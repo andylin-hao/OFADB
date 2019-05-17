@@ -42,7 +42,7 @@ public class DataFileTest {
 
         Type[] types = basicTypesData();
         Object[] data = basicRowData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         Row a = new Row(table,data);
         byte[] b = RowIO.writeRowData(types,data);
         Row c = new Row(table,b);
@@ -60,7 +60,7 @@ public class DataFileTest {
 
             Object[] data = basicRowData();
             data[j] = null;
-            Table table = new Table(database,basicColumn(types),"shit",null);
+            Table table = new Table(database,basicColumn(types),"test",null);
             Row a = new Row(table, data);
             byte[] b = RowIO.writeRowData(types, data);
             Row c = new Row(table, b);
@@ -84,7 +84,7 @@ public class DataFileTest {
         //int
         data[0] = 1;
         //String
-        data[1] = "shit";
+        data[1] = "test";
         //Double
         data[2] = 1.2;
         //char
@@ -132,7 +132,7 @@ public class DataFileTest {
     public static Column[] basicColumn(Type[] types){
         Column[] columns = new Column[types.length];
         for(int i = 0;i<types.length;i++){
-            columns[i] = (new Column(types[i],"shit" + (char)(i + 'a'),false));
+            columns[i] = (new Column(types[i],"test" + (char)(i + 'a'),false));
         }
         columns[0].hasIndex = true;
         return columns;
@@ -153,7 +153,7 @@ public class DataFileTest {
 
     private static void testEmtpyBlockIO() throws IOException{
         Type[] types = basicTypesData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         BlockIO a = new BlockIO(table,128,0);
         byte[] buf = a.content;
         BlockIO b = new BlockIO(table,buf,0);
@@ -169,7 +169,7 @@ public class DataFileTest {
 
     private static void testBlockSingleInsert()throws IOException{
         Type[] types = basicTypesData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         BlockIO a = new BlockIO(table,128,0);
         byte[] originData = RowIO.writeRowData(basicTypesData(),basicRowData());
         int index = a.insert(originData).rowIndex;
@@ -187,7 +187,7 @@ public class DataFileTest {
 
     private static void testBLockMiddleDelete()throws IOException{
         Type[] types = basicTypesData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         BlockIO a = new BlockIO(table,512,0);
         byte[] originData = RowIO.writeRowData(basicTypesData(),basicRowData());
         int index = a.insert(originData).rowIndex;
@@ -208,7 +208,7 @@ public class DataFileTest {
 
     private static void testBLockLastDelete()throws IOException{
         Type[] types = basicTypesData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         BlockIO a = new BlockIO(table,512,0);
         byte[] originData = RowIO.writeRowData(basicTypesData(),basicRowData());
         int index = a.insert(originData).rowIndex;
@@ -230,7 +230,7 @@ public class DataFileTest {
 
     private static void testBLockEmptyDelete()throws IOException{
         Type[] types = basicTypesData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         BlockIO a = new BlockIO(table,512,0);
         a.delete(28);
         return;
@@ -238,7 +238,7 @@ public class DataFileTest {
 
     private static void testBLockOneDelete()throws IOException{
         Type[] types = basicTypesData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         BlockIO a = new BlockIO(table,512,0);
         byte[] originData = RowIO.writeRowData(basicTypesData(),basicRowData());
         int index = a.insert(originData).rowIndex;
@@ -254,7 +254,7 @@ public class DataFileTest {
 
     private static void testBLockEqualUpdate()throws IOException{
         Type[] types = basicTypesData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         BlockIO a = new BlockIO(table,512,0);
         byte[] originData = RowIO.writeRowData(basicTypesData(),basicRowData());
         int index = a.insert(originData).rowIndex;
@@ -275,7 +275,7 @@ public class DataFileTest {
 
     private static void testBLockLQUpdate()throws IOException{
         Type[] types = basicTypesData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         BlockIO a = new BlockIO(table,512,0);
         byte[] originData = RowIO.writeRowData(basicTypesData(),basicRowData());
         byte[] LQdata = new byte[originData.length/2];
@@ -302,7 +302,7 @@ public class DataFileTest {
 
     private static void testBLockGQUpdate()throws IOException{
         Type[] types = basicTypesData();
-        Table table = new Table(database,basicColumn(types),"shit",null);
+        Table table = new Table(database,basicColumn(types),"test",null);
         BlockIO a = new BlockIO(table,512,0);
         byte[] originData = RowIO.writeRowData(basicTypesData(),basicRowData());
         byte[] LQdata = new byte[originData.length*2];
@@ -371,7 +371,7 @@ public class DataFileTest {
 
         }
         if(!NodeIndex.equal((NodeIndex) index.root,(NodeIndex) index2.root))
-            throw new Error("shit");
+            throw new Error("test");
 
         Random random = new Random(10000);
         for(int i = 0;i<testSize;i++){
@@ -386,7 +386,7 @@ public class DataFileTest {
                 File reload = index.fileIO.info;
                 index = new IndexBase(null,3,new int[1],reload,types);
                 if(!NodeIndex.equal((NodeIndex) index.root,(NodeIndex) index2.root))
-                    throw new Error("shit");
+                    throw new Error("test");
             }
         }
 
@@ -402,7 +402,7 @@ public class DataFileTest {
             index = new IndexBase(null,3,new int[1],reload,types);
             index2.remove(indexKey,new Row(null,i+1,i+1));
             if(!NodeIndex.equal((NodeIndex) index.root,(NodeIndex) index2.root))
-                throw new Error("shit");
+                throw new Error("test");
 
         }
         index.fileIO.file.close();
@@ -483,7 +483,7 @@ public class DataFileTest {
             index2.insert(new IndexKey(types,objects), new Row(null, i + 1, i + 1));
         }
         if(!NodeIndex.equal((NodeIndex) index.root,(NodeIndex) index2.root))
-            throw new Error("shit");
+            throw new Error("test");
 
         Random random = new Random(10000);
         for(int i = 0;i<testSize;i++){
@@ -499,7 +499,7 @@ public class DataFileTest {
                 File reload = index.fileIO.info;
                 index = new IndexBase(null,3,new int[1],reload,types);
                 if(!NodeIndex.equal((NodeIndex) index.root,(NodeIndex) index2.root))
-                    throw new Error("shit");
+                    throw new Error("test");
             }
         }
 
@@ -515,7 +515,7 @@ public class DataFileTest {
             index = new IndexBase(null,3,new int[1],reload,types);
             index2.remove(indexKey,new Row(null,i+1,i+1));
             if(!NodeIndex.equal((NodeIndex) index.root,(NodeIndex) index2.root))
-                throw new Error("shit");
+                throw new Error("test");
 
         }
         index.fileIO.file.close();
