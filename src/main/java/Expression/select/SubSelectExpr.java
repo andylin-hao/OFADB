@@ -1,0 +1,23 @@
+package Expression.select;
+
+import Expression.types.ExprTypes;
+import Expression.types.RangeTableTypes;
+
+public class SubSelectExpr extends RangeTableExpr {
+    private String alias;
+
+    private SelectExpr selectExpr;
+
+    public SubSelectExpr(String alias) {
+        super(RangeTableTypes.RT_SUB_QUERY);
+        this.alias = alias;
+    }
+
+    public SelectExpr getSelectExpr() {
+        return selectExpr;
+    }
+
+    public void setSelectExpr(SelectExpr selectExpr) {
+        this.selectExpr = selectExpr;
+    }
+}
