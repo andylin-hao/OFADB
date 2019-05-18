@@ -1,9 +1,9 @@
-package Index;
+package index;
 
-import IO.MDBByteArrayInputStream;
-import IO.MDBByteArrayOutputStream;
-import DBDisk.Type;
-import DBDisk.Types;
+import io.MDBByteArrayInputStream;
+import io.MDBByteArrayOutputStream;
+import disk.Type;
+import disk.Types;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package DBDisk;
+package disk;
 
 
 public class Type {

@@ -1,10 +1,10 @@
-package BlockManager;
+package block;
 
-import DBDisk.Database;
-import IO.BlockIO;
-import DBDisk.Logger;
-import DBDisk.Row;
-import DBDisk.Table;
+import disk.Database;
+import io.BlockIO;
+import disk.Logger;
+import disk.Row;
+import disk.Table;
 
 import java.io.IOException;
 import java.util.HashMap;

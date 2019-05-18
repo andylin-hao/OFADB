@@ -1,10 +1,10 @@
-package DBDisk;
+package disk;
 
-import BlockManager.Cache;
-import Index.IndexBase;
-import Index.IndexKey;
-import Index.NodeIndex;
-import Index.NodeLeaf;
+import block.Cache;
+import index.IndexBase;
+import index.IndexKey;
+import index.NodeIndex;
+import index.NodeLeaf;
 
 import java.io.IOException;
 import java.util.HashMap;

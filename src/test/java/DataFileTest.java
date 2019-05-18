@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import DBDisk.*;
-import IO.*;
-import Index.*;
+import disk.*;
+import io.*;
+import index.*;
 
 public class DataFileTest {
     public static Database database;
@@ -163,7 +163,7 @@ public class DataFileTest {
                 || (a.emptyPointer != b.emptyPointer)
                 || a.rowNum != b.rowNum
         )
-            throw new Error("emtpy block IO wrong");
+            throw new Error("emtpy block io wrong");
         return;
     }
 

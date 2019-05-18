@@ -1,6 +1,6 @@
-package Index;
+package index;
 
-import DBDisk.Row;
+import disk.Row;
 
 import java.util.*;
 

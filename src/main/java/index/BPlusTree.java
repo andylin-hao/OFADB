@@ -1,4 +1,4 @@
-package Index;
+package index;
 
 public abstract class BPlusTree {
     /**

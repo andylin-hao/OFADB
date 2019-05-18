@@ -1,13 +1,13 @@
-package DBDisk;
+package disk;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import IO.*;
-import Index.*;
-import BlockManager.*;
+import io.*;
+import index.*;
+import block.*;
 
 public class Table {
     /**
@@ -117,7 +117,7 @@ public class Table {
 
 
     /**
-     * @Description : check the column value of unique key in the data doesn't exist in the unique Index
+     * @Description : check the column value of unique key in the data doesn't exist in the unique index
     **/
     public boolean uniqueKeyUnUsed(Object[] data){
         for(int i = 0;i<indexs.size();i++)

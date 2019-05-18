@@ -1,4 +1,4 @@
-package DBDisk;
+package disk;
 
 public interface Types {
     int SQL_CHAR              = 1;

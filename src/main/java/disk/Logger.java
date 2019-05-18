@@ -1,4 +1,4 @@
-package DBDisk;
+package disk;
 
 import java.io.File;
 import java.io.IOException;

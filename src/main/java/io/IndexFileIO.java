@@ -1,7 +1,7 @@
-package IO;
+package io;
 
-import DBDisk.Row;
-import Index.*;
+import disk.Row;
+import index.*;
 
 import java.io.File;
 import java.io.IOException;

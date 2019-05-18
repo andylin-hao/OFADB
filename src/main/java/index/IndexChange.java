@@ -1,6 +1,6 @@
-package Index;
+package index;
 
-import IO.IndexFileIO;
+import io.IndexFileIO;
 
 import java.io.IOException;
 import java.util.HashMap;

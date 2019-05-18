@@ -1,6 +1,6 @@
-package BlockManager;
+package block;
 
-import DBDisk.Table;
+import disk.Table;
 
 public class CacheKey {
     /**

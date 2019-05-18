@@ -1,7 +1,7 @@
-package IO;
+package io;
 
-import DBDisk.Type;
-import DBDisk.Types;
+import disk.Type;
+import disk.Types;
 
 import java.io.EOFException;
 import java.io.IOException;

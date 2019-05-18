@@ -1,8 +1,8 @@
-package Index;
+package index;
 
-import IO.IndexFileIO;
-import DBDisk.Table;
-import DBDisk.Type;
+import io.IndexFileIO;
+import disk.Table;
+import disk.Type;
 
 import java.io.File;
 import java.util.HashMap;

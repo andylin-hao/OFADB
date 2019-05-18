@@ -1,7 +1,7 @@
-package BlockManager;
+package block;
 
-import IO.MDBByteArrayInputStream;
-import DBDisk.Table;
+import io.MDBByteArrayInputStream;
+import disk.Table;
 
 import java.io.IOException;
 import java.util.ArrayList;

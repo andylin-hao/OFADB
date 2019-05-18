@@ -1,7 +1,7 @@
-package Index;
+package index;
 
-import DBDisk.Row;
-import IO.*;
+import disk.Row;
+import io.*;
 
 import java.util.ArrayList;
 import java.util.List;

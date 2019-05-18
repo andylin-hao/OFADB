@@ -1,14 +1,14 @@
-package IO;
+package io;
 
-import BlockManager.BlockInfo;
-import DBDisk.Row;
-import DBDisk.Table;
+import block.BlockInfo;
+import disk.Row;
+import disk.Table;
 
 import java.io.IOException;
 
 /**
  * @Classname : BlockIO
- * @Description : the manger of IO of block
+ * @Description : the manger of io of block
  **/
 
 public class BlockIO extends BlockInfo {

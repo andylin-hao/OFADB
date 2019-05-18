@@ -1,7 +1,7 @@
-package DBDisk;
+package disk;
 
 import java.io.IOException;
-import IO.*;
+import io.*;
 
 public class Row {
     /**
