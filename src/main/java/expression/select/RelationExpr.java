@@ -1,8 +1,6 @@
-package Expression.select;
+package expression.select;
 
-import Expression.Expression;
-import Expression.types.ExprTypes;
-import Expression.types.RangeTableTypes;
+import expression.types.RangeTableTypes;
 
 public class RelationExpr extends RangeTableExpr {
     private String tableName = "";

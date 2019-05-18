@@ -1,5 +1,5 @@
-import Expression.select.ResultColumnExpr;
-import Expression.select.SelectExpr;
+import expression.select.ResultColumnExpr;
+import expression.select.SelectExpr;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import parser.SQLParser;

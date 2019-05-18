@@ -1,4 +1,4 @@
-package Expression.types;
+package expression.types;
 
 public enum RangeTableTypes {
     RT_RELATION,

@@ -1,8 +1,8 @@
 package parser;
 
-import Expression.Expression;
-import Expression.select.*;
-import Expression.types.*;
+import expression.Expression;
+import expression.select.*;
+import expression.types.*;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
 import java.util.ArrayList;

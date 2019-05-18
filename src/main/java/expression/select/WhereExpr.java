@@ -1,10 +1,8 @@
-package Expression.select;
+package expression.select;
 
-import Expression.Expression;
-import Expression.types.ExprTypes;
-import Expression.types.OpTypes;
-
-import java.util.ArrayList;
+import expression.Expression;
+import expression.types.ExprTypes;
+import expression.types.OpTypes;
 
 public class WhereExpr extends Expression {
 

@@ -1,7 +1,6 @@
-package Expression.select;
+package expression.select;
 
-import Expression.types.ExprTypes;
-import Expression.types.RangeTableTypes;
+import expression.types.RangeTableTypes;
 
 import java.util.ArrayList;
 

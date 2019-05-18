@@ -1,4 +1,4 @@
-package Expression.types;
+package expression.types;
 
 public enum QualifyTypes {
     QUA_EQ,

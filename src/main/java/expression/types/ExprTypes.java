@@ -1,4 +1,4 @@
-package Expression.types;
+package expression.types;
 
 public enum ExprTypes {
     EXPR_CREATE_TABLE,

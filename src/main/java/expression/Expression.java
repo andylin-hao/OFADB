@@ -1,6 +1,6 @@
-package Expression;
+package expression;
 
-import Expression.types.ExprTypes;
+import expression.types.ExprTypes;
 
 public class Expression {
     private ExprTypes exprType;

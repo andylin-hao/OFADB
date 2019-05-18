@@ -1,7 +1,7 @@
-package Expression.select;
+package expression.select;
 
-import Expression.Expression;
-import Expression.types.ExprTypes;
+import expression.Expression;
+import expression.types.ExprTypes;
 
 import java.util.ArrayList;
 
