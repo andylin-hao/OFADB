@@ -8,5 +8,6 @@ public enum ExprTypes {
     EXPR_QUALIFIER,
     EXPR_QUALIFY_ELE,
     EXPR_COLUMN,
-    EXPR_WHERE
+    EXPR_WHERE,
+    EXPR_FORMULA
 }

@@ -14,7 +14,7 @@ public class ParserTest {
     public static void main(String[] args) throws IOException {
         String sql = "select classno, classname as name\n" +
                 "from sc, (select * from class where class.gno = 'grade one') as sub on a = 1 join sc using (abc)\n" +
-                "where sc.no = 4 and sc.yes = 5 or sc.a = 8 and sc.b = 9\n" +
+                "where sc.no = 4 and sc.yes = 5 or sc.a = 8 and sc.b = 9+3*4+(4-3)*7\n" +
                 "order by name";
         ByteArrayInputStream is = new ByteArrayInputStream(sql.getBytes());
         CharStream stream = CharStreams.fromStream(is);

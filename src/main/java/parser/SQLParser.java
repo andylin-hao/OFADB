@@ -140,24 +140,8 @@ public class SQLParser extends SQLiteBaseListener {
         SelectExpr selectExpr = (SelectExpr) ctxExpr.get(ctx.getParent());
         WhereExpr whereExpr = getWhereExpr(ctx.expr());
         selectExpr.setWhereExpr(whereExpr);
-  }
-
-
-    private boolean isInteger(String str) {
-        if (null == str || "".equals(str)) {
-            return false;
-        }
-        Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
-        return pattern.matcher(str).matches();
     }
 
-    private boolean isDouble(String str) {
-        if (null == str || "".equals(str)) {
-            return false;
-        }
-        Pattern pattern = Pattern.compile("^[-+]?[.\\d]*$");
-        return pattern.matcher(str).matches();
-    }
 
     private QualifyEleExpr getQualifyEle(SQLiteParser.ExprContext exprCtx) {
         if (isInteger(exprCtx.getText())) {
@@ -166,6 +150,9 @@ public class SQLParser extends SQLiteBaseListener {
         } else if (isDouble(exprCtx.getText())) {
             Double ele = Double.parseDouble(exprCtx.getText());
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_FLOAT, ele);
+        } else if (isFormula(exprCtx)) {
+            FormulaExpr formulaExpr = getFormulaExpr(exprCtx);
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_FORMULA, formulaExpr);
         } else {
             ResultColumnExpr columnExpr = getColumnExpr(exprCtx);
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, columnExpr);
@@ -211,17 +198,22 @@ public class SQLParser extends SQLiteBaseListener {
             return QualifyTypes.QUA_NOT_EQ;
         return null;
     }
-    
-    private void checkQualifier(SQLiteParser.ExprContext exprCtx) {
-        if (exprCtx.expr().size() != 2)
-            throw new RuntimeException("Cannot parse qualifier:" + exprCtx.getText());
-    }
 
-    private OpTypes getWhereLogicalOperator(SQLiteParser.ExprContext exprCtx) {
+    private OpTypes getOperator(SQLiteParser.ExprContext exprCtx) {
         if (exprCtx.K_AND() != null)
             return OpTypes.OP_AND;
         if (exprCtx.K_OR() != null)
             return OpTypes.OP_OR;
+        if (exprCtx.STAR() != null)
+            return OpTypes.OP_MUL;
+        if (exprCtx.DIV() != null)
+            return OpTypes.OP_DIV;
+        if (exprCtx.MOD() != null)
+            return OpTypes.OP_MOD;
+        if (exprCtx.PLUS() != null)
+            return OpTypes.OP_PLUS;
+        if (exprCtx.MINUS() != null)
+            return OpTypes.OP_MINUS;
         return null;
     }
 
@@ -230,12 +222,12 @@ public class SQLParser extends SQLiteBaseListener {
             return getQualifier(exprCtx);
         }
 
-        if (exprCtx.expr().size() == 1 && exprCtx.getText().equals("("+exprCtx.expr(0)+")")) {
+        if (exprCtx.expr().size() == 1 && exprCtx.getText().equals("(" + exprCtx.expr(0) + ")")) {
             exprCtx = exprCtx.expr(0);
         }
 
         if (exprCtx.expr().size() == 2) {
-            OpTypes op = getWhereLogicalOperator(exprCtx);
+            OpTypes op = getOperator(exprCtx);
             if (op == null)
                 throw new RuntimeException("Unable to parse:" + exprCtx.getText());
 
@@ -249,9 +241,53 @@ public class SQLParser extends SQLiteBaseListener {
         throw new RuntimeException("Unable to parse:" + exprCtx.getText());
     }
 
+    private FormulaExpr getFormulaExpr(SQLiteParser.ExprContext exprCtx) {
+        if (isInteger(exprCtx.getText())) {
+            return new FormulaNodeExpr(Integer.parseInt(exprCtx.getText()));
+        } else if (isDouble(exprCtx.getText())) {
+            return new FormulaNodeExpr(Double.parseDouble(exprCtx.getText()));
+        } else {
+            if (exprCtx.expr().size() == 1) {
+                exprCtx = exprCtx.expr(0);
+            } 
+            if (exprCtx.expr().size() == 2) {
+                OpTypes op = getOperator(exprCtx);
+                FormulaExpr left = getFormulaExpr(exprCtx.expr(0));
+                FormulaExpr right = getFormulaExpr(exprCtx.expr(1));
+                return new FormulaExpr(left, right, op);
+            }
+            throw new RuntimeException("Unable to parse:"+exprCtx.getText());
+        }
+    }
+
+    private boolean isInteger(String str) {
+        if (null == str || "".equals(str)) {
+            return false;
+        }
+        Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
+        return pattern.matcher(str).matches();
+    }
+
+    private boolean isDouble(String str) {
+        if (null == str || "".equals(str)) {
+            return false;
+        }
+        Pattern pattern = Pattern.compile("^[-+]?[.\\d]*$");
+        return pattern.matcher(str).matches();
+    }
+
+    private boolean isFormula(SQLiteParser.ExprContext exprCtx) {
+        return exprCtx.STAR() != null || exprCtx.DIV() != null || exprCtx.MOD() != null || exprCtx.PLUS() != null || exprCtx.MINUS() != null;
+    }
+
     private boolean isWhereTerminal(SQLiteParser.ExprContext exprCtx) {
         checkQualifier(exprCtx);
-        return (exprCtx.expr(0).column_name() != null || exprCtx.expr(0).literal_value() != null) &&
-                (exprCtx.expr(1).column_name() != null || exprCtx.expr(1).literal_value() != null);
+        return (exprCtx.expr(0).column_name() != null || exprCtx.expr(0).literal_value() != null || isFormula(exprCtx.expr(0))) &&
+                (exprCtx.expr(1).column_name() != null || exprCtx.expr(1).literal_value() != null || isFormula(exprCtx.expr(1)));
+    }
+
+    private void checkQualifier(SQLiteParser.ExprContext exprCtx) {
+        if (exprCtx.expr().size() != 2)
+            throw new RuntimeException("Cannot parse qualifier:" + exprCtx.getText());
     }
 }

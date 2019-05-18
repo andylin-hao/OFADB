@@ -20,4 +20,16 @@ public class WhereExpr extends Expression {
         this.right = right;
         this.op = op;
     }
+
+    public WhereExpr getLeft() {
+        return left;
+    }
+
+    public WhereExpr getRight() {
+        return right;
+    }
+
+    public OpTypes getOp() {
+        return op;
+    }
 }
