@@ -1,4 +1,5 @@
 # OFADB设计文档
+<img src="https://travis-ci.org/linlinhaohao888/OFADB.svg?branch=master" /> <img src="https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/" />
 
 ## 	存储模块设计
 
