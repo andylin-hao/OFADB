@@ -2,6 +2,6 @@ language: java
 jdk: openjdk10
 install: true
 script:
-  - ./mvnw clean install
-  - ./mvnw clean test
+  - mvn clean install
+  - mvn clean test
 
