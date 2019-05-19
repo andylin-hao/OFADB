@@ -9,5 +9,7 @@ public enum ExprTypes {
     EXPR_QUALIFY_ELE,
     EXPR_COLUMN,
     EXPR_WHERE,
-    EXPR_FORMULA
+    EXPR_FORMULA,
+    EXPR_COLUMN_DEF,
+    EXPR_TABLE_CONSTRAINT
 }

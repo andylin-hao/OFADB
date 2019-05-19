@@ -1,11 +1,17 @@
 package parser;
 
+import disk.Table;
 import expression.Expression;
+import expression.create.ColumnDefExpr;
+import expression.create.CreateTableExpr;
+import expression.create.TableConstraintExpr;
 import expression.select.*;
 import expression.types.*;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import org.stringtemplate.v4.ST;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -13,11 +19,59 @@ public class SQLParser extends SQLiteBaseListener {
 
     private Expression expr;
 
-    private ParseTreeProperty<Expression> ctxExpr = new ParseTreeProperty<Expression>();
+    private ParseTreeProperty<Expression> ctxExpr = new ParseTreeProperty<>();
 
 
     public Expression getExpr() {
         return expr;
+    }
+
+    @Override
+    public void exitCreate_table_stmt(SQLiteParser.Create_table_stmtContext ctx) {
+        expr = new CreateTableExpr(ctx.database_name().getText(), ctx.table_name().getText());
+        CreateTableExpr createTableExpr = (CreateTableExpr) expr;
+        HashMap<String, ColumnDefExpr> columnExprs = new HashMap<>();
+
+        List<SQLiteParser.Column_defContext> columnDefContexts = ctx.column_def();
+        for (SQLiteParser.Column_defContext defCtx : columnDefContexts) {
+            String columnName = defCtx.column_name().getText();
+            ColumnTypes columnType = ColumnTypes.valueOf("COL_" + defCtx.type_name().name().getText().toUpperCase());
+            int signedNum = 0;
+            if (defCtx.type_name().signed_number().size() > 0 && defCtx.type_name().signed_number() != null) {
+                if (defCtx.type_name().signed_number().size() == 1)
+                    signedNum = Integer.parseInt(defCtx.type_name().signed_number(0).getText());
+                else
+                    throw new RuntimeException("Unable to parse:"+defCtx.getText());
+            }
+            ColumnDefExpr columnDefExpr = new ColumnDefExpr(columnName, columnType, signedNum);
+            columnExprs.put(columnName, columnDefExpr);
+
+            List<SQLiteParser.Column_constraintContext> columnConstraintContexts = defCtx.column_constraint();
+            for (SQLiteParser.Column_constraintContext colConstraintCtx: columnConstraintContexts) {
+                ColumnConstraintTypes type = getColConstraintType(colConstraintCtx);
+                columnDefExpr.getConstraintTypes().add(type);
+            }
+
+            createTableExpr.getColumnDefExprs().add(columnDefExpr);
+        }
+
+        List<SQLiteParser.Table_constraintContext> tableConstraintContexts = ctx.table_constraint();
+        for (SQLiteParser.Table_constraintContext tblConstraintCtx: tableConstraintContexts) {
+            TableConstraintTypes tblConstraintType = getTableConstraintType(tblConstraintCtx);
+            TableConstraintExpr tblConstraintExpr = new TableConstraintExpr(tblConstraintType);
+
+            List<SQLiteParser.Indexed_columnContext> columnContexts = tblConstraintCtx.indexed_column();
+            for (SQLiteParser.Indexed_columnContext columnCtx: columnContexts) {
+                ColumnDefExpr column = columnExprs.get(columnCtx.getText());
+                if (column == null) {
+                    throw new RuntimeException("Table constraint incorrect:" + tblConstraintCtx.getText());
+                } else {
+                    tblConstraintExpr.getColumns().add(column);
+                }
+            }
+
+            createTableExpr.getTableConstraintExprs().add(tblConstraintExpr);
+        }
     }
 
     @Override
@@ -102,7 +156,8 @@ public class SQLParser extends SQLiteBaseListener {
                 joinExpr.setLhs(leftRangeTblExpr);
                 joinExpr.setRhs((RangeTableExpr) ctxExpr.get(rangeTblContexts.get(i)));
 
-                if (rangeTblContexts.get(i - 1).table_alias() != null && rangeTblContexts.get(i - 1).table_alias().getText().toLowerCase().equals("natural") ||
+                if (rangeTblContexts.get(i - 1).table_alias() != null &&
+                        rangeTblContexts.get(i - 1).table_alias().getText().toLowerCase().equals("natural") ||
                         ctx.join_operator(i - 1).getText().equals("naturaljoin")) {
                     joinExpr.setNatural(true);
                 }
@@ -149,10 +204,17 @@ public class SQLParser extends SQLiteBaseListener {
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_INT, integer);
         } else if (isDouble(exprCtx.getText())) {
             Double ele = Double.parseDouble(exprCtx.getText());
-            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_FLOAT, ele);
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_DOUBLE, ele);
         } else if (isFormula(exprCtx)) {
             FormulaExpr formulaExpr = getFormulaExpr(exprCtx);
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_FORMULA, formulaExpr);
+        } else if (isBool(exprCtx.getText())) {
+            Boolean bool = Boolean.parseBoolean(exprCtx.getText().toLowerCase());
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_BOOL, bool);
+        } else if (isStr(exprCtx.getText())) {
+            String ctxStr = exprCtx.getText();
+            String str = ctxStr.substring(1, ctxStr.length() - 1);
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_STR, str);
         } else {
             ResultColumnExpr columnExpr = getColumnExpr(exprCtx);
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, columnExpr);
@@ -249,15 +311,38 @@ public class SQLParser extends SQLiteBaseListener {
         } else {
             if (exprCtx.expr().size() == 1) {
                 exprCtx = exprCtx.expr(0);
-            } 
+            }
             if (exprCtx.expr().size() == 2) {
                 OpTypes op = getOperator(exprCtx);
                 FormulaExpr left = getFormulaExpr(exprCtx.expr(0));
                 FormulaExpr right = getFormulaExpr(exprCtx.expr(1));
                 return new FormulaExpr(left, right, op);
             }
-            throw new RuntimeException("Unable to parse:"+exprCtx.getText());
+            throw new RuntimeException("Unable to parse:" + exprCtx.getText());
         }
+    }
+
+    private ColumnConstraintTypes getColConstraintType(SQLiteParser.Column_constraintContext exprCtx) {
+        switch (exprCtx.getText().toLowerCase()) {
+            case "notnull":
+                return ColumnConstraintTypes.COL_NOT_NULL;
+            case "primarykey":
+                return ColumnConstraintTypes.COL_PRIMARY_KEY;
+            case "primarykeyautoincrement":
+                return ColumnConstraintTypes.COL_AUTO_INC;
+            case "unique":
+                return ColumnConstraintTypes.COL_UNIQUE;
+            default:
+                throw new RuntimeException("Unsupported column constraint type");
+        }
+    }
+
+    private TableConstraintTypes getTableConstraintType(SQLiteParser.Table_constraintContext exprCtx) {
+        String str = exprCtx.getText().toLowerCase();
+        if (str.startsWith("primarykey"))
+            return TableConstraintTypes.TBL_PRIMARY_KEY;
+        else
+            throw new RuntimeException("Unsupported column constraint type");
     }
 
     private boolean isInteger(String str) {
@@ -274,6 +359,20 @@ public class SQLParser extends SQLiteBaseListener {
         }
         Pattern pattern = Pattern.compile("^[-+]?[.\\d]*$");
         return pattern.matcher(str).matches();
+    }
+
+    private boolean isBool(String str) {
+        if (null == str || "".equals(str)) {
+            return false;
+        }
+        return str.toLowerCase().equals("true") || str.toLowerCase().equals("false");
+    }
+
+    private boolean isStr(String str) {
+        if (null == str || "".equals(str)) {
+            return false;
+        }
+        return str.startsWith("\"") && str.endsWith("\"") || str.startsWith("\'") && str.endsWith("\'");
     }
 
     private boolean isFormula(SQLiteParser.ExprContext exprCtx) {

@@ -4,7 +4,7 @@ import expression.Expression;
 import expression.types.ExprTypes;
 import expression.types.OpTypes;
 
-@SuppressWarnings("ConstantConditions")
+
 public class FormulaExpr extends Expression {
     private FormulaExpr left;
     private FormulaExpr right;
@@ -36,24 +36,32 @@ public class FormulaExpr extends Expression {
                 if (isInteger)
                     return (Integer) leftValue * (Integer) rightValue;
                 else
-                    return (Double) leftValue * (Double) rightValue;
+                    return Double.parseDouble(leftValue.toString()) * Double.parseDouble(rightValue.toString());
             case OP_DIV:
-                return (Double) leftValue * (Double) rightValue;
+                if (Double.parseDouble(rightValue.toString()) == 0)
+                    throw new RuntimeException("Illegal division of number 0");
+                return Double.parseDouble(leftValue.toString()) / Double.parseDouble(rightValue.toString());
             case OP_MOD:
-                if (isInteger)
+                if (isInteger) {
+                    if ((Integer) rightValue == 0)
+                        throw new RuntimeException("Illegal division of number 0");
                     return (Integer) leftValue % (Integer) rightValue;
-                else
-                    return (Double) leftValue % (Double) rightValue;
+                }
+                else {
+                    if (Double.parseDouble(rightValue.toString()) == 0)
+                        throw new RuntimeException("Illegal division of number 0");
+                    return Double.parseDouble(leftValue.toString()) % Double.parseDouble(rightValue.toString());
+                }
             case OP_PLUS:
                 if (isInteger)
                     return (Integer) leftValue + (Integer) rightValue;
                 else
-                    return (Double) leftValue + (Double) rightValue;
+                    return Double.parseDouble(leftValue.toString()) + Double.parseDouble(rightValue.toString());
             case OP_MINUS:
                 if (isInteger)
                     return (Integer) leftValue - (Integer) rightValue;
                 else
-                    return (Double) leftValue - (Double) rightValue;
+                    return Double.parseDouble(leftValue.toString()) - Double.parseDouble(rightValue.toString());
         }
 
         throw new RuntimeException("Unable to calculate");
