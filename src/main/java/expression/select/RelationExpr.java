@@ -17,4 +17,16 @@ public class RelationExpr extends RangeTableExpr {
     public RelationExpr() {
         super(RangeTableTypes.RT_RELATION);
     }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
 }

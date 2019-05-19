@@ -1,14 +1,13 @@
 package parser;
 
-import disk.Table;
 import expression.Expression;
 import expression.create.ColumnDefExpr;
+import expression.create.CreateDBExpr;
 import expression.create.CreateTableExpr;
 import expression.create.TableConstraintExpr;
 import expression.select.*;
 import expression.types.*;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
-import org.stringtemplate.v4.ST;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +71,11 @@ public class SQLParser extends SQLiteBaseListener {
 
             createTableExpr.getTableConstraintExprs().add(tblConstraintExpr);
         }
+    }
+
+    @Override
+    public void exitCreate_database_stmt(SQLiteParser.Create_database_stmtContext ctx) {
+        expr = new CreateDBExpr(ctx.database_name().getText());
     }
 
     @Override

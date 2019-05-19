@@ -1,14 +1,10 @@
 import expression.Expression;
 import expression.create.ColumnDefExpr;
+import expression.create.CreateDBExpr;
 import expression.create.CreateTableExpr;
 import expression.create.TableConstraintExpr;
-import expression.select.FormulaExpr;
-import expression.select.QualifierExpr;
-import expression.select.ResultColumnExpr;
-import expression.select.SelectExpr;
-import expression.types.ColumnConstraintTypes;
-import expression.types.ColumnTypes;
-import expression.types.TableConstraintTypes;
+import expression.select.*;
+import expression.types.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,17 +36,42 @@ class ParserTest {
 
     @Test
     void selectTest() throws IOException {
-        String sql = "select class_num, classname as name\n" +
+        String sql =
+                "select db.table.class_num, classname as name\n" +
                 "from sc, (select * from class where class.gno = 'grade one') as sub on a = 1 join sc using (abc)\n" +
-                "where sc.no = 4 and sc.yes = 5 or sc.a = 8 and sc.b = (9+3*4+(4-3)*7)/10+7/10\n" +
-                "order by name";
+                "where sc.no = 4 and sc.yes = 5 or sc.a = 8 and sc.b > (9+3*4+(4-3)*7)/10+7/10\n";
         SelectExpr stmt = (SelectExpr) getParseResult(sql);
+
+        ResultColumnExpr firstCol = stmt.getResultColumnExprs().get(0);
+        ResultColumnExpr secondCol = stmt.getResultColumnExprs().get(1);
+        assertEquals(stmt.getResultColumnExprs().size(), 2);
+        assertEquals(firstCol.getDbName(), "db");
+        assertEquals(firstCol.getTableName(), "table");
+        assertEquals(firstCol.getAttrName(), "class_num");
+        assertEquals(secondCol.getAttrName(), "classname");
+        assertEquals(secondCol.getAlias(), "name");
+
+        JoinExpr rangeTableExpr = (JoinExpr) stmt.getFromExpr();
+        assertEquals(rangeTableExpr.getRhs().getClass(), RelationExpr.class);
+        assertEquals(((RelationExpr)rangeTableExpr.getRhs()).getTableName(), "sc");
+        assertEquals(rangeTableExpr.getUsingExpr().get(0).getAttrName(), "abc");
+
+        JoinExpr joinOnExpr = (JoinExpr) rangeTableExpr.getLhs();
+        assertEquals(joinOnExpr.getRhs().getClass(), SubSelectExpr.class);
+        assertEquals(((SubSelectExpr) joinOnExpr.getRhs()).getAlias(), "sub");
+        assertEquals(((SubSelectExpr) joinOnExpr.getRhs()).getSelectExpr().getResultColumnExprs().get(0).getAttrName(), "*");
+        assertEquals(joinOnExpr.getQualifierExpr().getQualifyTypes(), QualifyTypes.QUA_EQ);
+        assertEquals(joinOnExpr.getQualifierExpr().getLhs().getEleTypes(), QualifyEleTypes.QUA_ELE_ATTR);
+        assertEquals(joinOnExpr.getQualifierExpr().getRhs().getValue(), 1);
+
+        assertEquals(((QualifierExpr) stmt.getWhereExpr().getRight().getRight()).getQualifyTypes(), QualifyTypes.QUA_GT);
         assertEquals(((FormulaExpr) ((QualifierExpr) stmt.getWhereExpr().getRight().getRight()).getRhs().getValue()).getValue(), 3.5);
     }
 
     @Test
     void createTableTest() throws IOException {
-        String sql = "create table DB.MyTable (" +
+        String sql =
+                "create table DB.MyTable (" +
                 "id INT primary key not null," +
                 "name VARCHAR(8) not null," +
                 "stu_num DOUBLE primary key autoincrement," +
@@ -87,5 +108,12 @@ class ParserTest {
                 assertEquals(tblConstraintCols[i][j], tableConstraintExprs.get(i).getColumns().get(j).getColumnName());
             }
         }
+    }
+
+    @Test
+    void createDBTest() throws IOException {
+        String sql = "create database name";
+        CreateDBExpr stmt = (CreateDBExpr) getParseResult(sql);
+        assertEquals(stmt.getDbName(), "name");
     }
 }

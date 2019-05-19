@@ -4,7 +4,6 @@ import expression.types.RangeTableTypes;
 
 public class SubSelectExpr extends RangeTableExpr {
     private String alias;
-
     private SelectExpr selectExpr;
 
     public SubSelectExpr(String alias) {
@@ -18,5 +17,9 @@ public class SubSelectExpr extends RangeTableExpr {
 
     public void setSelectExpr(SelectExpr selectExpr) {
         this.selectExpr = selectExpr;
+    }
+
+    public String getAlias() {
+        return alias;
     }
 }
