@@ -7,8 +7,7 @@ import disk.Table;
 import java.io.IOException;
 
 /**
- * @Classname : BlockIO
- * @Description : the manger of io of block
+ * The manger of io of block
  **/
 
 public class BlockIO extends BlockInfo {
@@ -18,7 +17,7 @@ public class BlockIO extends BlockInfo {
 
 
     /**
-     * @Description : init  from an existing block
+     * Init  from an existing block
     **/
     public BlockIO(Table table, byte[] buf, int index)throws IOException{
         super(table,buf,index);
@@ -30,7 +29,7 @@ public class BlockIO extends BlockInfo {
 
 
     /**
-     * @Description : create a new block
+     * Create a new block
     **/
     public BlockIO(Table table, int blockSize, int index)throws IOException{
         super(table,blockSize,index);
@@ -44,7 +43,7 @@ public class BlockIO extends BlockInfo {
 
 
     /**
-     * @Description : insert row into position already in the entry list
+     * Insert row into position already in the entry list
      * @param index : the index of the position to be inserted
      * @param data : data bytes to be inserted
     **/
@@ -63,7 +62,7 @@ public class BlockIO extends BlockInfo {
     }
 
     /**
-     * @Description : insert a row into the block
+     * Insert a row into the block
     **/
     public Row insert(byte[] data)throws IOException{
         setModified(true);
@@ -80,7 +79,7 @@ public class BlockIO extends BlockInfo {
     }
 
     /**
-     * @Description : delete the row with the input index
+     * Delete the row with the input index
      * @param index : the index to be deleted
     **/
     public Row delete(int index)throws IOException{
@@ -117,7 +116,7 @@ public class BlockIO extends BlockInfo {
     }
 
     /**
-     * @Description : update the index row
+     * Update the index row
      * @param index : index of the row to be updated
      * @param data :new data
     **/
@@ -217,7 +216,7 @@ public class BlockIO extends BlockInfo {
 
 
     /**
-     * @Description : read data from bytes
+     * Read data from bytes
      * @param index: the index of the row to read
     **/
     public byte[] readRowData(int index) throws IOException {
@@ -235,7 +234,7 @@ public class BlockIO extends BlockInfo {
 
 
     /**
-     * @Description : write block info to the head of the block
+     * Write block info to the head of the block
     **/
     public void writeMetaToBytes() throws IOException{
         outputStream.setPosition(0);

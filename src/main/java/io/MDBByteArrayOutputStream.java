@@ -2,14 +2,14 @@ package io;
 
 import java.io.*;
 
-public class MDBByteArrayOutputStream{
-    /**
-     * @Classname : MDBByteArrayOutputStream
-     * @Description : An outputStream to handle writing work of a byte array.
-     **/
+/**
+ * An outputStream to handle writing work of a byte array.
+ **/
+
+public class MDBByteArrayOutputStream {
 
     protected byte[] buffer;
-    protected int    count;
+    protected int count;
 
     public MDBByteArrayOutputStream(byte[] buffer) {
         this.buffer = buffer;
@@ -85,7 +85,8 @@ public class MDBByteArrayOutputStream{
     /**
      * does nothing
      */
-    public void flush() throws IOException {}
+    public void flush() throws IOException {
+    }
 
     // methods that extend java.io.OutputStream
     public void write(int b) {
@@ -107,7 +108,8 @@ public class MDBByteArrayOutputStream{
         return new String(buffer, 0, count);
     }
 
-    public void close() throws IOException {}
+    public void close() throws IOException {
+    }
 
     // additional public methods not in similar java.util classes
     public void writeNoCheck(int b) {
@@ -118,9 +120,7 @@ public class MDBByteArrayOutputStream{
 
         int len = charArray.length;
 
-        for (int i = 0; i < len; i++) {
-            int v = charArray[i];
-
+        for (int v : charArray) {
             buffer[count++] = (byte) (v >>> 8);
             buffer[count++] = (byte) v;
         }
@@ -137,7 +137,7 @@ public class MDBByteArrayOutputStream{
                 break;
             }
 
-            left  -= read;
+            left -= read;
             count += read;
         }
 
@@ -218,36 +218,36 @@ public class MDBByteArrayOutputStream{
     }
 
     public void reset(byte[] buffer) {
-        count       = 0;
+        count = 0;
         this.buffer = buffer;
     }
 
-    public void writeObject(Object data) throws IOException{
-        if(data instanceof Integer)
-            writeInt((int)data);
-        else if(data instanceof Character)
-            writeChar((char)data);
-        else if(data instanceof Short)
-            writeShort((short)data);
+    public void writeObject(Object data) throws IOException {
+        if (data instanceof Integer)
+            writeInt((int) data);
+        else if (data instanceof Character)
+            writeChar((char) data);
+        else if (data instanceof Short)
+            writeShort((short) data);
         else if (data instanceof Float)
-            writeFloat((float)data);
+            writeFloat((float) data);
         else if (data instanceof Double)
-            writeDouble((double)data);
-        else if(data instanceof String)
-            writeChars((String)data);
-        else if(data instanceof Long)
-            writeLong((long)data);
-        else if(data instanceof Boolean)
-            writeBoolean((boolean)data);
+            writeDouble((double) data);
+        else if (data instanceof String)
+            writeChars((String) data);
+        else if (data instanceof Long)
+            writeLong((long) data);
+        else if (data instanceof Boolean)
+            writeBoolean((boolean) data);
         else
             throw new Error("invalid data type");
     }
-    public void skip(int walks){
-        count = Math.min(buffer.length,walks + count);
+
+    public void skip(int walks) {
+        count = Math.min(buffer.length, walks + count);
     }
 
-    public void writeObjects(Object[] data)throws IOException{
-        for(int i = 0;i<data.length;i++)
-            writeObject(data[i]);
+    public void writeObjects(Object[] data) throws IOException {
+        for (Object datum : data) writeObject(datum);
     }
 }

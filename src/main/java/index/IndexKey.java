@@ -51,18 +51,17 @@ public class IndexKey implements Comparable{
 
     public static int getKeyLength(Type[] types){
         int totalLength = 0;
-        for(int i = 0;i<types.length;i++)
-            totalLength += types[i].variableLength();
+        for (Type type : types) totalLength += type.variableLength();
         return totalLength;
     }
 
     public String stringFilter(String origin)throws IOException{
-        String resultStr = "";
+        StringBuilder resultStr = new StringBuilder();
         for(int i = 0;i<origin.length();i++){
             if(origin.charAt(i) != '\0')
-                resultStr += origin.charAt(i);
+                resultStr.append(origin.charAt(i));
         }
-        return resultStr;
+        return resultStr.toString();
     }
 
     @Override
@@ -108,12 +107,12 @@ public class IndexKey implements Comparable{
 
     @Override
     public String toString() {
-        String str = "(";
+        StringBuilder str = new StringBuilder("(");
         for(int i = 0;i<values.length;i++) {
-            str += values[i].toString();
-            if(i != values.length-1) str += ",";
+            str.append(values[i].toString());
+            if(i != values.length-1) str.append(",");
         }
-        str += ")";
-        return str;
+        str.append(")");
+        return str.toString();
     }
 }

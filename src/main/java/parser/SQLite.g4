@@ -75,8 +75,11 @@ sql_stmt
                                       | savepoint_stmt
                                       | simple_select_stmt
                                       | select_stmt
+                                      | show_database_stmt
+                                      | show_table_stmt
                                       | update_stmt
                                       | update_stmt_limited
+                                      | use_database_stmt
                                       | vacuum_stmt )
  ;
 
@@ -250,6 +253,16 @@ select_or_values
  | K_VALUES '(' expr ( ',' expr )* ')' ( ',' '(' expr ( ',' expr )* ')' )*
  ;
 
+
+show_database_stmt
+ : K_SHOW K_DATABASE database_name
+ | K_SHOW K_DATABASES
+ ;
+
+show_table_stmt
+ : K_SHOW K_TABLE ( database_name '.' )? table_name
+ ;
+
 update_stmt
  : with_clause? K_UPDATE ( K_OR K_ROLLBACK
                          | K_OR K_ABORT
@@ -269,6 +282,10 @@ update_stmt_limited
    ( ( K_ORDER K_BY ordering_term ( ',' ordering_term )* )?
      K_LIMIT expr ( ( K_OFFSET | ',' ) expr )?
    )?
+ ;
+
+use_database_stmt
+ : K_USE K_DATABASE database_name
  ;
 
 vacuum_stmt
@@ -597,6 +614,7 @@ keyword
  | K_SAVEPOINT
  | K_SELECT
  | K_SET
+ | K_SHOW
  | K_TABLE
  | K_TEMP
  | K_TEMPORARY
@@ -607,6 +625,7 @@ keyword
  | K_UNION
  | K_UNIQUE
  | K_UPDATE
+ | K_USE
  | K_USING
  | K_VACUUM
  | K_VALUES
@@ -752,6 +771,7 @@ K_CURRENT_DATE : C U R R E N T '_' D A T E;
 K_CURRENT_TIME : C U R R E N T '_' T I M E;
 K_CURRENT_TIMESTAMP : C U R R E N T '_' T I M E S T A M P;
 K_DATABASE : D A T A B A S E;
+K_DATABASES : D A T A B A S E S;
 K_DEFAULT : D E F A U L T;
 K_DEFERRABLE : D E F E R R A B L E;
 K_DEFERRED : D E F E R R E D;
@@ -826,6 +846,7 @@ K_ROW : R O W;
 K_SAVEPOINT : S A V E P O I N T;
 K_SELECT : S E L E C T;
 K_SET : S E T;
+K_SHOW : S H O W;
 K_TABLE : T A B L E;
 K_TEMP : T E M P;
 K_TEMPORARY : T E M P O R A R Y;
@@ -836,6 +857,7 @@ K_TRIGGER : T R I G G E R;
 K_UNION : U N I O N;
 K_UNIQUE : U N I Q U E;
 K_UPDATE : U P D A T E;
+K_USE : U S E;
 K_USING : U S I N G;
 K_VACUUM : V A C U U M;
 K_VALUES : V A L U E S;

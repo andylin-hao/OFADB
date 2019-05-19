@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Classname : BlockInfo
- * @Description : the class stored the info of one block in the storage file
+ * The class stored the info of one block in the storage file
  **/
 
 
@@ -31,9 +30,9 @@ public class BlockInfo {
 
 
     /**
-        * @Description : get block info from the byte array of a block
-    **/
-    public BlockInfo(Table t, byte[] buf, int index)throws IOException{
+     * Get block info from the byte array of a block
+     **/
+    public BlockInfo(Table t, byte[] buf, int index) throws IOException {
         table = t;
         emptyRecord = new ArrayList<Boolean>();
         blockIndex = index;
@@ -42,19 +41,20 @@ public class BlockInfo {
     }
 
     /**
-        * @Description : create a new block
-    **/
-    public BlockInfo(Table t, int blockSize, int index){
+     * Create a new block
+     **/
+    public BlockInfo(Table t, int blockSize, int index) {
         table = t;
         emptyRecord = new ArrayList<Boolean>();
         blockIndex = index;
-        setBLockInfo(blockSize,blockSize,blockSize-blockHeadSize,0);
+        setBLockInfo(blockSize, blockSize, blockSize - blockHeadSize, 0);
         setModified(true);
     }
 
     public void setModified(boolean modified) {
         isModified = modified;
     }
+
     public int getBlockSize() {
         return blockSize;
     }
@@ -96,8 +96,8 @@ public class BlockInfo {
     }
 
     /**
-      * @Description : get block info from an exists bytes array of a block
-    **/
+     * Get block info from an exists bytes array of a block
+     **/
     public void getMetaFromBytes(byte[] buf) throws IOException {
         emptyRecord.clear();
         MDBByteArrayInputStream inputStream = new MDBByteArrayInputStream(buf);
@@ -110,12 +110,12 @@ public class BlockInfo {
         int emptySize = inputStream.readInt();
 
         //get the empty list
-        setBLockInfo(blockSize,emptyPointer,emptySize,rowNum);
+        setBLockInfo(blockSize, emptyPointer, emptySize, rowNum);
         int validEntry = 0;
-        while(validEntry<rowNum){
+        while (validEntry < rowNum) {
             int offset = inputStream.readInt();
             int length = inputStream.readInt();
-            if(offset == -1 && length == -1)
+            if (offset == -1 && length == -1)
                 emptyRecord.add(true);
             else {
                 emptyRecord.add(false);
@@ -126,9 +126,9 @@ public class BlockInfo {
 
 
     /**
-     * @Description : set the block info
-    **/
-    public void setBLockInfo(int blockSize,int emptyPointer,int emptySize,int rowNum){
+     * Set the block info
+     **/
+    public void setBLockInfo(int blockSize, int emptyPointer, int emptySize, int rowNum) {
         setBlockSize(blockSize);
         setEmptyPointer(emptyPointer);
         setEmptySize(emptySize);
@@ -136,87 +136,92 @@ public class BlockInfo {
     }
 
     /**
-     * @Description : check the block is insertable or not
+     * Check the block is insertable or not
+     *
      * @param length : the length of the row data to be inserted
-    **/
-    public boolean insertable(int length){
-        if(emptyRecord.contains(true))
-            return emptySize>=length;
+     **/
+    public boolean insertable(int length) {
+        if (emptyRecord.contains(true))
+            return emptySize >= length;
         else
             return emptySize >= length + entrySize;
     }
 
 
     /**
-     * @Description : check the block is big enough to update the row
+     * Check the block is big enough to update the row
+     *
      * @param length : the length of the new data
-     * @param index : the index in the entry list of the row to be updated
-    **/
-    public boolean updatable(int index,int length){
-        if(index >= emptyRecord.size())
+     * @param index  : the index in the entry list of the row to be updated
+     **/
+    public boolean updatable(int index, int length) {
+        if (index >= emptyRecord.size())
             return false;
         return emptySize >= length;
     }
 
 
     /**
-     * @Description : update the block info after delete
-     * @param index : the index of the row deleted
+     * Update the block info after delete
+     *
+     * @param index      : the index of the row deleted
      * @param dataLength : the length of the row data deleted
-    **/
-    public void updateMetaByDelete(int index,int dataLength)throws IOException{
+     **/
+    public void updateMetaByDelete(int index, int dataLength) throws IOException {
         rowNum--;
-        emptyRecord.set(index,true);
+        emptyRecord.set(index, true);
 
         //if this is the last row in the list, then release the entry space
-        if(index == emptyRecord.size()-1)
+        if (index == emptyRecord.size() - 1)
             removeLastEntryi(index);
-        emptyPointer +=dataLength;
-        emptySize +=dataLength;
+        emptyPointer += dataLength;
+        emptySize += dataLength;
 //        writeMetaToBytes();
     }
 
     /**
-     * @Description : update the block info after insert
-     * @param index : the index of the row inserted
+     * Update the block info after insert
+     *
+     * @param index      : the index of the row inserted
      * @param dataLength : the length of the row inserted
-    **/
-    public void updateMetaByInsert(int index,int dataLength) throws IOException{
-        rowNum ++;
-        if(index == emptyRecord.size())
+     **/
+    public void updateMetaByInsert(int index, int dataLength) throws IOException {
+        rowNum++;
+        if (index == emptyRecord.size())
             emptyRecord.add(true);
-        emptyRecord.set(index,false);
-        emptyPointer -=dataLength;
-        emptySize -=dataLength;
+        emptyRecord.set(index, false);
+        emptyPointer -= dataLength;
+        emptySize -= dataLength;
 //        writeMetaToBytes();
     }
 
     /**
-     * @Description : update the block info after updated
-     * @param index ： the index of the row updated
+     * Update the block info after updated
+     *
+     * @param index       ： the index of the row updated
      * @param deltaLength : the delta length (new length - old length)
-    **/
-    public void updateMetaByUpdate(int index,int deltaLength)throws IOException{
-        emptyPointer -=deltaLength;
-        emptySize -=deltaLength;
+     **/
+    public void updateMetaByUpdate(int index, int deltaLength) throws IOException {
+        emptyPointer -= deltaLength;
+        emptySize -= deltaLength;
 //        writeMetaToBytes();
     }
 
 
     /**
-     * @Description : add new entry  into list and update the emptySize
-    **/
-    public void addNewEntry(){
+     * Add new entry  into list and update the emptySize
+     **/
+    public void addNewEntry() {
         this.emptyRecord.add(true);
-        emptySize -=entrySize;
+        emptySize -= entrySize;
     }
 
     /**
-     * @Description : remove the last entry in the list and update emptySize
-    **/
-    public void removeLastEntryi(int index){
+     * Remove the last entry in the list and update emptySize
+     **/
+    public void removeLastEntryi(int index) {
         emptyRecord.remove(index);
-        emptySize +=entrySize;
+        emptySize += entrySize;
     }
 
 }

@@ -215,6 +215,18 @@ public interface SQLiteVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSelect_or_values(SQLiteParser.Select_or_valuesContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SQLiteParser#show_database_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitShow_database_stmt(SQLiteParser.Show_database_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SQLiteParser#show_table_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitShow_table_stmt(SQLiteParser.Show_table_stmtContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SQLiteParser#update_stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -226,6 +238,12 @@ public interface SQLiteVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitUpdate_stmt_limited(SQLiteParser.Update_stmt_limitedContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SQLiteParser#use_database_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUse_database_stmt(SQLiteParser.Use_database_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SQLiteParser#vacuum_stmt}.
 	 * @param ctx the parse tree

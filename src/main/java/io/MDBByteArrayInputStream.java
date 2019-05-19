@@ -6,38 +6,38 @@ import disk.Types;
 import java.io.EOFException;
 import java.io.IOException;
 
-public class MDBByteArrayInputStream{
-    /**
-     * @Classname : MDBByteArrayInputStream
-     * @Description : An inputStream to handle reading work of a byte array.
-     **/
+/**
+ * An inputStream to handle reading work of a byte array.
+ **/
 
+
+public class MDBByteArrayInputStream {
     protected byte[] buffer;
-    protected int    pos;
-    protected int    mark = 0;
-    protected int    count;
+    protected int pos;
+    protected int mark = 0;
+    protected int count;
 
     public MDBByteArrayInputStream(byte[] buf) {
 
         this.buffer = buf;
-        this.pos    = 0;
-        this.count  = buf.length;
+        this.pos = 0;
+        this.count = buf.length;
     }
 
     public MDBByteArrayInputStream(byte[] buf, int offset, int length) {
 
         this.buffer = buf;
-        this.pos    = offset;
-        this.count  = Math.min(offset + length, buf.length);
-        this.mark   = offset;
+        this.pos = offset;
+        this.count = Math.min(offset + length, buf.length);
+        this.mark = offset;
     }
 
     public final int getPos() {
         return pos;
     }
 
-    public final void setPos(int pos){
-        if(pos<this.buffer.length)
+    public final void setPos(int pos) {
+        if (pos < this.buffer.length)
             this.pos = pos;
     }
 
@@ -45,6 +45,7 @@ public class MDBByteArrayInputStream{
     public void readFully(byte[] b) throws IOException {
         readFully(b, 0, b.length);
     }
+
     //off:file offset len:bytes need to be red
     public final void readFully(byte[] b, int off,
                                 int len) throws IOException {
@@ -137,12 +138,12 @@ public class MDBByteArrayInputStream{
         return (char) ((ch1 << 8) + ch2);
     }
 
-    public String readString(int length)throws IOException{
-        String string = new String();
-        for(int i = 0;i<length/2;i++){
-            string +=readChar();
+    public String readString(int length) throws IOException {
+        StringBuilder string = new StringBuilder();
+        for (int i = 0; i < length / 2; i++) {
+            string.append(readChar());
         }
-        return string;
+        return string.toString();
     }
 
     public int readInt() throws IOException {
@@ -179,7 +180,7 @@ public class MDBByteArrayInputStream{
 
     public String readLine() throws IOException {
 
-        /** @todo: this will probably be useful */
+        /* @todo: this will probably be useful */
         throw new UnsupportedOperationException("not implemented");
     }
 
@@ -241,10 +242,11 @@ public class MDBByteArrayInputStream{
         pos = mark;
     }
 
-    public void close() throws IOException {}
+    public void close() throws IOException {
+    }
 
-    public Object readObject(Type type, int length)throws IOException{
-        switch (type.typeCode){
+    public Object readObject(Type type, int length) throws IOException {
+        switch (type.typeCode) {
             case Types.SQL_CHAR:
                 return readChar();
             case Types.SQL_SMALLINT:

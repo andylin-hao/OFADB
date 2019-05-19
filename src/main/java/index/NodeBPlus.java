@@ -3,6 +3,7 @@ package index;
 public interface NodeBPlus {
 
     Comparable lastKey();
+
     NodeBPlus getParent();
 
     void setParent(NodeBPlus parent);
@@ -12,6 +13,7 @@ public interface NodeBPlus {
     void setNext(NodeBPlus next);
 
     NodeBPlus getPrevious();
+
     void setPrevious(NodeBPlus previous);
 
 

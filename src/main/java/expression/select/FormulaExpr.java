@@ -29,7 +29,7 @@ public class FormulaExpr extends Expression {
         if (leftValue instanceof Integer && rightValue instanceof Integer)
             isInteger = true;
         else if (!(leftValue instanceof Double) && !(rightValue instanceof Double))
-            throw new RuntimeException("Value type error:"+leftValue.getClass()+"/"+rightValue.getClass());
+            throw new RuntimeException("Value type error:" + leftValue.getClass() + "/" + rightValue.getClass());
 
         switch (op) {
             case OP_MUL:
@@ -46,8 +46,7 @@ public class FormulaExpr extends Expression {
                     if ((Integer) rightValue == 0)
                         throw new RuntimeException("Illegal division of number 0");
                     return (Integer) leftValue % (Integer) rightValue;
-                }
-                else {
+                } else {
                     if (Double.parseDouble(rightValue.toString()) == 0)
                         throw new RuntimeException("Illegal division of number 0");
                     return Double.parseDouble(leftValue.toString()) % Double.parseDouble(rightValue.toString());

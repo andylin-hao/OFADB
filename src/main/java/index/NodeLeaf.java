@@ -6,11 +6,11 @@ import io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The leaf of an index tree,including the row infos which belongs to the same key
+ **/
+
 public class NodeLeaf {
-    /**
-     * @Classname : NodeLeaf
-     * @Description : the leaf of an index tree,including the row infos which belongs to the same key
-     **/
     public List<Row> rowInfos;
     public NdxFIleInfo storageInfo;
     public NodeLeaf(Row row){

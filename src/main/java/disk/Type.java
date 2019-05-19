@@ -6,49 +6,42 @@ public class Type {
     public final int maxLength;
     public final static String nullStringHolder = "empty";
 
-    public Type(int type){
-        typeCode  = type;
+    public Type(int type) {
+        typeCode = type;
         maxLength = 0;
     }
-    public Type(int type,int length){
-        typeCode  = type;
+
+    public Type(int type, int length) {
+        typeCode = type;
         maxLength = length;
     }
 
-    public Type(String typeStr){
-        if(typeStr.startsWith("char")) {
+    public Type(String typeStr) {
+        if (typeStr.startsWith("char")) {
             typeCode = Types.SQL_CHAR;
             maxLength = 0;
-        }
-        else if(typeStr.startsWith("short")){
+        } else if (typeStr.startsWith("short")) {
             typeCode = Types.SQL_SMALLINT;
             maxLength = 0;
-        }
-        else if(typeStr.startsWith("int")) {
+        } else if (typeStr.startsWith("int")) {
             typeCode = Types.SQL_INTEGER;
             maxLength = 0;
-        }
-        else if(typeStr.startsWith("double")){
+        } else if (typeStr.startsWith("double")) {
             typeCode = Types.SQL_DOUBLE;
             maxLength = 0;
-        }
-        else if(typeStr.startsWith("float")) {
+        } else if (typeStr.startsWith("float")) {
             typeCode = Types.SQL_FLOAT;
             maxLength = 0;
-        }
-        else if(typeStr.startsWith("bool")) {
+        } else if (typeStr.startsWith("bool")) {
             typeCode = Types.SQL_BOOLEAN;
             maxLength = 0;
-        }
-        else if(typeStr.startsWith("long")) {
+        } else if (typeStr.startsWith("long")) {
             typeCode = Types.SQL_LONG;
             maxLength = 0;
-        }
-        else if(typeStr.startsWith("string")){
+        } else if (typeStr.startsWith("string")) {
             typeCode = Types.SQL_VARCHAR;
             maxLength = Integer.parseInt(typeStr.substring(6));
-        }
-        else{
+        } else {
             typeCode = -1;
             maxLength = -1;
         }
@@ -57,72 +50,70 @@ public class Type {
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof  Type))
+        if (!(obj instanceof Type))
             return false;
         return typeCode == ((Type) obj).typeCode && maxLength == ((Type) obj).maxLength;
     }
 
-    public boolean isVariable(){
+    public boolean isVariable() {
         return typeCode == Types.SQL_VARCHAR;
     }
 
-    public int variableLength(){
-        switch (typeCode){
+    public int variableLength() {
+        switch (typeCode) {
             case Types.SQL_CHAR:
             case Types.SQL_SMALLINT:
                 return 2;
             case Types.SQL_INTEGER:
-                return 4;
-            case Types.SQL_VARCHAR:
-                return maxLength*2;
-            case Types.SQL_DOUBLE:
-                return 8;
             case Types.SQL_FLOAT:
                 return 4;
-            case Types.SQL_BOOLEAN:
-                return 1;
+            case Types.SQL_VARCHAR:
+                return maxLength * 2;
+            case Types.SQL_DOUBLE:
             case Types.SQL_LONG:
                 return 8;
+            case Types.SQL_BOOLEAN:
+                return 1;
             default:
                 return 0;
         }
     }
 
-    public Object nullHolder(){
-        switch (typeCode){
+    public Object nullHolder() {
+        switch (typeCode) {
             case Types.SQL_CHAR:
             case Types.SQL_SMALLINT:
-                return (char)0;
+                return (char) 0;
             case Types.SQL_INTEGER:
-                return (int)0;
+                return 0;
             case Types.SQL_VARCHAR:
                 return nullStringHolder;
             case Types.SQL_DOUBLE:
-                return (double)0;
+                return (double) 0;
             case Types.SQL_FLOAT:
-                return (float)0;
+                return (float) 0;
             case Types.SQL_BOOLEAN:
                 return false;
             case Types.SQL_LONG:
-                return (long)0;
+                return (long) 0;
             default:
                 return null;
         }
     }
 
-    public int getVariableTypeLength(Object data){
+    public int getVariableTypeLength(Object data) {
         if (data == null)
-            if(typeCode == Types.SQL_VARCHAR)
-                return nullStringHolder.length()*2;
+            if (typeCode == Types.SQL_VARCHAR)
+                return nullStringHolder.length() * 2;
         if (data instanceof String) {
-                return ((String) data).length() * 2;
+            return ((String) data).length() * 2;
         }
         return 0;
     }
 
     @Override
     public String toString() {
-        switch (typeCode){
+        switch (typeCode) {
             case Types.SQL_CHAR:
                 return "char";
             case Types.SQL_SMALLINT:
@@ -130,7 +121,7 @@ public class Type {
             case Types.SQL_INTEGER:
                 return "int";
             case Types.SQL_VARCHAR:
-                return "string"+maxLength;
+                return "string" + maxLength;
             case Types.SQL_DOUBLE:
                 return "double";
             case Types.SQL_FLOAT:
@@ -144,11 +135,11 @@ public class Type {
         }
     }
 
-    public static Type intType(){
+    public static Type intType() {
         return new Type(Types.SQL_INTEGER);
     }
 
-    public static Type stringType(int maxLength){
-        return new Type(Types.SQL_VARCHAR,maxLength);
+    public static Type stringType(int maxLength) {
+        return new Type(Types.SQL_VARCHAR, maxLength);
     }
 }

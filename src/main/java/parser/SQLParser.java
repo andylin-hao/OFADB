@@ -5,7 +5,11 @@ import expression.create.ColumnDefExpr;
 import expression.create.CreateDBExpr;
 import expression.create.CreateTableExpr;
 import expression.create.TableConstraintExpr;
+import expression.drop.DropDBExpr;
+import expression.drop.DropTableExpr;
 import expression.select.*;
+import expression.show.ShowDBExpr;
+import expression.show.ShowTableExpr;
 import expression.types.*;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
@@ -40,13 +44,13 @@ public class SQLParser extends SQLiteBaseListener {
                 if (defCtx.type_name().signed_number().size() == 1)
                     signedNum = Integer.parseInt(defCtx.type_name().signed_number(0).getText());
                 else
-                    throw new RuntimeException("Unable to parse:"+defCtx.getText());
+                    throw new RuntimeException("Unable to parse:" + defCtx.getText());
             }
             ColumnDefExpr columnDefExpr = new ColumnDefExpr(columnName, columnType, signedNum);
             columnExprs.put(columnName, columnDefExpr);
 
             List<SQLiteParser.Column_constraintContext> columnConstraintContexts = defCtx.column_constraint();
-            for (SQLiteParser.Column_constraintContext colConstraintCtx: columnConstraintContexts) {
+            for (SQLiteParser.Column_constraintContext colConstraintCtx : columnConstraintContexts) {
                 ColumnConstraintTypes type = getColConstraintType(colConstraintCtx);
                 columnDefExpr.getConstraintTypes().add(type);
             }
@@ -55,12 +59,12 @@ public class SQLParser extends SQLiteBaseListener {
         }
 
         List<SQLiteParser.Table_constraintContext> tableConstraintContexts = ctx.table_constraint();
-        for (SQLiteParser.Table_constraintContext tblConstraintCtx: tableConstraintContexts) {
+        for (SQLiteParser.Table_constraintContext tblConstraintCtx : tableConstraintContexts) {
             TableConstraintTypes tblConstraintType = getTableConstraintType(tblConstraintCtx);
             TableConstraintExpr tblConstraintExpr = new TableConstraintExpr(tblConstraintType);
 
             List<SQLiteParser.Indexed_columnContext> columnContexts = tblConstraintCtx.indexed_column();
-            for (SQLiteParser.Indexed_columnContext columnCtx: columnContexts) {
+            for (SQLiteParser.Indexed_columnContext columnCtx : columnContexts) {
                 ColumnDefExpr column = columnExprs.get(columnCtx.getText());
                 if (column == null) {
                     throw new RuntimeException("Table constraint incorrect:" + tblConstraintCtx.getText());
@@ -76,6 +80,19 @@ public class SQLParser extends SQLiteBaseListener {
     @Override
     public void exitCreate_database_stmt(SQLiteParser.Create_database_stmtContext ctx) {
         expr = new CreateDBExpr(ctx.database_name().getText());
+    }
+
+    @Override
+    public void exitDrop_table_stmt(SQLiteParser.Drop_table_stmtContext ctx) {
+        String dbName = "";
+        if (ctx.database_name() != null)
+            dbName = ctx.database_name().getText();
+        expr = new DropTableExpr(dbName, ctx.table_name().getText());
+    }
+
+    @Override
+    public void exitDrop_database_stmt(SQLiteParser.Drop_database_stmtContext ctx) {
+        expr = new DropDBExpr(ctx.database_name().getText());
     }
 
     @Override
@@ -118,6 +135,25 @@ public class SQLParser extends SQLiteBaseListener {
             default:
                 break;
         }
+    }
+
+    @Override
+    public void exitShow_database_stmt(SQLiteParser.Show_database_stmtContext ctx) {
+        if (ctx.K_DATABASES() != null) {
+            expr = new ShowDBExpr();
+        } else if (ctx.K_DATABASE() != null) {
+            expr = new ShowDBExpr(ctx.database_name().getText());
+        } else {
+            throw new RuntimeException("Unable to parse:" + ctx.getText());
+        }
+    }
+
+    @Override
+    public void exitShow_table_stmt(SQLiteParser.Show_table_stmtContext ctx) {
+        String dbName = "";
+        if (ctx.database_name() != null)
+            dbName = ctx.database_name().getText();
+        expr = new ShowTableExpr(dbName, ctx.table_name().getText());
     }
 
     @Override
