@@ -34,7 +34,7 @@ public class BlockInfo {
      **/
     public BlockInfo(Table t, byte[] buf, int index) throws IOException {
         table = t;
-        emptyRecord = new ArrayList<Boolean>();
+        emptyRecord = new ArrayList<>();
         blockIndex = index;
         getMetaFromBytes(buf);
         setModified(false);
@@ -45,7 +45,7 @@ public class BlockInfo {
      **/
     public BlockInfo(Table t, int blockSize, int index) {
         table = t;
-        emptyRecord = new ArrayList<Boolean>();
+        emptyRecord = new ArrayList<>();
         blockIndex = index;
         setBLockInfo(blockSize, blockSize, blockSize - blockHeadSize, 0);
         setModified(true);

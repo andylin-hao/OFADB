@@ -47,15 +47,15 @@ public class Cache {
     /**
      * Delete row
      *
-     * @param blockIndex: index in the blocklist of the target block
+     * @param blockIndex: index in the block list of the target block
      * @param rowIndex    : the index of the row in the block
      **/
     public Row delete(Table table, int blockIndex, int rowIndex) throws IOException {
         //get the block to be deleted
         BlockIO block = loadBlock(getAccessor(table, blockIndex));
 
-        //get the old data
-        byte[] data = block.readRowData(rowIndex);
+//        //get the old data
+//        byte[] data = block.readRowData(rowIndex);
 
         //delete
         Row oldRow = block.delete(rowIndex);

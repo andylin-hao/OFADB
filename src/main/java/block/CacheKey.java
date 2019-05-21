@@ -1,7 +1,6 @@
 package block;
 
 import disk.Table;
-import org.omg.CORBA.PUBLIC_MEMBER;
 
 /**
  * The key of the block map in cache
