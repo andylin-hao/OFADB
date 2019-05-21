@@ -1,6 +1,10 @@
 # OFADB设计文档
 <img src="https://travis-ci.org/linlinhaohao888/OFADB.svg?branch=master" /> <img src="https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/" />
 
+## 元数据模块设计
+我们将元数据也以数据库表的形式存储
+
+
 ## 	存储模块设计
 
 我们将数据文件分为索引文件和数据文件两类，索引文件用于存储索引数的结构，数据文件用于存储数据库中实际的行数据. 实现的功能包括:

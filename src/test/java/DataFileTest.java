@@ -13,10 +13,11 @@ public class DataFileTest {
     private static Database database;
 
     public static void main(String[] args) throws IOException {
-        Database.loadSystem();
-        Database.createNewDatabase("heyhey");
-        Database hey = new Database("heyhey", false);
-        hey.loadTables();
+        testFixedIndex();
+//        Database.loadSystem();
+//        Database.createNewDatabase("heyhey");
+//        Database hey = new Database("heyhey", false);
+//        hey.loadTables();
 //        Object[] data = new Object[2];
 //        data[0] = 3;
 //        data[1] = "DataFileTest";
@@ -127,9 +128,8 @@ public class DataFileTest {
     private static Column[] basicColumn(Type[] types) {
         Column[] columns = new Column[types.length];
         for (int i = 0; i < types.length; i++) {
-            columns[i] = (new Column(types[i], "test" + (char) (i + 'a'), false));
+            columns[i] = (new Column(types[i], "test" + (char) (i + 'a')));
         }
-        columns[0].hasIndex = true;
         return columns;
     }
 

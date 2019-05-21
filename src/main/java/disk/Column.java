@@ -6,37 +6,37 @@ public class Column {
     public Type columnType;
     public String columnName;
     public boolean isUnique;
-    public boolean isPrimaryKey;
-    public boolean hasIndex;
+    public  boolean nullable;
     public final static String segment = ",";
 
-    public Column(Type columnType, String name, boolean hasIndex) {
+    public Column(Type columnType, String name) {
         this.columnType = columnType;
         columnName = name;
-        this.hasIndex = hasIndex;
+        isUnique = false;
+        nullable = true;
     }
 
     public Column(ColumnTypes typeCode, String name, boolean hasIndex) {
         this.columnType = new Type(typeCode);
         columnName = name;
-        this.hasIndex = hasIndex;
-    }
-
-    public Column(Type columnType, String columnName) {
-        this.columnType = columnType;
-        this.columnName = columnName;
-        this.hasIndex = false;
+        isUnique = false;
+        nullable = true;
     }
 
     public Column(String columnString) {
         String[] infos = columnString.split(Column.segment);
         columnName = infos[0];
         columnType = new Type(infos[1]);
+        isUnique = Integer.parseInt(infos[2]) == 1;
+        nullable = Integer.parseInt(infos[3]) == 1;
     }
 
     @Override
     public String toString() {
-        return columnName + Column.segment + columnType.toString();
+        return columnName + Column.segment
+                + columnType.toString() + Column.segment
+                + ((Integer)(isUnique ? 0:1)).toString() + Column.segment
+                + ((Integer)(nullable ? 0:1)).toString();
     }
 
     public static String columnsToString(Column[] columns) {

@@ -67,7 +67,7 @@ public class Table {
      **/
     public void loadIndex(String indexInfos) throws IOException {
         List<int[]> infos = getColumnsIndexForIndex(indexInfos);
-        indexes = new ArrayList<IndexBase>();
+        indexes = new ArrayList<>();
         for (int[] info : infos) {
             File file = new File(Logger.indexFilePath(this, getIndexFileName(info)));
             Type[] types = getIndexTypes(info);
@@ -113,8 +113,8 @@ public class Table {
      * Check the column value of unique key in the data doesn't exist in the unique index
      **/
     public boolean uniqueKeyUnUsed(Object[] data) {
-        for (int i = 0; i < indexes.size(); i++)
-            if (indexes.get(i).isUnique && indexes.get(i).root.contains(indexes.get(i).getIndexAccessor(data)) >= 0)
+        for (IndexBase index : indexes)
+            if (index.isUnique && index.root.contains(index.getIndexAccessor(data)) >= 0)
                 return false;
         return true;
     }
@@ -164,7 +164,7 @@ public class Table {
             return null;
         NodeLeaf rowPos = (NodeLeaf) index.get(key);
 
-        List<Row> deletedRow = new ArrayList<Row>();
+        List<Row> deletedRow = new ArrayList<>();
         for (int i = 0; i < rowPos.rowInfos.size(); i++) {
             Row row = dataFileManager.get(rowPos.rowInfos.get(i).blockIndex, rowPos.rowInfos.get(i).rowIndex);
             for (IndexBase indexBase : indexes) {
