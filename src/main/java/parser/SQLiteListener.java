@@ -268,6 +268,16 @@ public interface SQLiteListener extends ParseTreeListener {
 	 */
 	void exitInsert_stmt(SQLiteParser.Insert_stmtContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLiteParser#insert_value_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterInsert_value_stmt(SQLiteParser.Insert_value_stmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLiteParser#insert_value_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitInsert_value_stmt(SQLiteParser.Insert_value_stmtContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLiteParser#pragma_stmt}.
 	 * @param ctx the parse tree
 	 */

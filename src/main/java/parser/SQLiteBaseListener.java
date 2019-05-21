@@ -328,6 +328,18 @@ public class SQLiteBaseListener implements SQLiteListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterInsert_value_stmt(SQLiteParser.Insert_value_stmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitInsert_value_stmt(SQLiteParser.Insert_value_stmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterPragma_stmt(SQLiteParser.Pragma_stmtContext ctx) { }
 	/**
 	 * {@inheritDoc}
