@@ -1,8 +1,8 @@
 package expression.select;
 
 import expression.Expression;
-import expression.types.ExprTypes;
-import expression.types.OpTypes;
+import types.ExprTypes;
+import types.OpTypes;
 
 
 public class FormulaExpr extends Expression {

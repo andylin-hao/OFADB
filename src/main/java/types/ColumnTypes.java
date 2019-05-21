@@ -1,4 +1,4 @@
-package expression.types;
+package types;
 
 public enum ColumnTypes {
     COL_SHORT,
@@ -7,5 +7,6 @@ public enum ColumnTypes {
     COL_FLOAT,
     COL_DOUBLE,
     COL_VARCHAR,
-    COL_BOOL
+    COL_BOOL,
+    COL_CHAR
 }

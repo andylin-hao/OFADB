@@ -7,6 +7,7 @@ import java.util.Random;
 import disk.*;
 import io.*;
 import index.*;
+import types.ColumnTypes;
 
 public class DataFileTest {
     private static Database database;
@@ -98,27 +99,27 @@ public class DataFileTest {
     private static Type[] basicTypesData() {
         Type[] types = new Type[8];
         //int
-        types[0] = new Type(Types.SQL_INTEGER);
+        types[0] = new Type(ColumnTypes.COL_INT);
         //String
-        types[1] = new Type(Types.SQL_VARCHAR, 8);
+        types[1] = new Type(ColumnTypes.COL_VARCHAR, 8);
         //Double
 
-        types[2] = new Type(Types.SQL_DOUBLE);
+        types[2] = new Type(ColumnTypes.COL_DOUBLE);
         //char
 
-        types[3] = new Type(Types.SQL_CHAR);
+        types[3] = new Type(ColumnTypes.COL_CHAR);
         //boolean
 
-        types[4] = new Type(Types.SQL_BOOLEAN);
+        types[4] = new Type(ColumnTypes.COL_BOOL);
         //smallInt
 
-        types[5] = new Type(Types.SQL_SMALLINT);
+        types[5] = new Type(ColumnTypes.COL_SHORT);
         //long
 
-        types[6] = new Type(Types.SQL_LONG);
+        types[6] = new Type(ColumnTypes.COL_LONG);
         //float
 
-        types[7] = new Type(Types.SQL_FLOAT);
+        types[7] = new Type(ColumnTypes.COL_FLOAT);
 
         return types;
     }
@@ -339,7 +340,7 @@ public class DataFileTest {
     private static void compareTest(List<Integer> insertList) throws IOException {
         File testIndex = new File("index.txt");
         Type[] types = new Type[1];
-        types[0] = new Type(Types.SQL_INTEGER);
+        types[0] = new Type(ColumnTypes.COL_INT);
         IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types);
 
         File testIndex2 = new File("index2.txt");
@@ -396,7 +397,7 @@ public class DataFileTest {
 
         File testIndex = new File("index.txt");
         Type[] types = new Type[1];
-        types[0] = new Type(Types.SQL_INTEGER);
+        types[0] = new Type(ColumnTypes.COL_INT);
         IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types);
         for (int i = 0; i < insertList.size(); i++) {
             Object[] a = new Object[1];
@@ -449,7 +450,7 @@ public class DataFileTest {
 
     private static void compareTest_String(List<Integer> insertList) throws IOException {
         Type[] types = new Type[1];
-        types[0] = new Type(Types.SQL_VARCHAR, 10);
+        types[0] = new Type(ColumnTypes.COL_VARCHAR, 10);
         File testIndex = new File("index.txt");
         IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types);
 
@@ -507,7 +508,7 @@ public class DataFileTest {
 
         File testIndex = new File("index.txt");
         Type[] types = new Type[1];
-        types[0] = new Type(Types.SQL_VARCHAR, 10);
+        types[0] = new Type(ColumnTypes.COL_VARCHAR, 10);
         IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types);
         for (int i = 0; i < insertList.size(); i++) {
             Object[] objects = new Object[1];

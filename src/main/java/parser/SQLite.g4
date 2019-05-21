@@ -203,11 +203,15 @@ insert_stmt
                 | K_INSERT K_OR K_FAIL
                 | K_INSERT K_OR K_IGNORE ) K_INTO
    ( database_name '.' )? table_name ( '(' column_name ( ',' column_name )* ')' )?
-   ( K_VALUES '(' expr ( ',' expr )* ')' ( ',' '(' expr ( ',' expr )* ')' )*
+   ( K_VALUES insert_value_stmt ( ',' insert_value_stmt )*
    | select_stmt
    | K_DEFAULT K_VALUES
    )
  ;
+
+ insert_value_stmt
+  : '(' expr ( ',' expr )* ')'
+  ;
 
 pragma_stmt
  : K_PRAGMA ( database_name '.' )? pragma_name ( '=' pragma_value

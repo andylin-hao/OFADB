@@ -1,6 +1,6 @@
 package expression.select;
 
-import expression.types.RangeTableTypes;
+import types.RangeTableTypes;
 
 import java.util.ArrayList;
 

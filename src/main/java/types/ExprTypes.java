@@ -1,4 +1,4 @@
-package expression.types;
+package types;
 
 public enum ExprTypes {
     EXPR_COLUMN,
@@ -17,5 +17,6 @@ public enum ExprTypes {
     EXPR_SHOW_DB,
     EXPR_SHOW_DBS,
     EXPR_SHOW_TABLE,
+    EXPR_USE_DB,
     EXPR_WHERE
 }

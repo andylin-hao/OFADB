@@ -3,8 +3,11 @@ import expression.create.ColumnDefExpr;
 import expression.create.CreateDBExpr;
 import expression.create.CreateTableExpr;
 import expression.create.TableConstraintExpr;
+import expression.drop.DropDBExpr;
+import expression.drop.DropTableExpr;
 import expression.select.*;
-import expression.types.*;
+import expression.show.ShowDBExpr;
+import types.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -115,5 +118,31 @@ class ParserTest {
         String sql = "create database name";
         CreateDBExpr stmt = (CreateDBExpr) getParseResult(sql);
         assertEquals(stmt.getDbName(), "name");
+    }
+
+    @Test
+    void dropTableTest() throws IOException {
+        String sql = "drop table db.test";
+        DropTableExpr stmt = (DropTableExpr) getParseResult(sql);
+        assertEquals(stmt.getDbName(), "db");
+        assertEquals(stmt.getTableName(), "test");
+    }
+
+    @Test
+    void dropDBTest() throws IOException {
+        String sql = "drop database db";
+        DropDBExpr stmt = (DropDBExpr) getParseResult(sql);
+        assertEquals(stmt.getDbName(), "db");
+    }
+
+    @Test
+    void showDBTest() throws IOException {
+        String sql = "show databases";
+        ShowDBExpr stmt = (ShowDBExpr) getParseResult(sql);
+        assertEquals(stmt.getExprType(), ExprTypes.EXPR_SHOW_DBS);
+
+        sql = "show database db";
+        stmt = (ShowDBExpr) getParseResult(sql);
+        assertEquals(stmt.getExprType(), ExprTypes.EXPR_SHOW_DB);
     }
 }

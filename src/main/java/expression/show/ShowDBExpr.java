@@ -1,7 +1,7 @@
 package expression.show;
 
 import expression.Expression;
-import expression.types.ExprTypes;
+import types.ExprTypes;
 
 public class ShowDBExpr extends Expression {
     private String dbName;

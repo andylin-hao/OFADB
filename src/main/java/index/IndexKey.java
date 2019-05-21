@@ -3,7 +3,7 @@ package index;
 import io.MDBByteArrayInputStream;
 import io.MDBByteArrayOutputStream;
 import disk.Type;
-import disk.Types;
+import types.ColumnTypes;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ public class IndexKey implements Comparable{
         byte[] bytes = new byte[totalLength];
         MDBByteArrayOutputStream outputStream = new MDBByteArrayOutputStream(bytes);
         for(int i = 0;i<values.length;i++){
-            if(types[i].typeCode != Types.SQL_VARCHAR)
+            if(types[i].typeCode != ColumnTypes.COL_VARCHAR)
                 outputStream.writeObject(values[i]);
             else{
                 outputStream.writeObject(values[i]);
@@ -42,7 +42,7 @@ public class IndexKey implements Comparable{
         Object[] objects = new Object[types.length];
         MDBByteArrayInputStream reader = new MDBByteArrayInputStream(buf);
         for(int i = 0;i<types.length;i++)
-            if(types[i].typeCode != Types.SQL_VARCHAR)
+            if(types[i].typeCode != ColumnTypes.COL_VARCHAR)
                 objects[i] = reader.readObject(types[i],types[i].variableLength());
             else
                 objects[i] = stringFilter((String)reader.readObject(types[i],types[i].variableLength()));

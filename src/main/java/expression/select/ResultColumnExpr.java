@@ -1,7 +1,7 @@
 package expression.select;
 
 import expression.Expression;
-import expression.types.ExprTypes;
+import types.ExprTypes;
 
 public class ResultColumnExpr extends Expression {
     private String attrName = "";

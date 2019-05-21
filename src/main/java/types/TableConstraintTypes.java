@@ -1,4 +1,4 @@
-package expression.types;
+package types;
 
 public enum TableConstraintTypes {
     TBL_PRIMARY_KEY

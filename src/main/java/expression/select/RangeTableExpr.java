@@ -1,8 +1,8 @@
 package expression.select;
 
 import expression.Expression;
-import expression.types.ExprTypes;
-import expression.types.RangeTableTypes;
+import types.ExprTypes;
+import types.RangeTableTypes;
 
 public class RangeTableExpr extends Expression {
     private RangeTableTypes rtTypes;

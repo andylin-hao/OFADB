@@ -1,5 +1,7 @@
 package disk;
 
+import types.ColumnTypes;
+
 public class Column {
     public Type columnType;
     public String columnName;
@@ -14,7 +16,7 @@ public class Column {
         this.hasIndex = hasIndex;
     }
 
-    public Column(int typeCode, String name, boolean hasIndex) {
+    public Column(ColumnTypes typeCode, String name, boolean hasIndex) {
         this.columnType = new Type(typeCode);
         columnName = name;
         this.hasIndex = hasIndex;

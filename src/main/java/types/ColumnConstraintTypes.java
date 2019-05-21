@@ -1,4 +1,4 @@
-package expression.types;
+package types;
 
 public enum ColumnConstraintTypes {
     COL_AUTO_INC,
