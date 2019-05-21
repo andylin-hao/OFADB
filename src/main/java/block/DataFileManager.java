@@ -72,7 +72,8 @@ public class DataFileManager {
             blockInfos.add(blockInfo);
             rowNum += blockInfo.rowNum;
         }
-        this.table.rowNum = rowNum;
+
+        this.table.info.rowNum = rowNum;
     }
 
 
@@ -172,7 +173,7 @@ public class DataFileManager {
     public Row update(int blockIndex, int rowIndex, byte[] data) throws IOException {
         if (blockIndex >= blockInfos.size())
             return null;
-        Row updatedRow = null;
+        Row updatedRow;
         // the block is updatable
         if (blockInfos.get(blockIndex).updatable(rowIndex, data.length)) {
             int oldLength = cache.get(table, blockIndex, rowIndex).length;

@@ -24,294 +24,294 @@ public class DataFileTest {
 //        List<Row> result = hey.tables.get("test1").equivalenceFind(0,hey.tables.get("test1").indexes.get(0).getIndexAccessor(data));
     }
 
-    private static void BPlusTreeTest() throws IOException {
+    private static void BPlusTreeTest() {
 //        testInsertAndDelete();
 //        testTraversing();
 //        testIndex();
     }
 
 
-    private static void testRowIO() throws IOException {
-        System.out.println("DataFileTest :rowIO");
-        testRowIOWithoutNull();
-        testRowIOWithNullField();
-        System.out.println("state: OK");
-    }
-
-    private static void testRowIOWithoutNull() throws IOException {
-
-        Type[] types = basicTypesData();
-        Object[] data = basicRowData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        Row a = new Row(table, data);
-        byte[] b = RowIO.writeRowData(types, data);
-        Row c = new Row(table, b);
-        for (int i = 0; i < data.length; i++) {
-            if (!data[i].equals(c.rowData[i]))
-                throw new Error("baisc rowIO has something wrong");
-        }
-    }
-
-    private static void testRowIOWithNullField() throws IOException {
-        Type[] types = basicTypesData();
-        for (int j = 0; j < types.length; j++) {
-
-            Object[] data = basicRowData();
-            data[j] = null;
-            Table table = new Table(database, basicColumn(types), "test", null);
-            Row a = new Row(table, data);
-            byte[] b = RowIO.writeRowData(types, data);
-            Row c = new Row(table, b);
-            for (int i = 0; i < data.length; i++) {
-                if (data[i] != null) {
-                    if (!data[i].equals(c.rowData[i]))
-                        throw new Error("rowIO has something wrong with typeCode:" + (types[i].typeCode));
-                } else {
-                    if (c.rowData[i] != null)
-                        throw new Error("rowIO has something wrong" + (types[i].typeCode));
-                }
-            }
-        }
-    }
-
-    private static Object[] basicRowData() {
-        Object[] data = new Object[8];
-        Type[] types = new Type[8];
-        //int
-        data[0] = 1;
-        //String
-        data[1] = "test";
-        //Double
-        data[2] = 1.2;
-        //char
-        data[3] = 'a';
-        //boolean
-        data[4] = false;
-        //smallInt
-        data[5] = (short) 45;
-        //long
-        data[6] = (long) 45;
-        //float
-        data[7] = (float) 1.2;
-
-        return data;
-    }
-
-    private static Type[] basicTypesData() {
-        Type[] types = new Type[8];
-        //int
-        types[0] = new Type(ColumnTypes.COL_INT);
-        //String
-        types[1] = new Type(ColumnTypes.COL_VARCHAR, 8);
-        //Double
-
-        types[2] = new Type(ColumnTypes.COL_DOUBLE);
-        //char
-
-        types[3] = new Type(ColumnTypes.COL_CHAR);
-        //boolean
-
-        types[4] = new Type(ColumnTypes.COL_BOOL);
-        //smallInt
-
-        types[5] = new Type(ColumnTypes.COL_SHORT);
-        //long
-
-        types[6] = new Type(ColumnTypes.COL_LONG);
-        //float
-
-        types[7] = new Type(ColumnTypes.COL_FLOAT);
-
-        return types;
-    }
-
-    private static Column[] basicColumn(Type[] types) {
-        Column[] columns = new Column[types.length];
-        for (int i = 0; i < types.length; i++) {
-            columns[i] = (new Column(types[i], "test" + (char) (i + 'a')));
-        }
-        return columns;
-    }
-
-    private static void testBlockIO() throws IOException {
-        testEmtpyBlockIO();
-        testBlockSingleInsert();
-        testBLockMiddleDelete();
-        testBLockEmptyDelete();
-        testBLockOneDelete();
-        testBLockLastDelete();
-        testBLockEqualUpdate();
-        testBLockLQUpdate();
-        testBLockGQUpdate();
-    }
-
-    private static void testEmtpyBlockIO() throws IOException {
-        Type[] types = basicTypesData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        BlockIO a = new BlockIO(table, 128, 0);
-        byte[] buf = a.content;
-        BlockIO b = new BlockIO(table, buf, 0);
-        if (!a.emptyRecord.equals(b.emptyRecord)
-                || (a.blockSize != b.blockSize)
-                || (a.emptySize != b.emptySize)
-                || (a.emptyPointer != b.emptyPointer)
-                || a.rowNum != b.rowNum
-        )
-            throw new Error("emtpy block io wrong");
-    }
-
-    private static void testBlockSingleInsert() throws IOException {
-        Type[] types = basicTypesData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        BlockIO a = new BlockIO(table, 128, 0);
-        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
-        int index = a.insert(originData).rowIndex;
-        int index1 = a.insert(originData).rowIndex;
-        BlockIO b = new BlockIO(table, a.content, 0);
-        byte[] data = b.readRowData(index);
-        byte[] data2 = b.readRowData(index1);
-        if (data.length != originData.length || data2.length != originData.length)
-            throw new Error("block insert wrong");
-        for (int i = 0; i < data.length; i++)
-            if (data[i] != originData[i] || data2[i] != originData[i])
-                throw new Error("block insert wrong");
-    }
-
-    private static void testBLockMiddleDelete() throws IOException {
-        Type[] types = basicTypesData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        BlockIO a = new BlockIO(table, 512, 0);
-        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
-        int index = a.insert(originData).rowIndex;
-        int index1 = a.insert(originData).rowIndex;
-        int index2 = a.insert(originData).rowIndex;
-        a.delete(index1);
-        BlockIO b = new BlockIO(table, a.content, 0);
-        if (!b.emptyRecord.get(index1) || b.rowNum != a.rowNum)
-            throw new Error("block delete wrong:block meta wrong");
-        if (b.readRowData(index1) != null)
-            throw new Error("block delete wrong:get null data wrong");
-        byte[] data2 = b.readRowData(index2);
-        for (int i = 0; i < data2.length; i++)
-            if (data2[i] != originData[i])
-                throw new Error("block delete wrong:other data wrong");
-    }
-
-    private static void testBLockLastDelete() throws IOException {
-        Type[] types = basicTypesData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        BlockIO a = new BlockIO(table, 512, 0);
-        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
-        int index = a.insert(originData).rowIndex;
-        int index1 = a.insert(originData).rowIndex;
-        int index2 = a.insert(originData).rowIndex;
-        a.delete(index2);
-        BlockIO b = new BlockIO(table, a.content, 0);
-        if (b.rowNum != a.rowNum)
-            throw new Error("block delete wrong:block meta wrong");
-        if (b.readRowData(index2) != null)
-            throw new Error("block delete wrong:get null data wrong");
-        byte[] data = b.readRowData(index1);
-        byte[] data2 = b.readRowData(index);
-        for (int i = 0; i < data2.length; i++)
-            if (data2[i] != originData[i] || data[i] != originData[i])
-                throw new Error("block delete wrong:other data wrong");
-    }
-
-    private static void testBLockEmptyDelete() throws IOException {
-        Type[] types = basicTypesData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        BlockIO a = new BlockIO(table, 512, 0);
-        a.delete(28);
-    }
-
-    private static void testBLockOneDelete() throws IOException {
-        Type[] types = basicTypesData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        BlockIO a = new BlockIO(table, 512, 0);
-        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
-        int index = a.insert(originData).rowIndex;
-        a.delete(index);
-        BlockIO b = new BlockIO(table, 512, 0);
-        if (a.emptyPointer != b.emptyPointer
-                || a.emptySize != b.emptySize
-                || a.rowNum != b.rowNum
-        )
-            throw new Error("block with one row delete wrong");
-    }
-
-    private static void testBLockEqualUpdate() throws IOException {
-        Type[] types = basicTypesData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        BlockIO a = new BlockIO(table, 512, 0);
-        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
-        int index = a.insert(originData).rowIndex;
-        a.update(index, originData);
-        BlockIO b = new BlockIO(table, a.content, 0);
-        if (a.emptyPointer != b.emptyPointer
-                || a.emptySize != b.emptySize
-                || a.rowNum != b.rowNum
-        )
-            throw new Error("block equal update wrong");
-        byte[] data1 = a.readRowData(index);
-        byte[] data2 = b.readRowData(index);
-        for (int i = 0; i < data1.length; i++)
-            if (data1[i] != data2[i])
-                throw new Error("block equal update wrong");
-    }
-
-    private static void testBLockLQUpdate() throws IOException {
-        Type[] types = basicTypesData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        BlockIO a = new BlockIO(table, 512, 0);
-        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
-        byte[] LQdata = new byte[originData.length / 2];
-        System.arraycopy(originData, 0, LQdata, 0, LQdata.length);
-        int index = a.insert(originData).rowIndex;
-        int index2 = a.insert(originData).rowIndex;
-        a.update(index, LQdata);
-        BlockIO b = new BlockIO(table, a.content, 0);
-        if (a.emptyPointer != b.emptyPointer
-                || a.emptySize != b.emptySize
-                || a.rowNum != b.rowNum
-        )
-            throw new Error("block equal update wrong");
-        byte[] data1 = b.readRowData(index);
-        byte[] data2 = b.readRowData(index2);
-        for (int i = 0; i < data1.length; i++)
-            if (data1[i] != LQdata[i])
-                throw new Error("block equal update wrong");
-        for (int i = 0; i < data2.length; i++)
-            if (data2[i] != originData[i])
-                throw new Error("block equal update wrong");
-    }
-
-    private static void testBLockGQUpdate() throws IOException {
-        Type[] types = basicTypesData();
-        Table table = new Table(database, basicColumn(types), "test", null);
-        BlockIO a = new BlockIO(table, 512, 0);
-        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
-        byte[] LQdata = new byte[originData.length * 2];
-        System.arraycopy(originData, 0, LQdata, 0, originData.length);
-        System.arraycopy(originData, 0, LQdata, originData.length, originData.length);
-        int index = a.insert(originData).rowIndex;
-        int index2 = a.insert(originData).rowIndex;
-        a.update(index, LQdata);
-        BlockIO b = new BlockIO(table, a.content, 0);
-        if (a.emptyPointer != b.emptyPointer
-                || a.emptySize != b.emptySize
-                || a.rowNum != b.rowNum
-        )
-            throw new Error("block equal update wrong");
-        byte[] data1 = b.readRowData(index);
-        byte[] data2 = b.readRowData(index2);
-        for (int i = 0; i < data1.length; i++)
-            if (data1[i] != LQdata[i])
-                throw new Error("block equal update wrong");
-        for (int i = 0; i < data2.length; i++)
-            if (data2[i] != originData[i])
-                throw new Error("block equal update wrong");
-    }
+//    private static void testRowIO() throws IOException {
+//        System.out.println("DataFileTest :rowIO");
+//        testRowIOWithoutNull();
+//        testRowIOWithNullField();
+//        System.out.println("state: OK");
+//    }
+//
+//    private static void testRowIOWithoutNull() throws IOException {
+//
+//        Type[] types = basicTypesData();
+//        Object[] data = basicRowData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        Row a = new Row(table, data);
+//        byte[] b = RowIO.writeRowData(types, data);
+//        Row c = new Row(table, b);
+//        for (int i = 0; i < data.length; i++) {
+//            if (!data[i].equals(c.rowData[i]))
+//                throw new Error("baisc rowIO has something wrong");
+//        }
+//    }
+//
+//    private static void testRowIOWithNullField() throws IOException {
+//        Type[] types = basicTypesData();
+//        for (int j = 0; j < types.length; j++) {
+//
+//            Object[] data = basicRowData();
+//            data[j] = null;
+//            Table table = new Table(database, basicColumn(types), "test", null);
+//            Row a = new Row(table, data);
+//            byte[] b = RowIO.writeRowData(types, data);
+//            Row c = new Row(table, b);
+//            for (int i = 0; i < data.length; i++) {
+//                if (data[i] != null) {
+//                    if (!data[i].equals(c.rowData[i]))
+//                        throw new Error("rowIO has something wrong with typeCode:" + (types[i].typeCode));
+//                } else {
+//                    if (c.rowData[i] != null)
+//                        throw new Error("rowIO has something wrong" + (types[i].typeCode));
+//                }
+//            }
+//        }
+//    }
+//
+//    private static Object[] basicRowData() {
+//        Object[] data = new Object[8];
+//        Type[] types = new Type[8];
+//        //int
+//        data[0] = 1;
+//        //String
+//        data[1] = "test";
+//        //Double
+//        data[2] = 1.2;
+//        //char
+//        data[3] = 'a';
+//        //boolean
+//        data[4] = false;
+//        //smallInt
+//        data[5] = (short) 45;
+//        //long
+//        data[6] = (long) 45;
+//        //float
+//        data[7] = (float) 1.2;
+//
+//        return data;
+//    }
+//
+//    private static Type[] basicTypesData() {
+//        Type[] types = new Type[8];
+//        //int
+//        types[0] = new Type(ColumnTypes.COL_INT);
+//        //String
+//        types[1] = new Type(ColumnTypes.COL_VARCHAR, 8);
+//        //Double
+//
+//        types[2] = new Type(ColumnTypes.COL_DOUBLE);
+//        //char
+//
+//        types[3] = new Type(ColumnTypes.COL_CHAR);
+//        //boolean
+//
+//        types[4] = new Type(ColumnTypes.COL_BOOL);
+//        //smallInt
+//
+//        types[5] = new Type(ColumnTypes.COL_SHORT);
+//        //long
+//
+//        types[6] = new Type(ColumnTypes.COL_LONG);
+//        //float
+//
+//        types[7] = new Type(ColumnTypes.COL_FLOAT);
+//
+//        return types;
+//    }
+//
+//    private static Column[] basicColumn(Type[] types) {
+//        Column[] columns = new Column[types.length];
+//        for (int i = 0; i < types.length; i++) {
+//            columns[i] = (new Column(types[i], "test" + (char) (i + 'a')));
+//        }
+//        return columns;
+//    }
+//
+//    private static void testBlockIO() throws IOException {
+//        testEmtpyBlockIO();
+//        testBlockSingleInsert();
+//        testBLockMiddleDelete();
+//        testBLockEmptyDelete();
+//        testBLockOneDelete();
+//        testBLockLastDelete();
+//        testBLockEqualUpdate();
+//        testBLockLQUpdate();
+//        testBLockGQUpdate();
+//    }
+//
+//    private static void testEmtpyBlockIO() throws IOException {
+//        Type[] types = basicTypesData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        BlockIO a = new BlockIO(table, 128, 0);
+//        byte[] buf = a.content;
+//        BlockIO b = new BlockIO(table, buf, 0);
+//        if (!a.emptyRecord.equals(b.emptyRecord)
+//                || (a.blockSize != b.blockSize)
+//                || (a.emptySize != b.emptySize)
+//                || (a.emptyPointer != b.emptyPointer)
+//                || a.rowNum != b.rowNum
+//        )
+//            throw new Error("emtpy block io wrong");
+//    }
+//
+//    private static void testBlockSingleInsert() throws IOException {
+//        Type[] types = basicTypesData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        BlockIO a = new BlockIO(table, 128, 0);
+//        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
+//        int index = a.insert(originData).rowIndex;
+//        int index1 = a.insert(originData).rowIndex;
+//        BlockIO b = new BlockIO(table, a.content, 0);
+//        byte[] data = b.readRowData(index);
+//        byte[] data2 = b.readRowData(index1);
+//        if (data.length != originData.length || data2.length != originData.length)
+//            throw new Error("block insert wrong");
+//        for (int i = 0; i < data.length; i++)
+//            if (data[i] != originData[i] || data2[i] != originData[i])
+//                throw new Error("block insert wrong");
+//    }
+//
+//    private static void testBLockMiddleDelete() throws IOException {
+//        Type[] types = basicTypesData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        BlockIO a = new BlockIO(table, 512, 0);
+//        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
+//        int index = a.insert(originData).rowIndex;
+//        int index1 = a.insert(originData).rowIndex;
+//        int index2 = a.insert(originData).rowIndex;
+//        a.delete(index1);
+//        BlockIO b = new BlockIO(table, a.content, 0);
+//        if (!b.emptyRecord.get(index1) || b.rowNum != a.rowNum)
+//            throw new Error("block delete wrong:block meta wrong");
+//        if (b.readRowData(index1) != null)
+//            throw new Error("block delete wrong:get null data wrong");
+//        byte[] data2 = b.readRowData(index2);
+//        for (int i = 0; i < data2.length; i++)
+//            if (data2[i] != originData[i])
+//                throw new Error("block delete wrong:other data wrong");
+//    }
+//
+//    private static void testBLockLastDelete() throws IOException {
+//        Type[] types = basicTypesData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        BlockIO a = new BlockIO(table, 512, 0);
+//        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
+//        int index = a.insert(originData).rowIndex;
+//        int index1 = a.insert(originData).rowIndex;
+//        int index2 = a.insert(originData).rowIndex;
+//        a.delete(index2);
+//        BlockIO b = new BlockIO(table, a.content, 0);
+//        if (b.rowNum != a.rowNum)
+//            throw new Error("block delete wrong:block meta wrong");
+//        if (b.readRowData(index2) != null)
+//            throw new Error("block delete wrong:get null data wrong");
+//        byte[] data = b.readRowData(index1);
+//        byte[] data2 = b.readRowData(index);
+//        for (int i = 0; i < data2.length; i++)
+//            if (data2[i] != originData[i] || data[i] != originData[i])
+//                throw new Error("block delete wrong:other data wrong");
+//    }
+//
+//    private static void testBLockEmptyDelete() throws IOException {
+//        Type[] types = basicTypesData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        BlockIO a = new BlockIO(table, 512, 0);
+//        a.delete(28);
+//    }
+//
+//    private static void testBLockOneDelete() throws IOException {
+//        Type[] types = basicTypesData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        BlockIO a = new BlockIO(table, 512, 0);
+//        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
+//        int index = a.insert(originData).rowIndex;
+//        a.delete(index);
+//        BlockIO b = new BlockIO(table, 512, 0);
+//        if (a.emptyPointer != b.emptyPointer
+//                || a.emptySize != b.emptySize
+//                || a.rowNum != b.rowNum
+//        )
+//            throw new Error("block with one row delete wrong");
+//    }
+//
+//    private static void testBLockEqualUpdate() throws IOException {
+//        Type[] types = basicTypesData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        BlockIO a = new BlockIO(table, 512, 0);
+//        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
+//        int index = a.insert(originData).rowIndex;
+//        a.update(index, originData);
+//        BlockIO b = new BlockIO(table, a.content, 0);
+//        if (a.emptyPointer != b.emptyPointer
+//                || a.emptySize != b.emptySize
+//                || a.rowNum != b.rowNum
+//        )
+//            throw new Error("block equal update wrong");
+//        byte[] data1 = a.readRowData(index);
+//        byte[] data2 = b.readRowData(index);
+//        for (int i = 0; i < data1.length; i++)
+//            if (data1[i] != data2[i])
+//                throw new Error("block equal update wrong");
+//    }
+//
+//    private static void testBLockLQUpdate() throws IOException {
+//        Type[] types = basicTypesData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        BlockIO a = new BlockIO(table, 512, 0);
+//        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
+//        byte[] LQdata = new byte[originData.length / 2];
+//        System.arraycopy(originData, 0, LQdata, 0, LQdata.length);
+//        int index = a.insert(originData).rowIndex;
+//        int index2 = a.insert(originData).rowIndex;
+//        a.update(index, LQdata);
+//        BlockIO b = new BlockIO(table, a.content, 0);
+//        if (a.emptyPointer != b.emptyPointer
+//                || a.emptySize != b.emptySize
+//                || a.rowNum != b.rowNum
+//        )
+//            throw new Error("block equal update wrong");
+//        byte[] data1 = b.readRowData(index);
+//        byte[] data2 = b.readRowData(index2);
+//        for (int i = 0; i < data1.length; i++)
+//            if (data1[i] != LQdata[i])
+//                throw new Error("block equal update wrong");
+//        for (int i = 0; i < data2.length; i++)
+//            if (data2[i] != originData[i])
+//                throw new Error("block equal update wrong");
+//    }
+//
+//    private static void testBLockGQUpdate() throws IOException {
+//        Type[] types = basicTypesData();
+//        Table table = new Table(database, basicColumn(types), "test", null);
+//        BlockIO a = new BlockIO(table, 512, 0);
+//        byte[] originData = RowIO.writeRowData(basicTypesData(), basicRowData());
+//        byte[] LQdata = new byte[originData.length * 2];
+//        System.arraycopy(originData, 0, LQdata, 0, originData.length);
+//        System.arraycopy(originData, 0, LQdata, originData.length, originData.length);
+//        int index = a.insert(originData).rowIndex;
+//        int index2 = a.insert(originData).rowIndex;
+//        a.update(index, LQdata);
+//        BlockIO b = new BlockIO(table, a.content, 0);
+//        if (a.emptyPointer != b.emptyPointer
+//                || a.emptySize != b.emptySize
+//                || a.rowNum != b.rowNum
+//        )
+//            throw new Error("block equal update wrong");
+//        byte[] data1 = b.readRowData(index);
+//        byte[] data2 = b.readRowData(index2);
+//        for (int i = 0; i < data1.length; i++)
+//            if (data1[i] != LQdata[i])
+//                throw new Error("block equal update wrong");
+//        for (int i = 0; i < data2.length; i++)
+//            if (data2[i] != originData[i])
+//                throw new Error("block equal update wrong");
+//    }
 
     private static void testFixedIndex() throws IOException {
         int testSize = 1000;

@@ -15,14 +15,14 @@ public class Row {
 
     public Row(Table table, byte[] dataBytes, int bindex, int rindex) throws IOException {
         this.table = table;
-        rowData = RowIO.getRowData(table.columnTypes, dataBytes);
+        rowData = RowIO.getRowData(table.info.columnTypes, dataBytes);
         blockIndex = bindex;
         rowIndex = rindex;
     }
 
     public Row(Table table, byte[] dataBytes) throws IOException {
         this.table = table;
-        rowData = RowIO.getRowData(table.columnTypes, dataBytes);
+        rowData = RowIO.getRowData(table.info.columnTypes, dataBytes);
         blockIndex = -1;
         rowIndex = -1;
     }

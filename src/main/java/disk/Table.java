@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import Meta.TableInfo;
 import io.*;
 import index.*;
 import block.*;
@@ -14,33 +15,17 @@ import block.*;
  **/
 
 public class Table {
-    public Database database;
-    public Type[] columnTypes;                        // the type array of the columns
-    public Column[] columns;                                // the columns array
     public DataFileManager dataFileManager;                         // the io manager of the data file
-    public String tableName;                              // name of the table
     public IndexBase primaryIndex;                                  // the primary index of this table
     public List<IndexBase> indexes;                                  // the index array of this table
-    public int rowNum;                                              // the number of rows in the table
-
-    public Table(Database database, Column[] columns, String name, Cache cache) throws IOException {
-        this.columns = columns;
-        loadTypes();
-        tableName = name;
-        this.database = database;
-        dataFileManager = new DataFileManager(this, new File(Logger.dataFilePath(this)), cache);
-    }
+    public TableInfo info;
 
     public Table(Database database, Column[] columns, String name, String indexInfos, Cache cache, int pkIndexNum) throws IOException {
-        this.columns = columns;
-        loadTypes();
-        tableName = name;
-        this.database = database;
+        this.info = new TableInfo(database,this,columns,name);
         dataFileManager = new DataFileManager(this, new File(Logger.dataFilePath(this)), cache);
         loadIndex(indexInfos);
         if (pkIndexNum >= 0)
             setPKIndex(pkIndexNum);
-
     }
 
     public void setPKIndex(int indexNum) throws IOException {
@@ -52,15 +37,6 @@ public class Table {
 
     }
 
-    /**
-     * Init the type array of column
-     **/
-    public void loadTypes() {
-        this.columnTypes = new Type[columns.length];
-        for (int i = 0; i < columnTypes.length; i++) {
-            columnTypes[i] = columns[i].columnType;
-        }
-    }
 
     /**
      * Load the indexes
@@ -76,10 +52,23 @@ public class Table {
         }
     }
 
+    public String getIndexInfos(){
+        StringBuilder infos = new StringBuilder();
+        for(int i = 0;i<indexes.size();i++){
+            for(int j = 0;j<indexes.get(i).columnIndex.length;i++){
+                infos.append(((Integer) indexes.get(i).columnIndex[j]).toString());
+                if(j < indexes.get(i).columnIndex.length-1) infos.append(Logger.columnIndexStringSegment);
+            }
+            if(i < indexes.size()-1)
+                infos.append(Logger.indexStringSegment);
+        }
+        return infos.toString();
+    }
+
     public List<int[]> getColumnsIndexForIndex(String infos) {
-        String[] infosSplited = infos.split(Logger.indexStringSegment);
+        String[] infosSplit = infos.split(Logger.indexStringSegment);
         List<int[]> columns = new ArrayList<>();
-        for (String s : infosSplited) {
+        for (String s : infosSplit) {
             String[] infoSpliced = s.split(Logger.columnIndexStringSegment);
             int[] column = new int[infoSpliced.length];
             for (int j = 0; j < infoSpliced.length; j++) {
@@ -94,7 +83,7 @@ public class Table {
     public String getIndexFileName(int[] info) {
         StringBuilder name = new StringBuilder();
         for (int i = 0; i < info.length; i++) {
-            name.append(columns[info[i]].columnName);
+            name.append(this.info.columns[info[i]].columnName);
             if (i != info.length - 1)
                 name.append('_');
         }
@@ -104,7 +93,7 @@ public class Table {
     public Type[] getIndexTypes(int[] info) {
         Type[] types = new Type[info.length];
         for (int i = 0; i < info.length; i++)
-            types[i] = columnTypes[info[i]];
+            types[i] = this.info.columnTypes[info[i]];
         return types;
     }
 
@@ -134,6 +123,19 @@ public class Table {
 
 
     /**
+     * get the row by its primary key
+     * @param pk primary key
+     */
+    public Row getByPrimaryKey(IndexKey pk)throws IOException{
+        NodeLeaf leaf = (NodeLeaf)primaryIndex.get(pk);
+        if(leaf == null)
+            return null;
+
+        return this.dataFileManager.get(leaf.rowInfos.get(0));
+    }
+
+
+    /**
      * Check the unique key, then insert the data into data file and all index trees
      **/
     public Row insert(Object[] data) throws IOException {
@@ -141,14 +143,14 @@ public class Table {
         if (uniqueKeyUnUsed(data)) {
 
             // insert the data into data file
-            Row row = dataFileManager.insert(RowIO.writeRowData(columnTypes, data));
+            Row row = dataFileManager.insert(RowIO.writeRowData(info.columnTypes, data));
             Row rowInfo = new Row(this, row.blockIndex, row.rowIndex);
             //insert the row into all index trees
             for (IndexBase index : indexes) {
                 index.insert(index.getIndexAccessor(row.rowData), rowInfo);
                 index.indexChange.saveChange();
             }
-            rowNum++;
+            info.rowNum++;
             return row;
         } else
             return null;
@@ -172,14 +174,14 @@ public class Table {
             }
             deletedRow.add(dataFileManager.delete(rowPos.rowInfos.get(i).blockIndex, rowPos.rowInfos.get(i).rowIndex));
         }
-        rowNum -= deletedRow.size();
+        info.rowNum -= deletedRow.size();
         return deletedRow;
     }
 
 
     public Row update(Row oldRow, Object[] data) throws IOException {
         Row old = dataFileManager.get(oldRow);
-        Row updated = dataFileManager.update(oldRow.blockIndex, oldRow.rowIndex, RowIO.writeRowData(columnTypes, data));
+        Row updated = dataFileManager.update(oldRow.blockIndex, oldRow.rowIndex, RowIO.writeRowData(info.columnTypes, data));
         for (IndexBase index : indexes) {
             index.update(index.getIndexAccessor(old.rowData),
                     index.getIndexAccessor(data),
@@ -190,6 +192,7 @@ public class Table {
     }
 
     public void save() throws IOException {
+        saveMeta();
         saveIndex();
         saveData();
     }
@@ -204,11 +207,30 @@ public class Table {
         dataFileManager.saveAll();
     }
 
+    public static Object[] tableData(String dataBaseName,String tableName, Column[] columns, String indexInfos, int pkIndexNum) {
+        Object[] data = new Object[Logger.columnNamesOftableTable.length];
+        data[0] = tableName;
+        data[1] = dataBaseName;
+        data[2] = Column.columnsToString(columns);
+        data[3] = indexInfos;
+        data[4] = pkIndexNum;
+        return data;
+    }
+
+    public Object[] tableData(){
+        return Table.tableData(info.database.dataBaseName,info.tableName,info.columns,getIndexInfos(),indexes.indexOf(primaryIndex));
+    }
+
+    public void saveMeta() throws IOException {
+        Row table = Database.System.tables.get(Logger.tablesTableName).getByPrimaryKey(Database.tablePK(info.database.dataBaseName,info.tableName));
+        Database.System.tables.get(Logger.tablesTableName).update(table,tableData());
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Table))
             return false;
-        return tableName.equals(((Table) obj).tableName) && database.equals(((Table) obj).database);
+        return info.tableName.equals(((Table) obj).info.tableName) && info.database.equals(((Table) obj).info.database);
     }
 
 }

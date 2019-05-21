@@ -20,13 +20,13 @@ public class CacheKey {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof CacheKey)
-            return table.database.dataBaseName.equals(((CacheKey) obj).table.database.dataBaseName) && table.tableName.equals(((CacheKey) obj).table.tableName) && index == ((CacheKey) obj).index;
+            return table.info.database.dataBaseName.equals(((CacheKey) obj).table.info.database.dataBaseName) && table.info.tableName.equals(((CacheKey) obj).table.info.tableName) && index == ((CacheKey) obj).index;
         return false;
     }
 
     @Override
     public int hashCode() {
-        return table.tableName.hashCode() + index;
+        return table.info.tableName.hashCode() + index;
     }
 
     public void visited() {

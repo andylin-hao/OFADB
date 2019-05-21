@@ -8,6 +8,7 @@ import index.NodeLeaf;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Database {
@@ -31,8 +32,22 @@ public class Database {
         System = new Database(Logger.systemDatabaseName, true);
         Table databases = new Table(System, Logger.datebasesTableType(), Logger.databaseTableName, "0", System.cache, 0);
         Table tables = new Table(System, Logger.tablesTableType(), Logger.tablesTableName, "1,0", System.cache, 0);
-        System.tables.put(databases.tableName, databases);
-        System.tables.put(tables.tableName, tables);
+        System.tables.put(databases.info.tableName, databases);
+        System.tables.put(tables.info.tableName, tables);
+    }
+
+    public static boolean databaseExistence(String name)throws IOException{
+        Table databases = System.tables.get(Logger.databaseTableName);
+        List<Row> result = databases.equivalenceFind(0,new IndexKey(Logger.columnTypesOfdatabaseTable,databaseData(name)));
+        return result.size() > 0;
+    }
+
+    public static Database loadDataBase(String name)throws IOException{
+        if(!databaseExistence(name))
+            return null;
+        Database database = new Database(name,false);
+        database.loadTables();
+        return database;
     }
 
     @Override
@@ -53,40 +68,46 @@ public class Database {
             Database.loadSystem();
     }
 
-    public static Row createNewDatabase(String name) throws IOException {
+    public static Database createNewDatabase(String name) throws IOException {
         checkSystemLoaded();
 
         Object[] databaseData = databaseData(name);
-        return System.tables.get(Logger.databaseTableName).insert(databaseData);
+
+        if(System.tables.get(Logger.databaseTableName).insert(databaseData) != null)
+            return new Database(name,false);
+        return null;
     }
 
-    public Row createNewTable(String name, Column[] columns, String indexInfos, int pkIndexNum) throws IOException {
+    public Table createNewTable(String name, Column[] columns, String indexInfos, int pkIndexNum) throws IOException {
         checkSystemLoaded();
 
-        Object[] tableData = tableData(name, columns, indexInfos, pkIndexNum);
+        Object[] tableData = Table.tableData(dataBaseName,name, columns, indexInfos, pkIndexNum);
 
         Row result = System.tables.get(Logger.tablesTableName).insert(tableData);
         if (result != null) {
             Table newTable = new Table(this, columns, name, indexInfos, this.cache, pkIndexNum);
             this.tables.put(name, newTable);
+            return newTable;
         }
-        return result;
+        return null;
     }
 
-    public Object[] tableData(String tableName, Column[] columns, String indexInfos, int pkIndexNum) {
-        Object[] data = new Object[Logger.columnNamesOftableTable.length];
-        data[0] = tableName;
-        data[1] = dataBaseName;
-        data[2] = Column.columnsToString(columns);
-        data[3] = indexInfos;
-        data[4] = pkIndexNum;
-        return data;
-    }
+
 
     public static Object[] databaseData(String name) {
         Object[] data = new Object[1];
         data[0] = name;
         return data;
+    }
+
+    public static IndexKey tablePK(String dataBaseName,String tableName){
+        Object[] data = new Object[2];
+        data[0] = dataBaseName;
+        data[1] = tableName;
+        Type[] types = new Type[2];
+        types[0] = Logger.columnTypesOftableTable[1];
+        types[1] = Logger.columnTypesOftableTable[0];
+        return new IndexKey(types,data);
     }
 
     public void loadTables() throws IOException {
