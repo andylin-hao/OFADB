@@ -5,8 +5,7 @@ import types.ExprTypes;
 
 public class ResultColumnExpr extends Expression {
     private String attrName = "";
-    private String tableName = "";
-    private String dbName = "";
+    private RelationExpr table = new RelationExpr();
     private String alias = "";
 
     public ResultColumnExpr() {
@@ -14,7 +13,7 @@ public class ResultColumnExpr extends Expression {
     }
 
     boolean equals(ResultColumnExpr r) {
-        return alias.equals(r.getAlias()) && attrName.equals(r.getAttrName()) && tableName.equals(r.getTableName());
+        return alias.equals(r.getAlias()) && attrName.equals(r.getAttrName()) && table.getTableName().equals(r.getTableName());
     }
 
     public String getAttrName() {
@@ -26,11 +25,11 @@ public class ResultColumnExpr extends Expression {
     }
 
     public String getTableName() {
-        return tableName;
+        return table.getTableName();
     }
 
     public void setTableName(String tableName) {
-        this.tableName = tableName;
+        table.setTableName(tableName);
     }
 
     public String getAlias() {
@@ -41,7 +40,7 @@ public class ResultColumnExpr extends Expression {
         this.alias = alias;
     }
 
-    public String getDbName() { return dbName; }
+    public String getDbName() { return table.getDbName(); }
 
-    public void setDbName(String dbName) { this.dbName = dbName; }
+    public void setDbName(String dbName) { table.setDbName(dbName); }
 }

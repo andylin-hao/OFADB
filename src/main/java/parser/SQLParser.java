@@ -5,12 +5,14 @@ import expression.create.ColumnDefExpr;
 import expression.create.CreateDBExpr;
 import expression.create.CreateTableExpr;
 import expression.create.TableConstraintExpr;
+import expression.delete.DeleteExpr;
 import expression.drop.DropDBExpr;
 import expression.drop.DropTableExpr;
 import expression.insert.InsertExpr;
 import expression.select.*;
 import expression.show.ShowDBExpr;
 import expression.show.ShowTableExpr;
+import expression.update.UpdateExpr;
 import types.*;
 import expression.use.UseDBExpr;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
@@ -82,6 +84,15 @@ public class SQLParser extends SQLiteBaseListener {
     @Override
     public void exitCreate_database_stmt(SQLiteParser.Create_database_stmtContext ctx) {
         expr = new CreateDBExpr(ctx.database_name().getText());
+    }
+
+    @Override
+    public void enterDelete_stmt(SQLiteParser.Delete_stmtContext ctx) {
+        String dbName = "";
+        if (ctx.qualified_table_name().database_name() != null)
+            dbName = ctx.qualified_table_name().database_name().getText();
+        expr = new DeleteExpr(dbName, ctx.qualified_table_name().table_name().getText());
+        ctxExpr.put(ctx, expr);
     }
 
     @Override
@@ -190,7 +201,7 @@ public class SQLParser extends SQLiteBaseListener {
         InsertExpr insertExpr = (InsertExpr) expr;
 
         List<SQLiteParser.Column_nameContext> columnContexts = ctx.column_name();
-        for (SQLiteParser.Column_nameContext columnCtx: columnContexts) {
+        for (SQLiteParser.Column_nameContext columnCtx : columnContexts) {
             insertExpr.getColumns().add(columnCtx.getText());
         }
 
@@ -200,7 +211,7 @@ public class SQLParser extends SQLiteBaseListener {
             List<SQLiteParser.ExprContext> exprContexts = valueCtx.expr();
             insertExpr.getValues().add(new ArrayList<>());
             for (SQLiteParser.ExprContext exprCtx : exprContexts) {
-                Object value = getInsertValue(exprCtx);
+                Object value = getValue(exprCtx);
                 insertExpr.getValues().get(i).add(value);
             }
         }
@@ -260,9 +271,43 @@ public class SQLParser extends SQLiteBaseListener {
 
     @Override
     public void exitWhere_clause(SQLiteParser.Where_clauseContext ctx) {
-        SelectExpr selectExpr = (SelectExpr) ctxExpr.get(ctx.getParent());
         WhereExpr whereExpr = getWhereExpr(ctx.expr());
-        selectExpr.setWhereExpr(whereExpr);
+        Expression expression = ctxExpr.get(ctx.getParent());
+
+        switch (expression.getExprType()) {
+            case EXPR_SELECT:
+                SelectExpr selectExpr = (SelectExpr) expression;
+                selectExpr.setWhereExpr(whereExpr);
+                break;
+            case EXPR_UPDATE:
+                UpdateExpr updateExpr = (UpdateExpr) expression;
+                updateExpr.setWhereExpr(whereExpr);
+                break;
+            case EXPR_DELETE:
+                DeleteExpr deleteExpr = (DeleteExpr) expression;
+                deleteExpr.setWhereExpr(whereExpr);
+                break;
+            default:
+                throw new RuntimeException("Illegal parent of where clause");
+        }
+    }
+
+    @Override
+    public void enterUpdate_stmt(SQLiteParser.Update_stmtContext ctx) {
+        String dbName = "";
+        if (ctx.qualified_table_name().database_name() != null) {
+            dbName = ctx.qualified_table_name().database_name().getText();
+        }
+        expr = new UpdateExpr(dbName, ctx.qualified_table_name().table_name().getText());
+        UpdateExpr updateExpr = (UpdateExpr) expr;
+
+        List<SQLiteParser.Update_values_stmtContext> valuesContexts = ctx.update_values_stmt();
+        for (SQLiteParser.Update_values_stmtContext valueCtx : valuesContexts) {
+            updateExpr.getAttrNames().add(valueCtx.column_name().getText());
+            updateExpr.getValues().add(getValue(valueCtx.expr()));
+        }
+
+        ctxExpr.put(ctx, expr);
     }
 
     @Override
@@ -271,40 +316,38 @@ public class SQLParser extends SQLiteBaseListener {
     }
 
     private QualifyEleExpr getQualifyEle(SQLiteParser.ExprContext exprCtx) {
-        String text = exprCtx.getText();
-        if (isInteger(text)) {
-            Integer integer = Integer.parseInt(text);
-            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_INT, integer);
-        } else if (isDouble(text)) {
-            Double ele = Double.parseDouble(text);
-            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_DOUBLE, ele);
-        } else if (isFormula(exprCtx)) {
-            FormulaExpr formulaExpr = getFormulaExpr(exprCtx);
-            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_FORMULA, formulaExpr);
-        } else if (isBool(text)) {
-            Boolean bool = Boolean.parseBoolean(text.toLowerCase());
-            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_BOOL, bool);
-        } else if (isStr(text)) {
-            String str = text.substring(1, text.length() - 1);
-            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_STR, str);
-        } else {
-            ResultColumnExpr columnExpr = getColumnExpr(exprCtx);
-            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, columnExpr);
-        }
+        Object value = getValue(exprCtx);
+        Class valueClass = value.getClass();
+        if (valueClass == Long.class) {
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_INT, value);
+        } else if (valueClass == Double.class) {
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_DOUBLE, value);
+        } else if (valueClass == FormulaExpr.class) {
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_FORMULA, value);
+        } else if (valueClass == Boolean.class) {
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_BOOL, value);
+        } else if (valueClass == String.class) {
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_STR, value);
+        } else if (valueClass == ResultColumnExpr.class) {
+            return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, value);
+        } else
+            throw new RuntimeException("Unable to parse:" + exprCtx.getText());
     }
-    
-    private Object getInsertValue(SQLiteParser.ExprContext exprCtx) {
+
+    private Object getValue(SQLiteParser.ExprContext exprCtx) {
         String text = exprCtx.getText();
         if (isInteger(text))
             return Long.parseLong(text);
         else if (isDouble(text))
             return Double.parseDouble(text);
         else if (isBool(text))
-            return Boolean.parseBoolean(text);
+            return Boolean.parseBoolean(text.toLowerCase());
         else if (isStr(text))
             return text.substring(1, text.length() - 1);
+        else if (isFormula(exprCtx))
+            return getFormulaExpr(exprCtx);
         else
-            throw new RuntimeException("Invalid value:" + text);
+            return getColumnExpr(exprCtx);
     }
 
     private ResultColumnExpr getColumnExpr(SQLiteParser.ExprContext exprCtx) {
