@@ -1,7 +1,7 @@
 package expression.create;
 
 import expression.Expression;
-import expression.types.ExprTypes;
+import types.ExprTypes;
 
 public class CreateDBExpr extends Expression {
     private String dbName;

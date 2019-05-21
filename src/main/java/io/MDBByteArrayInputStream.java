@@ -1,7 +1,6 @@
 package io;
 
 import disk.Type;
-import disk.Types;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -247,21 +246,21 @@ public class MDBByteArrayInputStream {
 
     public Object readObject(Type type, int length) throws IOException {
         switch (type.typeCode) {
-            case Types.SQL_CHAR:
+            case COL_CHAR:
                 return readChar();
-            case Types.SQL_SMALLINT:
+            case COL_SHORT:
                 return readShort();
-            case Types.SQL_INTEGER:
+            case COL_INT:
                 return readInt();
-            case Types.SQL_FLOAT:
+            case COL_FLOAT:
                 return readFloat();
-            case Types.SQL_LONG:
+            case COL_LONG:
                 return readLong();
-            case Types.SQL_DOUBLE:
+            case COL_DOUBLE:
                 return readDouble();
-            case Types.SQL_BOOLEAN:
+            case COL_BOOL:
                 return readBoolean();
-            case Types.SQL_VARCHAR:
+            case COL_VARCHAR:
                 return readString(length);
         }
         return null;

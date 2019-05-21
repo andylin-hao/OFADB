@@ -1,8 +1,8 @@
 package expression.select;
 
 import expression.Expression;
-import expression.types.ExprTypes;
-import expression.types.QualifyEleTypes;
+import types.ExprTypes;
+import types.QualifyEleTypes;
 
 public class QualifyEleExpr extends Expression {
     private QualifyEleTypes eleTypes;

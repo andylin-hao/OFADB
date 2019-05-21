@@ -1,8 +1,8 @@
 package expression.create;
 
 import expression.Expression;
-import expression.types.ExprTypes;
-import expression.types.TableConstraintTypes;
+import types.ExprTypes;
+import types.TableConstraintTypes;
 
 import java.util.ArrayList;
 

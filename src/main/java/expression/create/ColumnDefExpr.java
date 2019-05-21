@@ -1,9 +1,9 @@
 package expression.create;
 
 import expression.Expression;
-import expression.types.ColumnConstraintTypes;
-import expression.types.ColumnTypes;
-import expression.types.ExprTypes;
+import types.ColumnConstraintTypes;
+import types.ColumnTypes;
+import types.ExprTypes;
 
 import java.util.ArrayList;
 

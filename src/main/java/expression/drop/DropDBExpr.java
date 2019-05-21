@@ -1,7 +1,7 @@
 package expression.drop;
 
 import expression.Expression;
-import expression.types.ExprTypes;
+import types.ExprTypes;
 
 public class DropDBExpr extends Expression {
     private String dbName;

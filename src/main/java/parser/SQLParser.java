@@ -7,10 +7,12 @@ import expression.create.CreateTableExpr;
 import expression.create.TableConstraintExpr;
 import expression.drop.DropDBExpr;
 import expression.drop.DropTableExpr;
+import expression.insert.InsertExpr;
 import expression.select.*;
 import expression.show.ShowDBExpr;
 import expression.show.ShowTableExpr;
-import expression.types.*;
+import types.*;
+import expression.use.UseDBExpr;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
 import java.util.ArrayList;
@@ -179,6 +181,32 @@ public class SQLParser extends SQLiteBaseListener {
     }
 
     @Override
+    public void exitInsert_stmt(SQLiteParser.Insert_stmtContext ctx) {
+        String dbName = "";
+        if (ctx.database_name() != null) {
+            dbName = ctx.database_name().getText();
+        }
+        expr = new InsertExpr(dbName, ctx.table_name().getText());
+        InsertExpr insertExpr = (InsertExpr) expr;
+
+        List<SQLiteParser.Column_nameContext> columnContexts = ctx.column_name();
+        for (SQLiteParser.Column_nameContext columnCtx: columnContexts) {
+            insertExpr.getColumns().add(columnCtx.getText());
+        }
+
+        List<SQLiteParser.Insert_value_stmtContext> valueContexts = ctx.insert_value_stmt();
+        for (int i = 0; i < valueContexts.size(); i++) {
+            SQLiteParser.Insert_value_stmtContext valueCtx = valueContexts.get(i);
+            List<SQLiteParser.ExprContext> exprContexts = valueCtx.expr();
+            insertExpr.getValues().add(new ArrayList<>());
+            for (SQLiteParser.ExprContext exprCtx : exprContexts) {
+                Object value = getInsertValue(exprCtx);
+                insertExpr.getValues().get(i).add(value);
+            }
+        }
+    }
+
+    @Override
     public void exitJoin_clause(SQLiteParser.Join_clauseContext ctx) {
 
         List<SQLiteParser.Table_or_subqueryContext> rangeTblContexts = ctx.table_or_subquery();
@@ -237,28 +265,46 @@ public class SQLParser extends SQLiteBaseListener {
         selectExpr.setWhereExpr(whereExpr);
     }
 
+    @Override
+    public void enterUse_database_stmt(SQLiteParser.Use_database_stmtContext ctx) {
+        expr = new UseDBExpr(ctx.database_name().getText());
+    }
 
     private QualifyEleExpr getQualifyEle(SQLiteParser.ExprContext exprCtx) {
-        if (isInteger(exprCtx.getText())) {
-            Integer integer = Integer.parseInt(exprCtx.getText());
+        String text = exprCtx.getText();
+        if (isInteger(text)) {
+            Integer integer = Integer.parseInt(text);
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_INT, integer);
-        } else if (isDouble(exprCtx.getText())) {
-            Double ele = Double.parseDouble(exprCtx.getText());
+        } else if (isDouble(text)) {
+            Double ele = Double.parseDouble(text);
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_DOUBLE, ele);
         } else if (isFormula(exprCtx)) {
             FormulaExpr formulaExpr = getFormulaExpr(exprCtx);
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_FORMULA, formulaExpr);
-        } else if (isBool(exprCtx.getText())) {
-            Boolean bool = Boolean.parseBoolean(exprCtx.getText().toLowerCase());
+        } else if (isBool(text)) {
+            Boolean bool = Boolean.parseBoolean(text.toLowerCase());
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_BOOL, bool);
-        } else if (isStr(exprCtx.getText())) {
-            String ctxStr = exprCtx.getText();
-            String str = ctxStr.substring(1, ctxStr.length() - 1);
+        } else if (isStr(text)) {
+            String str = text.substring(1, text.length() - 1);
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_STR, str);
         } else {
             ResultColumnExpr columnExpr = getColumnExpr(exprCtx);
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, columnExpr);
         }
+    }
+    
+    private Object getInsertValue(SQLiteParser.ExprContext exprCtx) {
+        String text = exprCtx.getText();
+        if (isInteger(text))
+            return Long.parseLong(text);
+        else if (isDouble(text))
+            return Double.parseDouble(text);
+        else if (isBool(text))
+            return Boolean.parseBoolean(text);
+        else if (isStr(text))
+            return text.substring(1, text.length() - 1);
+        else
+            throw new RuntimeException("Invalid value:" + text);
     }
 
     private ResultColumnExpr getColumnExpr(SQLiteParser.ExprContext exprCtx) {

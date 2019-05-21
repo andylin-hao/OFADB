@@ -1,10 +1,11 @@
-package expression.types;
+package types;
 
 public enum ExprTypes {
     EXPR_COLUMN,
     EXPR_COLUMN_DEF,
     EXPR_CREATE_TABLE,
     EXPR_CREATE_DB,
+    EXPR_DELETE,
     EXPR_DROP_TABLE,
     EXPR_DROP_DB,
     EXPR_FORMULA,
@@ -17,5 +18,7 @@ public enum ExprTypes {
     EXPR_SHOW_DB,
     EXPR_SHOW_DBS,
     EXPR_SHOW_TABLE,
+    EXPR_UPDATE,
+    EXPR_USE_DB,
     EXPR_WHERE
 }

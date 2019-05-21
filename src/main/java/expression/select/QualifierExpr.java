@@ -1,7 +1,7 @@
 package expression.select;
 
-import expression.types.ExprTypes;
-import expression.types.QualifyTypes;
+import types.ExprTypes;
+import types.QualifyTypes;
 
 public class QualifierExpr extends WhereExpr {
     private QualifyTypes qualifyTypes;

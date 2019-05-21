@@ -1,6 +1,6 @@
 package expression.select;
 
-import expression.types.RangeTableTypes;
+import types.RangeTableTypes;
 
 public class RelationExpr extends RangeTableExpr {
     private String tableName = "";
