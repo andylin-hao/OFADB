@@ -45,8 +45,8 @@ class ParserTest {
     @Test
     void selectTest() throws IOException {
         String sql =
-                "select db.table.class_num, classname as name\n" +
-                        "from sc, (select * from class where class.gno = 'grade one') as sub on a = 1 join sc using (abc)\n" +
+                "select db.sc.class_num, classname as name\n" +
+                        "from db.sc, (select * from class where class.gno = 'grade one') as sub on a = 1 join sc using (abc)\n" +
                         "where sc.no = 4 and sc.yes = 5 or sc.a = 8 and sc.b > (9+3*4+(4-3)*7)/10+7/10\n";
         SelectExpr stmt = (SelectExpr) getParseResult(sql);
 
@@ -54,7 +54,7 @@ class ParserTest {
         ResultColumnExpr secondCol = stmt.getResultColumnExprs().get(1);
         assertEquals(stmt.getResultColumnExprs().size(), 2);
         assertEquals(firstCol.getDbName(), "db");
-        assertEquals(firstCol.getTableName(), "table");
+        assertEquals(firstCol.getTableName(), "sc");
         assertEquals(firstCol.getAttrName(), "class_num");
         assertEquals(secondCol.getAttrName(), "classname");
         assertEquals(secondCol.getAlias(), "name");

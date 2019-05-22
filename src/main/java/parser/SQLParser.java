@@ -109,6 +109,11 @@ public class SQLParser extends SQLiteBaseListener {
     }
 
     @Override
+    public void exitParse(SQLiteParser.ParseContext ctx) {
+        expr.checkValidity();
+    }
+
+    @Override
     public void enterSelect_core(SQLiteParser.Select_coreContext ctx) {
         expr = new SelectExpr();
         ctxExpr.put(ctx, expr);
