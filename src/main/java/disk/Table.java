@@ -45,10 +45,10 @@ public class Table {
      **/
     public void loadIndex(List<IndexInfo> indexInfos) throws IOException {
         indexes = new ArrayList<>();
-        for (int i = 0;i<indexInfos.size();i++) {
-            indexInfos.get(i).setTable(this);
-            File file = new File(Logger.indexFilePath(this, getIndexFileName(indexInfos.get(i).columnIndex)));
-            IndexBase index = new IndexBase(this, Logger.defaultIndexOrder, indexInfos.get(i).columnIndex, file, indexInfos.get(i).types,indexInfos.get(i).isUnique);
+        for (IndexInfo indexInfo : indexInfos) {
+            indexInfo.setTable(this);
+            File file = new File(Logger.indexFilePath(this, getIndexFileName(indexInfo.columnIndex)));
+            IndexBase index = new IndexBase(this, Logger.defaultIndexOrder, indexInfo.columnIndex, file, indexInfo.types, indexInfo.isUnique);
             indexes.add(index);
         }
     }
@@ -118,9 +118,9 @@ public class Table {
             //insert the row into all index trees
             for (IndexBase index : indexes) {
                 index.insert(index.getIndexAccessor(row.rowData), rowInfo);
-                index.indexChange.saveChange();
             }
             info.rowNum++;
+            save();
             return row;
         } else
             return null;
@@ -134,17 +134,25 @@ public class Table {
         IndexBase index = indexes.get(indexNum);
         if (index.root.contains(key) < 0)
             return null;
-        NodeLeaf rowPos = (NodeLeaf) index.get(key);
+        NodeLeaf rowPos = new NodeLeaf((NodeLeaf) index.get(key));
 
         List<Row> deletedRow = new ArrayList<>();
-        for (int i = 0; i < rowPos.rowInfos.size(); i++) {
-            Row row = dataFileManager.get(rowPos.rowInfos.get(i).blockIndex, rowPos.rowInfos.get(i).rowIndex);
+        for(Row ele : rowPos.rowInfos){
+            Row row = dataFileManager.get(ele.blockIndex, ele.rowIndex);
             for (IndexBase indexBase : indexes) {
-                indexBase.remove(indexBase.getIndexAccessor(row.rowData), rowPos.rowInfos.get(i));
+                indexBase.remove(indexBase.getIndexAccessor(row.rowData), ele);
             }
-            deletedRow.add(dataFileManager.delete(rowPos.rowInfos.get(i).blockIndex, rowPos.rowInfos.get(i).rowIndex));
+            deletedRow.add(dataFileManager.delete(ele.blockIndex, ele.rowIndex));
         }
+//        for (int i = 0; i < rowPos.rowInfos.size(); i++) {
+//            Row row = dataFileManager.get(rowPos.rowInfos.get(i).blockIndex, rowPos.rowInfos.get(i).rowIndex);
+//            for (IndexBase indexBase : indexes) {
+//                indexBase.remove(indexBase.getIndexAccessor(row.rowData), rowPos.rowInfos.get(i));
+//            }
+//            deletedRow.add(dataFileManager.delete(rowPos.rowInfos.get(i).blockIndex, rowPos.rowInfos.get(i).rowIndex));
+//        }
         info.rowNum -= deletedRow.size();
+        save();
         return deletedRow;
     }
 
@@ -158,6 +166,7 @@ public class Table {
                     new Row(old),
                     new Row(updated));
         }
+        save();
         return updated;
     }
 
@@ -194,6 +203,15 @@ public class Table {
         if (!(obj instanceof Table))
             return false;
         return info.tableName.equals(((Table) obj).info.tableName) && info.database.equals(((Table) obj).info.database);
+    }
+
+    public void closeFile()throws IOException{
+        save();
+        dataFileManager.close();
+        for(IndexBase indexBase : indexes) {
+            indexBase.indexChange.saveChange();
+            indexBase.fileIO.file.close();
+        }
     }
 
 }

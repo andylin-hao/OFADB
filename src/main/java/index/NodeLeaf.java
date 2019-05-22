@@ -10,7 +10,7 @@ import java.util.List;
  * The leaf of an index tree,including the row infos which belongs to the same key
  **/
 
-public class NodeLeaf {
+public class NodeLeaf implements Cloneable {
     public List<Row> rowInfos;
     public NdxFIleInfo storageInfo;
     public NodeLeaf(Row row){
@@ -21,6 +21,11 @@ public class NodeLeaf {
     public NodeLeaf(){
         this.rowInfos = new ArrayList<>();
         this.storageInfo = null;
+    }
+    public NodeLeaf(NodeLeaf clo){
+        this.rowInfos = new ArrayList<>();
+        rowInfos.addAll(clo.rowInfos);
+        this.storageInfo = clo.storageInfo;
     }
 
     public void setStorageInfo(NdxFIleInfo storageInfo) {

@@ -21,7 +21,7 @@ public class TableInfo {
     public TableInfo(Database database,Table table,Column[] columns,String name,List<IndexInfo> indexInfos){
         this.database = database;
         this.table = table;
-        this.columns = columns;
+        loadColumns(columns);
         this.tableName = name;
         this.indexInfos = indexInfos;
         loadTypes();
@@ -36,6 +36,12 @@ public class TableInfo {
         for (int i = 0; i < columnTypes.length; i++) {
             columnTypes[i] = columns[i].columnType;
         }
+    }
+
+    public void loadColumns(Column[] columns){
+        this.columns = columns;
+        for(Column ele : columns)
+            ele.setTable(this.table);
     }
 
     @Override

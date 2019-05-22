@@ -61,8 +61,8 @@ public class Database {
         Row result = FileSystem.getSystem().tables.get(Logger.tablesTableName).insert(tableData);
 
         if (result != null) {
-            for (int i = 0;i<indexInfos.size();i++) {
-                FileSystem.createNewIndex(dataBaseName, name, indexInfos.get(i));
+            for (IndexInfo indexInfo : indexInfos) {
+                FileSystem.createNewIndex(dataBaseName, name, indexInfo);
             }
 
             Table newTable = new Table(this, columns, name, indexInfos, this.cache, pkIndexNum);
@@ -72,6 +72,17 @@ public class Database {
         return null;
     }
 
+
+    public void removeTable(Table table)throws IOException{
+        if(table != null && tables.get(table.info.tableName) != null) {
+            Table tables = FileSystem.getTablesTable();
+            tables.delete(0,FileSystem.tablePK(dataBaseName, table.info.tableName));
+            Table indexTable = FileSystem.getIndexesTable();
+            indexTable.delete(0,FileSystem.tablePK(dataBaseName, table.info.tableName));
+            table.closeFile();
+            Logger.deleteDir(new File(Logger.tableDirectoryPath(table)));
+        }
+    }
 
 
 

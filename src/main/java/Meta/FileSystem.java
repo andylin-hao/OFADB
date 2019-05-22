@@ -3,6 +3,7 @@ package Meta;
 import disk.*;
 import index.IndexKey;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,11 @@ public class FileSystem {
     public static Database getSystem()throws IOException{
         checkSystemLoaded();
         return System;
+    }
+
+    public static Table getDatabaseTable()throws IOException{
+        checkSystemLoaded();
+        return System.tables.get(Logger.databaseTableName);
     }
 
     public static Table getTablesTable()throws IOException{
@@ -88,8 +94,19 @@ public class FileSystem {
             return info;
         else
             return null;
-
     }
+
+    public static void removeDatabase(Database database)throws IOException{
+        if(database == null)
+            return;
+
+        Table databases = getDatabaseTable();
+        for(Table table : database.tables.values())
+            database.removeTable(table);
+        databases.delete(0,databasePK(database.dataBaseName));
+        Logger.deleteDir(new File(Logger.databaseDirectoryPath(database)));
+    }
+
 
     public static Object[] databaseData(String name) {
         Object[] data = new Object[1];
@@ -116,4 +133,13 @@ public class FileSystem {
         types[1] = Logger.columnTypesOftableTable[0];
         return new IndexKey(types,data);
     }
+
+    public static IndexKey databasePK(String dataBaseName){
+        Object[] data = new Object[1];
+        data[0] = dataBaseName;
+        Type[] types = new Type[1];
+        types[0] = Logger.columnTypesOfdatabaseTable[0];
+        return new IndexKey(types,data);
+    }
+
 }

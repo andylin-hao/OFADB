@@ -79,6 +79,22 @@ public class MetaData {
     }
 
 
+    public static Column getColumnType(String databaseName,String tableName,String columnName)throws IOException{
+        if(!databaseExistence(databaseName) || ! tableExistence(databaseName,tableName))
+            return null;
+
+        Database database = FileSystem.loadDataBase(databaseName);
+
+
+        Table table = database.tables.get(tableName);
+        Column[] columns = table.info.columns;
+        for(Column ele : columns)
+            if(ele.columnName.equals(columnName))
+                return ele;
+        return null;
+    }
+
+
     public static List<IndexInfo> getIndexesInfo(String databaseName,String tableName)throws IOException{
         Table tables = FileSystem.getTablesTable();
         Table indexes = FileSystem.getIndexesTable();

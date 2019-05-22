@@ -48,6 +48,26 @@ public class Logger {
         return filePath;
     }
 
+
+
+    /**
+     * Return the path of a table directory
+     **/
+    public static String tableDirectoryPath(Table table) throws IOException {
+        String filePath = FilePrefix + table.info.database.dataBaseName + '/' + table.info.tableName;
+        preFile(filePath);
+        return filePath;
+    }
+
+    /**
+     * Return the path of a database directory
+     **/
+    public static String databaseDirectoryPath(Database dataBase) throws IOException {
+        String filePath = FilePrefix + dataBase.dataBaseName;
+        preFile(filePath);
+        return filePath;
+    }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void preFile(String path) throws IOException {
         File file = new File(path);
@@ -56,6 +76,34 @@ public class Logger {
             file.createNewFile();
         }
     }
+
+    public static boolean deleteDir(File someFile) {
+        if (!someFile.exists()) {
+            System.out.println("[deleteDir]File " + someFile.getAbsolutePath()
+                    + " does not exist.");
+            return false;
+        }
+        if (someFile.isDirectory()) {// is a folder
+            File[] files = someFile.listFiles();
+            for (File subFile : files) {
+                boolean isSuccess = deleteDir(subFile);
+                if (!isSuccess) {
+                    return isSuccess;
+                }
+            }
+        } else {// is a regular file
+            boolean isSuccess = someFile.delete();
+            if (!isSuccess) {
+                return isSuccess;
+            }
+        }
+        if (someFile.isDirectory()) {
+            return someFile.delete();
+        } else {
+            return true;
+        }
+    }
+
 
     public Logger() {
     }

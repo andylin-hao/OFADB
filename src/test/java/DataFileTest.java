@@ -18,24 +18,33 @@ public class DataFileTest {
         FileSystem.loadSystem();
         FileSystem.createNewDatabase("testbase");
         Database database = FileSystem.loadDataBase("testbase");
+        FileSystem.removeDatabase(database);
+//        database.removeTable(database.tables.get("tt2"));
 
-        Object[] data = new Object[3];
-        data[0] = 2;
-        data[1] = "jack";
-        data[2] = Long.parseLong("7");
-        database.tables.get("tt2").delete(0,database.tables.get("tt2").indexes.get(0).getIndexAccessor(data));
-//        database.tables.get("tt2").insert(data);
 //        database.loadTables();
 //        Object[] d = new Object[2];
 //        d[0] = 1;
 //        d[1] = "test1";
 //        database.tables.get("tt1").insert(d);
+
+
+
 //        Column[] columns = new Column[3];
 //        columns[0] = new Column("id",Type.intType(),false,false,0);
 //        columns[1] = new Column("name",Type.stringType(20),false,false,0);
 //        columns[2] = new Column("age",Type.longType(),false,false,0);
 //        database.createNewTable("tt2",columns,new ArrayList<IndexInfo>(){{add(new IndexInfo("0",true));add(new IndexInfo("2",false));}},0);
-//        Database.loadSystem();
+//
+//        Object[] data = new Object[3];
+//        data[0] = 2;
+//        data[1] = "jack";
+//        data[2] = Long.parseLong("7");
+////        database.tables.get("tt2").delete(0,database.tables.get("tt2").indexes.get(0).getIndexAccessor(data));
+//        database.tables.get("tt2").insert(data);
+
+
+
+        //        Database.loadSystem();
 //        Database.createNewDatabase("heyhey");
 //        Database hey = new Database("heyhey", false);
 //        hey.loadTables();

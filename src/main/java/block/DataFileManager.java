@@ -151,7 +151,7 @@ public class DataFileManager {
      * Delete a row from the table
      **/
     public Row delete(int blockIndex, int rowIndex) throws IOException {
-        if (rowIndex >= blockInfos.size())
+        if (blockIndex >= blockInfos.size())
             return null;
         //get the old data
         byte[] databyte = cache.get(table, blockIndex, rowIndex);
@@ -222,6 +222,11 @@ public class DataFileManager {
                 cache.popOut(ele.getKey());
             }
         }
+    }
+
+    public void close()throws IOException{
+        saveAll();
+        file.close();
     }
 
 

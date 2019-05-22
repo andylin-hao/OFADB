@@ -9,6 +9,7 @@ public class Column {
     public Integer incrStart;
     public  boolean nullable;
     public final static String segment = ",";
+    public Table table;
 
     public Column(Type columnType, String name) {
         this.columnType = columnType;
@@ -61,5 +62,9 @@ public class Column {
             columns[i] = new Column(columnStrings[i]);
         }
         return columns;
+    }
+
+    public void setTable(Table table){
+        this.table = table;
     }
 }
