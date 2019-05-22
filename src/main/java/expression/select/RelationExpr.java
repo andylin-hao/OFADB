@@ -29,4 +29,16 @@ public class RelationExpr extends RangeTableExpr {
     public String getDbName() {
         return dbName;
     }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
 }

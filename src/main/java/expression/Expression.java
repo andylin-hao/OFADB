@@ -16,4 +16,6 @@ public class Expression {
     public void setExprType(ExprTypes exprType) {
         this.exprType = exprType;
     }
+
+    public void checkValidity() {}
 }

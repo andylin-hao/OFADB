@@ -1,7 +1,10 @@
 package expression.select;
 
 import types.ExprTypes;
+import types.QualifyEleTypes;
 import types.QualifyTypes;
+
+import java.util.ArrayList;
 
 public class QualifierExpr extends WhereExpr {
     private QualifyTypes qualifyTypes;
@@ -41,5 +44,14 @@ public class QualifierExpr extends WhereExpr {
 
     public void setRhs(QualifyEleExpr rhs) {
         this.rhs = rhs;
+    }
+
+    public ArrayList<QualifyEleExpr> getAttrELes() {
+        ArrayList<QualifyEleExpr> result = new ArrayList<>();
+        if (lhs.getEleTypes() == QualifyEleTypes.QUA_ELE_ATTR)
+            result.add(lhs);
+        if (rhs.getEleTypes() == QualifyEleTypes.QUA_ELE_ATTR)
+            result.add(rhs);
+        return result;
     }
 }

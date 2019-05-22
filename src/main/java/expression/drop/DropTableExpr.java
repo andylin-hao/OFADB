@@ -1,16 +1,16 @@
 package expression.drop;
 
 import expression.Expression;
+import expression.select.RelationExpr;
 import types.ExprTypes;
 
 public class DropTableExpr extends Expression {
-    private String dbName;
-    private String tableName;
+    private RelationExpr table = new RelationExpr();
 
     public DropTableExpr(String dbName, String tableName) {
         super(ExprTypes.EXPR_DROP_TABLE);
-        this.dbName = dbName;
-        this.tableName = tableName;
+        table.setDbName(dbName);
+        table.setTableName(tableName);
     }
 
     public DropTableExpr() {
@@ -18,10 +18,10 @@ public class DropTableExpr extends Expression {
     }
 
     public String getTableName() {
-        return tableName;
+        return table.getTableName();
     }
 
     public String getDbName() {
-        return dbName;
+        return table.getDbName();
     }
 }

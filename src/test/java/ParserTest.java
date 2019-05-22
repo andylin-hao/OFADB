@@ -3,11 +3,13 @@ import expression.create.ColumnDefExpr;
 import expression.create.CreateDBExpr;
 import expression.create.CreateTableExpr;
 import expression.create.TableConstraintExpr;
+import expression.delete.DeleteExpr;
 import expression.drop.DropDBExpr;
 import expression.drop.DropTableExpr;
 import expression.insert.InsertExpr;
 import expression.select.*;
 import expression.show.ShowDBExpr;
+import expression.update.UpdateExpr;
 import types.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -43,8 +45,8 @@ class ParserTest {
     @Test
     void selectTest() throws IOException {
         String sql =
-                "select db.table.class_num, classname as name\n" +
-                        "from sc, (select * from class where class.gno = 'grade one') as sub on a = 1 join sc using (abc)\n" +
+                "select db.sc.class_num, classname as name\n" +
+                        "from db.sc, (select * from class where class.gno = 'grade one') as sub on a = 1 join sc using (abc)\n" +
                         "where sc.no = 4 and sc.yes = 5 or sc.a = 8 and sc.b > (9+3*4+(4-3)*7)/10+7/10\n";
         SelectExpr stmt = (SelectExpr) getParseResult(sql);
 
@@ -52,7 +54,7 @@ class ParserTest {
         ResultColumnExpr secondCol = stmt.getResultColumnExprs().get(1);
         assertEquals(stmt.getResultColumnExprs().size(), 2);
         assertEquals(firstCol.getDbName(), "db");
-        assertEquals(firstCol.getTableName(), "table");
+        assertEquals(firstCol.getTableName(), "sc");
         assertEquals(firstCol.getAttrName(), "class_num");
         assertEquals(secondCol.getAttrName(), "classname");
         assertEquals(secondCol.getAlias(), "name");
@@ -68,7 +70,7 @@ class ParserTest {
         assertEquals(((SubSelectExpr) joinOnExpr.getRhs()).getSelectExpr().getResultColumnExprs().get(0).getAttrName(), "*");
         assertEquals(joinOnExpr.getQualifierExpr().getQualifyTypes(), QualifyTypes.QUA_EQ);
         assertEquals(joinOnExpr.getQualifierExpr().getLhs().getEleTypes(), QualifyEleTypes.QUA_ELE_ATTR);
-        assertEquals(joinOnExpr.getQualifierExpr().getRhs().getValue(), 1);
+        assertEquals(joinOnExpr.getQualifierExpr().getRhs().getValue(), 1L);
 
         assertEquals(((QualifierExpr) stmt.getWhereExpr().getRight().getRight()).getQualifyTypes(), QualifyTypes.QUA_GT);
         assertEquals(((FormulaExpr) ((QualifierExpr) stmt.getWhereExpr().getRight().getRight()).getRhs().getValue()).getValue(), 3.5);
@@ -166,5 +168,29 @@ class ParserTest {
                 assertEquals(stmt.getValues().get(j).get(i), values[j][i]);
             }
         }
+    }
+
+    @Test
+    void updateTest() throws IOException {
+        String sql = "update db.table set a = 1 where b > 1 and c < 3";
+        UpdateExpr stmt = (UpdateExpr) getParseResult(sql);
+
+        assertEquals(stmt.getAttrNames().get(0), "a");
+        assertEquals(stmt.getValues().get(0), 1L);
+        assertEquals(((QualifierExpr)stmt.getWhereExpr().getLeft()).getQualifyTypes(), QualifyTypes.QUA_GT);
+        assertEquals(((QualifierExpr)stmt.getWhereExpr().getRight()).getQualifyTypes(), QualifyTypes.QUA_LT);
+    }
+
+    @Test
+    void deleteTest() throws IOException {
+        String sql = "delete from db.table where b >= 1 and c <> 4";
+        DeleteExpr stmt = (DeleteExpr) getParseResult(sql);
+
+        assertEquals(stmt.getDBName(), "db");
+        assertEquals(stmt.getTableName(), "table");
+        assertEquals(((QualifierExpr)stmt.getWhereExpr().getLeft()).getLhs().getEleTypes(), QualifyEleTypes.QUA_ELE_ATTR);
+        assertEquals(((QualifierExpr)stmt.getWhereExpr().getLeft()).getRhs().getValue(), 1L);
+        assertEquals(((QualifierExpr)stmt.getWhereExpr().getLeft()).getQualifyTypes(), QualifyTypes.QUA_GET);
+        assertEquals(((QualifierExpr)stmt.getWhereExpr().getRight()).getQualifyTypes(), QualifyTypes.QUA_NOT_EQ);
     }
 }

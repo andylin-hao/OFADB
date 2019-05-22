@@ -14,4 +14,8 @@ public class ShowDBExpr extends Expression {
         super(ExprTypes.EXPR_SHOW_DB);
         this.dbName = dbName;
     }
+
+    public String getDbName() {
+        return dbName;
+    }
 }

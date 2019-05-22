@@ -1,11 +1,11 @@
 package expression.show;
 
 import expression.Expression;
+import expression.select.RelationExpr;
 import types.ExprTypes;
 
 public class ShowTableExpr extends Expression {
-    private String dbName;
-    private String tableName;
+    private RelationExpr table = new RelationExpr();
 
     public ShowTableExpr() {
         super(ExprTypes.EXPR_SHOW_TABLE);
@@ -13,15 +13,15 @@ public class ShowTableExpr extends Expression {
 
     public ShowTableExpr(String dbName, String tableName) {
         super(ExprTypes.EXPR_SHOW_TABLE);
-        this.dbName = dbName;
-        this.tableName = tableName;
+        table.setDbName(dbName);
+        table.setTableName(tableName);
     }
 
     public String getDbName() {
-        return dbName;
+        return table.getDbName();
     }
 
     public String getTableName() {
-        return tableName;
+        return table.getTableName();
     }
 }

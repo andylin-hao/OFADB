@@ -267,13 +267,17 @@ show_table_stmt
  : K_SHOW K_TABLE ( database_name '.' )? table_name
  ;
 
+update_values_stmt
+ : column_name '=' expr
+ ;
+
 update_stmt
  : with_clause? K_UPDATE ( K_OR K_ROLLBACK
                          | K_OR K_ABORT
                          | K_OR K_REPLACE
                          | K_OR K_FAIL
                          | K_OR K_IGNORE )? qualified_table_name
-   K_SET column_name '=' expr ( ',' column_name '=' expr )* ( where_clause )?
+   K_SET update_values_stmt ( ',' update_values_stmt )* ( where_clause )?
  ;
 
 update_stmt_limited

@@ -1,14 +1,14 @@
 package expression.create;
 
 import expression.Expression;
+import expression.select.RelationExpr;
 import types.ExprTypes;
 
 import java.util.ArrayList;
 
 public class CreateTableExpr extends Expression {
 
-    private String dbName;
-    private String tableName;
+    private RelationExpr table = new RelationExpr();
     private ArrayList<ColumnDefExpr> columnDefExprs = new ArrayList<>();
     private ArrayList<TableConstraintExpr> tableConstraintExprs = new ArrayList<>();
 
@@ -18,8 +18,8 @@ public class CreateTableExpr extends Expression {
 
     public CreateTableExpr(String dbName, String tableName) {
         super(ExprTypes.EXPR_CREATE_TABLE);
-        this.dbName = dbName;
-        this.tableName = tableName;
+        table.setDbName(dbName);
+        table.setTableName(tableName);
     }
 
     public ArrayList<ColumnDefExpr> getColumnDefExprs() {
@@ -39,10 +39,10 @@ public class CreateTableExpr extends Expression {
     }
 
     public String getDbName() {
-        return dbName;
+        return table.getDbName();
     }
 
     public String getTableName() {
-        return tableName;
+        return table.getTableName();
     }
 }
