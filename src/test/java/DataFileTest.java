@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import Meta.FileSystem;
-import Meta.IndexInfo;
+import disk.System;
 import disk.*;
-import io.*;
 import index.*;
 import types.ColumnTypes;
 
@@ -15,10 +13,10 @@ public class DataFileTest {
     private static Database database;
 
     public static void main(String[] args) throws IOException {
-        FileSystem.loadSystem();
-        FileSystem.createNewDatabase("testbase");
-        Database database = FileSystem.loadDataBase("testbase");
-        FileSystem.removeDatabase(database);
+        System.loadSystem();
+        System.createNewDatabase("testbase");
+        Database database = System.loadDataBase("testbase");
+        System.removeDatabase(database);
 //        database.removeTable(database.tables.get("tt2"));
 
 //        database.loadTables();
@@ -29,10 +27,10 @@ public class DataFileTest {
 
 
 
-//        Column[] columns = new Column[3];
-//        columns[0] = new Column("id",Type.intType(),false,false,0);
-//        columns[1] = new Column("name",Type.stringType(20),false,false,0);
-//        columns[2] = new Column("age",Type.longType(),false,false,0);
+//        ColumnInfo[] columns = new ColumnInfo[3];
+//        columns[0] = new ColumnInfo("id",Type.intType(),false,false,0);
+//        columns[1] = new ColumnInfo("name",Type.stringType(20),false,false,0);
+//        columns[2] = new ColumnInfo("age",Type.longType(),false,false,0);
 //        database.createNewTable("tt2",columns,new ArrayList<IndexInfo>(){{add(new IndexInfo("0",true));add(new IndexInfo("2",false));}},0);
 //
 //        Object[] data = new Object[3];
@@ -156,10 +154,10 @@ public class DataFileTest {
 //        return types;
 //    }
 //
-//    private static Column[] basicColumn(Type[] types) {
-//        Column[] columns = new Column[types.length];
+//    private static ColumnInfo[] basicColumn(Type[] types) {
+//        ColumnInfo[] columns = new ColumnInfo[types.length];
 //        for (int i = 0; i < types.length; i++) {
-//            columns[i] = (new Column(types[i], "test" + (char) (i + 'a')));
+//            columns[i] = (new ColumnInfo(types[i], "test" + (char) (i + 'a')));
 //        }
 //        return columns;
 //    }
@@ -351,14 +349,14 @@ public class DataFileTest {
 
             List<Integer> insertList = prepareInsertList(testSize, i);
             for (int j = 0; j < testSize; j++) {
-                System.out.print(insertList.get(j));
-                System.out.print(',');
+                java.lang.System.out.print(insertList.get(j));
+                java.lang.System.out.print(',');
             }
-            System.out.println();
+            java.lang.System.out.println();
             createIndex(insertList);
             compareTest(insertList);
 
-            System.out.println(i);
+            java.lang.System.out.println(i);
             File file1 = new File("index.txt");
             File file2 = new File("index2.txt");
             if (!file1.delete())
@@ -462,14 +460,14 @@ public class DataFileTest {
 
             List<Integer> insertList = prepareInsertList(testSize, i);
             for (int j = 0; j < testSize; j++) {
-                System.out.print(insertList.get(j));
-                System.out.print(',');
+                java.lang.System.out.print(insertList.get(j));
+                java.lang.System.out.print(',');
             }
-            System.out.println();
+            java.lang.System.out.println();
             createStringIndex(insertList);
             compareTest_String(insertList);
 
-            System.out.println(i);
+            java.lang.System.out.println(i);
             File file1 = new File("index.txt");
             File file2 = new File("index2.txt");
             if (!file1.delete())

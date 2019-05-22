@@ -1,11 +1,8 @@
-package Meta;
+package meta;
 
-import block.DataFileManager;
-import disk.Column;
 import disk.Database;
 import disk.Table;
 import disk.Type;
-import index.IndexBase;
 
 import java.util.List;
 
@@ -13,12 +10,12 @@ public class TableInfo {
     public Table table;
     public Database database;
     public Type[] columnTypes;                        // the type array of the columns
-    public Column[] columns;                                // the columns array
+    public ColumnInfo[] columns;                                // the columns array
     public String tableName;                              // name of the table
     public int rowNum;                                              // the number of rows in the table
     public List<IndexInfo> indexInfos;                             //the info of indexes
 
-    public TableInfo(Database database,Table table,Column[] columns,String name,List<IndexInfo> indexInfos){
+    public TableInfo(Database database, Table table, ColumnInfo[] columns, String name, List<IndexInfo> indexInfos){
         this.database = database;
         this.table = table;
         loadColumns(columns);
@@ -38,9 +35,9 @@ public class TableInfo {
         }
     }
 
-    public void loadColumns(Column[] columns){
+    public void loadColumns(ColumnInfo[] columns){
         this.columns = columns;
-        for(Column ele : columns)
+        for(ColumnInfo ele : columns)
             ele.setTable(this.table);
     }
 

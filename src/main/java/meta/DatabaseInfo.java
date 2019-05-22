@@ -1,4 +1,4 @@
-package Meta;
+package meta;
 
 import disk.Database;
 import disk.Table;

@@ -1,6 +1,6 @@
 package index;
 
-import Meta.IndexInfo;
+import meta.IndexInfo;
 import io.IndexFileIO;
 import disk.Table;
 import disk.Type;
@@ -25,7 +25,7 @@ public class IndexBase extends BPlusTree {
         this.table = table;
         info = new IndexInfo(index,isUnique);
         info.setTable(table);
-        this.loadedNodes = new HashMap<Long, NodeIndex>();
+        this.loadedNodes = new HashMap<>();
 
         this.fileIO = new IndexFileIO(file, order, this);
         this.indexChange = new IndexChange(this);

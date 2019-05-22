@@ -1,5 +1,7 @@
 package disk;
 
+import meta.ColumnInfo;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -79,7 +81,7 @@ public class Logger {
 
     public static boolean deleteDir(File someFile) {
         if (!someFile.exists()) {
-            System.out.println("[deleteDir]File " + someFile.getAbsolutePath()
+            java.lang.System.out.println("[deleteDir]File " + someFile.getAbsolutePath()
                     + " does not exist.");
             return false;
         }
@@ -108,24 +110,24 @@ public class Logger {
     public Logger() {
     }
 
-    public static Column[] datebasesTableType() {
-        Column[] columns = new Column[columnNamesOfdatabaseTable.length];
+    public static ColumnInfo[] datebasesTableType() {
+        ColumnInfo[] columns = new ColumnInfo[columnNamesOfdatabaseTable.length];
         for (int i = 0; i < columns.length; i++)
-            columns[i] = new Column(columnTypesOfdatabaseTable[i], columnNamesOfdatabaseTable[i]);
+            columns[i] = new ColumnInfo(columnTypesOfdatabaseTable[i], columnNamesOfdatabaseTable[i]);
         return columns;
     }
 
-    public static Column[] tablesTableType() {
-        Column[] columns = new Column[columnNamesOftableTable.length];
+    public static ColumnInfo[] tablesTableType() {
+        ColumnInfo[] columns = new ColumnInfo[columnNamesOftableTable.length];
         for (int i = 0; i < columns.length; i++)
-            columns[i] = new Column(columnTypesOftableTable[i], columnNamesOftableTable[i]);
+            columns[i] = new ColumnInfo(columnTypesOftableTable[i], columnNamesOftableTable[i]);
         return columns;
     }
 
-    public static Column[] indexesTableType(){
-        Column[] columns = new Column[columnNamesOfindexTable.length];
+    public static ColumnInfo[] indexesTableType(){
+        ColumnInfo[] columns = new ColumnInfo[columnNamesOfindexTable.length];
         for(int i = 0;i<columns.length;i++)
-            columns[i] = new Column(getColumnTypesOfindexTable[i],columnNamesOfindexTable[i]);
+            columns[i] = new ColumnInfo(getColumnTypesOfindexTable[i],columnNamesOfindexTable[i]);
         return columns;
     }
 }

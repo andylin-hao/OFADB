@@ -1,8 +1,10 @@
-package disk;
+package meta;
 
-import types.ColumnTypes;
+import disk.Logger;
+import disk.Table;
+import disk.Type;
 
-public class Column {
+public class ColumnInfo {
     public Type columnType;
     public String columnName;
     public boolean autoIncr;
@@ -11,7 +13,7 @@ public class Column {
     public final static String segment = ",";
     public Table table;
 
-    public Column(Type columnType, String name) {
+    public ColumnInfo(Type columnType, String name) {
         this.columnType = columnType;
         columnName = name;
         autoIncr = false;
@@ -19,7 +21,7 @@ public class Column {
         incrStart = 0;
     }
 
-    public Column(String columnName,Type columnType,boolean autoIncr,boolean nullable,Integer incrStart){
+    public ColumnInfo(String columnName, Type columnType, boolean autoIncr, boolean nullable, Integer incrStart){
         this.columnName = columnName;
         this.columnType = columnType;
         this.incrStart = incrStart;
@@ -27,8 +29,8 @@ public class Column {
         this.nullable = nullable;
     }
 
-    public Column(String columnString) {
-        String[] infos = columnString.split(Column.segment);
+    public ColumnInfo(String columnString) {
+        String[] infos = columnString.split(ColumnInfo.segment);
         columnName = infos[0];
         columnType = new Type(infos[1]);
         autoIncr = Integer.parseInt(infos[2]) == 1;
@@ -38,14 +40,14 @@ public class Column {
 
     @Override
     public String toString() {
-        return columnName + Column.segment
-                + columnType.toString() + Column.segment
-                + ((Integer)(autoIncr ? 0:1)).toString() + Column.segment
-                + ((Integer)(nullable ? 0:1)).toString() + Column.segment
+        return columnName + ColumnInfo.segment
+                + columnType.toString() + ColumnInfo.segment
+                + ((Integer)(autoIncr ? 0:1)).toString() + ColumnInfo.segment
+                + ((Integer)(nullable ? 0:1)).toString() + ColumnInfo.segment
                 + (incrStart).toString();
     }
 
-    public static String columnsToString(Column[] columns) {
+    public static String columnsToString(ColumnInfo[] columns) {
         StringBuilder str = new StringBuilder();
         for (int i = 0; i < columns.length; i++) {
             str.append(columns[i].toString());
@@ -55,11 +57,11 @@ public class Column {
         return str.toString();
     }
 
-    public static Column[] columnsFromString(String columnsString) {
+    public static ColumnInfo[] columnsFromString(String columnsString) {
         String[] columnStrings = columnsString.split(Logger.tableColumnNameSegment);
-        Column[] columns = new Column[columnStrings.length];
+        ColumnInfo[] columns = new ColumnInfo[columnStrings.length];
         for (int i = 0; i < columns.length; i++) {
-            columns[i] = new Column(columnStrings[i]);
+            columns[i] = new ColumnInfo(columnStrings[i]);
         }
         return columns;
     }

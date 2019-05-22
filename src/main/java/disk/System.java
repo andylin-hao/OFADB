@@ -1,18 +1,18 @@
-package Meta;
+package disk;
 
-import disk.*;
 import index.IndexKey;
+import meta.IndexInfo;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileSystem {
+public class System {
     private static Database System;
 
-    public FileSystem()throws IOException{
-        FileSystem.loadSystem();
+    public System()throws IOException{
+        disk.System.loadSystem();
     }
 
     public static Database getSystem()throws IOException{
@@ -74,7 +74,7 @@ public class FileSystem {
 
     public static void checkSystemLoaded() throws IOException {
         if (System == null)
-            FileSystem.loadSystem();
+            disk.System.loadSystem();
     }
 
     public static Database createNewDatabase(String name) throws IOException {

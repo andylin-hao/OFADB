@@ -1,4 +1,4 @@
-package Meta;
+package meta;
 
 import disk.Logger;
 import disk.Table;
@@ -36,7 +36,7 @@ public class IndexInfo {
     }
 
     public String columnIndexString(){
-        StringBuilder stringBuilder = new StringBuilder("");
+        StringBuilder stringBuilder = new StringBuilder();
         for(int i = 0;i<columnIndex.length;i++) {
             stringBuilder.append(((Integer) columnIndex[i]).toString());
             if(i != columnIndex.length-1)

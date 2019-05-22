@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import Meta.IndexInfo;
-import Meta.TableInfo;
+import meta.ColumnInfo;
+import meta.IndexInfo;
+import meta.TableInfo;
 import io.*;
 import index.*;
 import block.*;
@@ -21,7 +22,7 @@ public class Table {
     public List<IndexBase> indexes;                                  // the index array of this table
     public TableInfo info;
 
-    public Table(Database database, Column[] columns, String name, List<IndexInfo> indexInfos, Cache cache, int pkIndexNum) throws IOException {
+    public Table(Database database, ColumnInfo[] columns, String name, List<IndexInfo> indexInfos, Cache cache, int pkIndexNum) throws IOException {
         this.info = new TableInfo(database,this,columns,name,indexInfos);
         dataFileManager = new DataFileManager(this, new File(Logger.dataFilePath(this)), cache);
         loadIndex(indexInfos);
@@ -185,11 +186,11 @@ public class Table {
         dataFileManager.saveAll();
     }
 
-    public static Object[] tableData(String dataBaseName,String tableName, Column[] columns, int pkIndexNum) {
+    public static Object[] tableData(String dataBaseName, String tableName, ColumnInfo[] columns, int pkIndexNum) {
         Object[] data = new Object[Logger.columnNamesOftableTable.length];
         data[0] = tableName;
         data[1] = dataBaseName;
-        data[2] = Column.columnsToString(columns);
+        data[2] = ColumnInfo.columnsToString(columns);
         data[4] = pkIndexNum;
         return data;
     }

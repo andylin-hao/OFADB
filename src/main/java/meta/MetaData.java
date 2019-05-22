@@ -1,13 +1,13 @@
-package Meta;
+package meta;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import disk.*;
+import disk.System;
 import index.IndexKey;
-import index.NodeLeaf;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MetaData {
     /**
@@ -15,7 +15,7 @@ public class MetaData {
      * @param name name of the database
      */
     public static boolean databaseExistence(String name)throws IOException {
-        return FileSystem.databaseExistence(name);
+        return System.databaseExistence(name);
     }
 
     /**
@@ -25,7 +25,7 @@ public class MetaData {
     public static DatabaseInfo getDatabaseByName(String name)throws IOException{
         if(!databaseExistence(name))
             return null;
-        return new DatabaseInfo(FileSystem.loadDataBase(name));
+        return new DatabaseInfo(Objects.requireNonNull(System.loadDataBase(name)));
     }
 
 
@@ -38,9 +38,10 @@ public class MetaData {
         if(!databaseExistence(databaseName))
             return false;
 
-        Database database =  FileSystem.loadDataBase(databaseName);
+        Database database =  System.loadDataBase(databaseName);
 
 
+        assert database != null;
         return database.tables.containsKey(tableName);
     }
 
@@ -52,7 +53,8 @@ public class MetaData {
     public static TableInfo getTableInfoByName(String databaseName,String tableName)throws IOException {
         if(!tableExistence(databaseName,tableName))
             return null;
-        Database database =  FileSystem.loadDataBase(databaseName);
+        Database database =  System.loadDataBase(databaseName);
+        assert database != null;
         return database.tables.get(tableName).info;
     }
 
@@ -67,28 +69,30 @@ public class MetaData {
         if(!databaseExistence(databaseName) || ! tableExistence(databaseName,tableName))
             return false;
 
-        Database database = FileSystem.loadDataBase(databaseName);
+        Database database = System.loadDataBase(databaseName);
 
 
+        assert database != null;
         Table table = database.tables.get(tableName);
-        Column[] columns = table.info.columns;
-        for(Column ele : columns)
+        ColumnInfo[] columns = table.info.columns;
+        for(ColumnInfo ele : columns)
             if(ele.columnName.equals(columnName))
                 return true;
         return false;
     }
 
 
-    public static Column getColumnType(String databaseName,String tableName,String columnName)throws IOException{
+    public static ColumnInfo getColumnType(String databaseName, String tableName, String columnName)throws IOException{
         if(!databaseExistence(databaseName) || ! tableExistence(databaseName,tableName))
             return null;
 
-        Database database = FileSystem.loadDataBase(databaseName);
+        Database database = System.loadDataBase(databaseName);
 
 
+        assert database != null;
         Table table = database.tables.get(tableName);
-        Column[] columns = table.info.columns;
-        for(Column ele : columns)
+        ColumnInfo[] columns = table.info.columns;
+        for(ColumnInfo ele : columns)
             if(ele.columnName.equals(columnName))
                 return ele;
         return null;
@@ -96,8 +100,8 @@ public class MetaData {
 
 
     public static List<IndexInfo> getIndexesInfo(String databaseName,String tableName)throws IOException{
-        Table tables = FileSystem.getTablesTable();
-        Table indexes = FileSystem.getIndexesTable();
+        Table tables = System.getTablesTable();
+        Table indexes = System.getIndexesTable();
 
         Type[] types = new Type[indexes.indexes.get(0).info.columnIndex.length];
         Object[] data = new Object[indexes.indexes.get(0).info.columnIndex.length];
@@ -106,8 +110,7 @@ public class MetaData {
 
         List<IndexInfo> infos = new ArrayList<>();
         List<Row> rows = indexes.equivalenceFind(0,new IndexKey(types,data));
-        for(int i = 0;i<rows.size();i++)
-            infos.add(new IndexInfo((String) rows.get(i).rowData[2],(Boolean) rows.get(i).rowData[3]));
+        for (Row row : rows) infos.add(new IndexInfo((String) row.rowData[2], (Boolean) row.rowData[3]));
         return infos;
     }
 }
