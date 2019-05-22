@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import Meta.FileSystem;
+import Meta.IndexInfo;
 import disk.*;
 import io.*;
 import index.*;
@@ -13,7 +15,26 @@ public class DataFileTest {
     private static Database database;
 
     public static void main(String[] args) throws IOException {
-        testFixedIndex();
+        FileSystem.loadSystem();
+        FileSystem.createNewDatabase("testbase");
+        Database database = FileSystem.loadDataBase("testbase");
+
+        Object[] data = new Object[3];
+        data[0] = 2;
+        data[1] = "jack";
+        data[2] = Long.parseLong("7");
+        database.tables.get("tt2").delete(0,database.tables.get("tt2").indexes.get(0).getIndexAccessor(data));
+//        database.tables.get("tt2").insert(data);
+//        database.loadTables();
+//        Object[] d = new Object[2];
+//        d[0] = 1;
+//        d[1] = "test1";
+//        database.tables.get("tt1").insert(d);
+//        Column[] columns = new Column[3];
+//        columns[0] = new Column("id",Type.intType(),false,false,0);
+//        columns[1] = new Column("name",Type.stringType(20),false,false,0);
+//        columns[2] = new Column("age",Type.longType(),false,false,0);
+//        database.createNewTable("tt2",columns,new ArrayList<IndexInfo>(){{add(new IndexInfo("0",true));add(new IndexInfo("2",false));}},0);
 //        Database.loadSystem();
 //        Database.createNewDatabase("heyhey");
 //        Database hey = new Database("heyhey", false);
@@ -22,6 +43,7 @@ public class DataFileTest {
 //        data[0] = 3;
 //        data[1] = "DataFileTest";
 //        List<Row> result = hey.tables.get("test1").equivalenceFind(0,hey.tables.get("test1").indexes.get(0).getIndexAccessor(data));
+        return;
     }
 
     private static void BPlusTreeTest() {
@@ -341,10 +363,10 @@ public class DataFileTest {
         File testIndex = new File("index.txt");
         Type[] types = new Type[1];
         types[0] = new Type(ColumnTypes.COL_INT);
-        IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types);
+        IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types,false);
 
         File testIndex2 = new File("index2.txt");
-        IndexBase index2 = new IndexBase(null, 3, new int[1], testIndex2, types);
+        IndexBase index2 = new IndexBase(null, 3, new int[1], testIndex2, types,false);
 
         int testSize = insertList.size();
 
@@ -368,7 +390,7 @@ public class DataFileTest {
                 index.indexChange.saveChange();
                 index.indexChange.fileIO.file.close();
                 File reload = index.fileIO.info;
-                index = new IndexBase(null, 3, new int[1], reload, types);
+                index = new IndexBase(null, 3, new int[1], reload, types,false);
                 if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
                     throw new Error("test");
             }
@@ -383,7 +405,7 @@ public class DataFileTest {
             index.indexChange.saveChange();
             index.fileIO.file.close();
             File reload = index.fileIO.info;
-            index = new IndexBase(null, 3, new int[1], reload, types);
+            index = new IndexBase(null, 3, new int[1], reload, types,false);
             index2.remove(indexKey, new Row(null, i + 1, i + 1));
             if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
                 throw new Error("test");
@@ -398,7 +420,7 @@ public class DataFileTest {
         File testIndex = new File("index.txt");
         Type[] types = new Type[1];
         types[0] = new Type(ColumnTypes.COL_INT);
-        IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types);
+        IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types,false);
         for (int i = 0; i < insertList.size(); i++) {
             Object[] a = new Object[1];
             a[0] = insertList.get(i);
@@ -452,10 +474,10 @@ public class DataFileTest {
         Type[] types = new Type[1];
         types[0] = new Type(ColumnTypes.COL_VARCHAR, 10);
         File testIndex = new File("index.txt");
-        IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types);
+        IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types,false);
 
         File testIndex2 = new File("index2.txt");
-        IndexBase index2 = new IndexBase(null, 3, new int[1], testIndex2, types);
+        IndexBase index2 = new IndexBase(null, 3, new int[1], testIndex2, types,false);
 
         int testSize = insertList.size();
 
@@ -479,7 +501,7 @@ public class DataFileTest {
                 index.indexChange.saveChange();
                 index.indexChange.fileIO.file.close();
                 File reload = index.fileIO.info;
-                index = new IndexBase(null, 3, new int[1], reload, types);
+                index = new IndexBase(null, 3, new int[1], reload, types,false);
                 if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
                     throw new Error("test");
             }
@@ -494,7 +516,7 @@ public class DataFileTest {
             index.indexChange.saveChange();
             index.fileIO.file.close();
             File reload = index.fileIO.info;
-            index = new IndexBase(null, 3, new int[1], reload, types);
+            index = new IndexBase(null, 3, new int[1], reload, types,false);
             index2.remove(indexKey, new Row(null, i + 1, i + 1));
             if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
                 throw new Error("test");
@@ -509,7 +531,7 @@ public class DataFileTest {
         File testIndex = new File("index.txt");
         Type[] types = new Type[1];
         types[0] = new Type(ColumnTypes.COL_VARCHAR, 10);
-        IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types);
+        IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types,false);
         for (int i = 0; i < insertList.size(); i++) {
             Object[] objects = new Object[1];
             objects[0] = String.valueOf(insertList.get(i));

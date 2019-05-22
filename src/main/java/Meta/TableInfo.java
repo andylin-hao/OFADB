@@ -16,12 +16,14 @@ public class TableInfo {
     public Column[] columns;                                // the columns array
     public String tableName;                              // name of the table
     public int rowNum;                                              // the number of rows in the table
+    public List<IndexInfo> indexInfos;                             //the info of indexes
 
-    public TableInfo(Database database,Table table,Column[] columns,String name){
+    public TableInfo(Database database,Table table,Column[] columns,String name,List<IndexInfo> indexInfos){
         this.database = database;
         this.table = table;
         this.columns = columns;
         this.tableName = name;
+        this.indexInfos = indexInfos;
         loadTypes();
     }
 
@@ -34,5 +36,10 @@ public class TableInfo {
         for (int i = 0; i < columnTypes.length; i++) {
             columnTypes[i] = columns[i].columnType;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "name:" + tableName + ",rowNum:" + rowNum;
     }
 }

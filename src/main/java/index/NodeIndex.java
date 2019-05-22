@@ -180,7 +180,7 @@ public class NodeIndex implements NodeBPlus {
      **/
     @Override
     public void insert(Comparable key, Object data, BPlusTree tree) {
-        if (contains(key) >= 0 && ((IndexBase) tree).isUnique)
+        if (contains(key) >= 0 && ((IndexBase) tree).info.isUnique)
             return;
         //leaf node
         if (this.isLeaf) {

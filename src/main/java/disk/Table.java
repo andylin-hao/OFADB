@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import Meta.IndexInfo;
 import Meta.TableInfo;
 import io.*;
 import index.*;
@@ -20,8 +21,8 @@ public class Table {
     public List<IndexBase> indexes;                                  // the index array of this table
     public TableInfo info;
 
-    public Table(Database database, Column[] columns, String name, String indexInfos, Cache cache, int pkIndexNum) throws IOException {
-        this.info = new TableInfo(database,this,columns,name);
+    public Table(Database database, Column[] columns, String name, List<IndexInfo> indexInfos, Cache cache, int pkIndexNum) throws IOException {
+        this.info = new TableInfo(database,this,columns,name,indexInfos);
         dataFileManager = new DataFileManager(this, new File(Logger.dataFilePath(this)), cache);
         loadIndex(indexInfos);
         if (pkIndexNum >= 0)
@@ -30,55 +31,27 @@ public class Table {
 
     public void setPKIndex(int indexNum) throws IOException {
         primaryIndex = indexes.get(indexNum);
-        if (!primaryIndex.isUnique) {
-            primaryIndex.isUnique = true;
+        if (!primaryIndex.info.isUnique) {
+            primaryIndex.info.isUnique = true;
             primaryIndex.fileIO.saveUnique();
         }
 
     }
 
 
+
     /**
      * Load the indexes
      **/
-    public void loadIndex(String indexInfos) throws IOException {
-        List<int[]> infos = getColumnsIndexForIndex(indexInfos);
+    public void loadIndex(List<IndexInfo> indexInfos) throws IOException {
         indexes = new ArrayList<>();
-        for (int[] info : infos) {
-            File file = new File(Logger.indexFilePath(this, getIndexFileName(info)));
-            Type[] types = getIndexTypes(info);
-            IndexBase index = new IndexBase(this, Logger.defaultIndexOrder, info, file, types);
+        for (int i = 0;i<indexInfos.size();i++) {
+            indexInfos.get(i).setTable(this);
+            File file = new File(Logger.indexFilePath(this, getIndexFileName(indexInfos.get(i).columnIndex)));
+            IndexBase index = new IndexBase(this, Logger.defaultIndexOrder, indexInfos.get(i).columnIndex, file, indexInfos.get(i).types,indexInfos.get(i).isUnique);
             indexes.add(index);
         }
     }
-
-    public String getIndexInfos(){
-        StringBuilder infos = new StringBuilder();
-        for(int i = 0;i<indexes.size();i++){
-            for(int j = 0;j<indexes.get(i).columnIndex.length;i++){
-                infos.append(((Integer) indexes.get(i).columnIndex[j]).toString());
-                if(j < indexes.get(i).columnIndex.length-1) infos.append(Logger.columnIndexStringSegment);
-            }
-            if(i < indexes.size()-1)
-                infos.append(Logger.indexStringSegment);
-        }
-        return infos.toString();
-    }
-
-    public List<int[]> getColumnsIndexForIndex(String infos) {
-        String[] infosSplit = infos.split(Logger.indexStringSegment);
-        List<int[]> columns = new ArrayList<>();
-        for (String s : infosSplit) {
-            String[] infoSpliced = s.split(Logger.columnIndexStringSegment);
-            int[] column = new int[infoSpliced.length];
-            for (int j = 0; j < infoSpliced.length; j++) {
-                column[j] = (Integer.parseInt(infoSpliced[j]));
-            }
-            columns.add(column);
-        }
-        return columns;
-    }
-
 
     public String getIndexFileName(int[] info) {
         StringBuilder name = new StringBuilder();
@@ -90,20 +63,13 @@ public class Table {
         return name.toString();
     }
 
-    public Type[] getIndexTypes(int[] info) {
-        Type[] types = new Type[info.length];
-        for (int i = 0; i < info.length; i++)
-            types[i] = this.info.columnTypes[info[i]];
-        return types;
-    }
-
 
     /**
      * Check the column value of unique key in the data doesn't exist in the unique index
      **/
     public boolean uniqueKeyUnUsed(Object[] data) {
         for (IndexBase index : indexes)
-            if (index.isUnique && index.root.contains(index.getIndexAccessor(data)) >= 0)
+            if (index.info.isUnique && index.root.contains(index.getIndexAccessor(data)) >= 0)
                 return false;
         return true;
     }
@@ -115,9 +81,13 @@ public class Table {
         IndexBase index = indexes.get(indexNum);
         NodeLeaf leaf = (NodeLeaf) index.get(key);
         List<Row> rowList = new ArrayList<>();
-        for (Row ele : leaf.rowInfos) {
-            rowList.add(dataFileManager.get(ele));
+
+        if(leaf != null) {
+            for (Row ele : leaf.rowInfos) {
+                rowList.add(dataFileManager.get(ele));
+            }
         }
+
         return rowList;
     }
 
@@ -170,7 +140,7 @@ public class Table {
         for (int i = 0; i < rowPos.rowInfos.size(); i++) {
             Row row = dataFileManager.get(rowPos.rowInfos.get(i).blockIndex, rowPos.rowInfos.get(i).rowIndex);
             for (IndexBase indexBase : indexes) {
-                indexBase.remove(indexes.get(i).getIndexAccessor(row.rowData), rowPos.rowInfos.get(i));
+                indexBase.remove(indexBase.getIndexAccessor(row.rowData), rowPos.rowInfos.get(i));
             }
             deletedRow.add(dataFileManager.delete(rowPos.rowInfos.get(i).blockIndex, rowPos.rowInfos.get(i).rowIndex));
         }
@@ -192,7 +162,6 @@ public class Table {
     }
 
     public void save() throws IOException {
-        saveMeta();
         saveIndex();
         saveData();
     }
@@ -207,23 +176,17 @@ public class Table {
         dataFileManager.saveAll();
     }
 
-    public static Object[] tableData(String dataBaseName,String tableName, Column[] columns, String indexInfos, int pkIndexNum) {
+    public static Object[] tableData(String dataBaseName,String tableName, Column[] columns, int pkIndexNum) {
         Object[] data = new Object[Logger.columnNamesOftableTable.length];
         data[0] = tableName;
         data[1] = dataBaseName;
         data[2] = Column.columnsToString(columns);
-        data[3] = indexInfos;
         data[4] = pkIndexNum;
         return data;
     }
 
     public Object[] tableData(){
-        return Table.tableData(info.database.dataBaseName,info.tableName,info.columns,getIndexInfos(),indexes.indexOf(primaryIndex));
-    }
-
-    public void saveMeta() throws IOException {
-        Row table = Database.System.tables.get(Logger.tablesTableName).getByPrimaryKey(Database.tablePK(info.database.dataBaseName,info.tableName));
-        Database.System.tables.get(Logger.tablesTableName).update(table,tableData());
+        return Table.tableData(info.database.dataBaseName,info.tableName,info.columns,indexes.indexOf(primaryIndex));
     }
 
     @Override

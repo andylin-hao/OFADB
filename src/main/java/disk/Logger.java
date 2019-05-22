@@ -13,20 +13,28 @@ public class Logger {
     public final static int defaultIndexOrder = 3;                                          // order of bplus tree in index
     public final static String columnIndexStringSegment = ",";                              // segment of column index in index column string
     public final static String indexStringSegment = "\\|";                                  // segment of different index string
+
     public final static String systemDatabaseName = "system";                               // name of system database storing the meta data
+
     public final static String databaseTableName = "databases";
-    public final static String tablesTableName = "tables";
     public final static String[] columnNamesOfdatabaseTable = {"name"};
     public final static Type[] columnTypesOfdatabaseTable = {Type.stringType(20)};
+
+    public final static String tablesTableName = "tables";
     public final static String[] columnNamesOftableTable = {"tableName", "databaseName", "fields", "indexesInfo", "pkInfo"};
     public final static Type[] columnTypesOftableTable = {Type.stringType(20), Type.stringType(20), Type.stringType(400), Type.stringType(200), Type.intType()};
+
+    public final static String indexesTableName = "indexes";
+    public final static String[] columnNamesOfindexTable = {"tableName","databaseName","columnsInfo","isUnique"};
+    public final static Type[] getColumnTypesOfindexTable = {Type.stringType(20),Type.stringType(20),Type.stringType(200),Type.boolType()};
+
     public final static String tableColumnNameSegment = "\1";
 
     /**
      * Return the path of data file from a table
      **/
     public static String dataFilePath(Table table) throws IOException {
-        String filePath = FilePrefix + table.database.dataBaseName + '/' + table.tableName + '/' + table.tableName + dataFileSuffix;
+        String filePath = FilePrefix + table.info.database.dataBaseName + '/' + table.info.tableName + '/' + table.info.tableName + dataFileSuffix;
         preFile(filePath);
         return filePath;
     }
@@ -35,7 +43,7 @@ public class Logger {
      * Return the path of index file from a table and column
      **/
     public static String indexFilePath(Table table, String columns) throws IOException {
-        String filePath = FilePrefix + table.database.dataBaseName + '/' + table.tableName + indexFilePrefix + columns + indexFileSuffix;
+        String filePath = FilePrefix + table.info.database.dataBaseName + '/' + table.info.tableName + indexFilePrefix + columns + indexFileSuffix;
         preFile(filePath);
         return filePath;
     }
@@ -63,6 +71,13 @@ public class Logger {
         Column[] columns = new Column[columnNamesOftableTable.length];
         for (int i = 0; i < columns.length; i++)
             columns[i] = new Column(columnTypesOftableTable[i], columnNamesOftableTable[i]);
+        return columns;
+    }
+
+    public static Column[] indexesTableType(){
+        Column[] columns = new Column[columnNamesOfindexTable.length];
+        for(int i = 0;i<columns.length;i++)
+            columns[i] = new Column(getColumnTypesOfindexTable[i],columnNamesOfindexTable[i]);
         return columns;
     }
 }

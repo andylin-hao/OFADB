@@ -144,4 +144,8 @@ public class Type {
     public static Type stringType(int maxLength) {
         return new Type(ColumnTypes.COL_VARCHAR, maxLength);
     }
+
+    public static Type boolType(){ return new Type(ColumnTypes.COL_BOOL); }
+
+    public static Type longType(){ return new Type(ColumnTypes.COL_LONG); }
 }

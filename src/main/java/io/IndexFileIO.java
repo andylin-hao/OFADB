@@ -116,7 +116,7 @@ public class IndexFileIO {
 
     public void saveUnique() throws IOException {
         file.seek(uniqueOffset);
-        file.writeBoolean(index.isUnique);
+        file.writeBoolean(index.info.isUnique);
     }
 
     /**
@@ -174,12 +174,12 @@ public class IndexFileIO {
         nodeLength += keyNumLength;
         if (node.isLeaf) {
             for (int i = 0; i < node.keys.size(); i++) {
-                nodeLength += IndexKey.getKeyLength(index.types);
+                nodeLength += IndexKey.getKeyLength(index.info.types);
                 nodeLength += ((NodeLeaf) (node.keys.get(i).getValue())).length();
             }
         } else {
             for (int i = 0; i < node.keys.size(); i++) {
-                nodeLength += IndexKey.getKeyLength(index.types);
+                nodeLength += IndexKey.getKeyLength(index.info.types);
                 nodeLength += offsetLength;
             }
         }
@@ -210,7 +210,7 @@ public class IndexFileIO {
         file.seek(0);
 
         //write isUnique
-        file.writeBoolean(this.index.isUnique);
+        file.writeBoolean(this.index.info.isUnique);
 
         NodeIndex root = new NodeIndex(true, true);
         int rootLength = getNodeLength(root);
@@ -478,10 +478,10 @@ public class IndexFileIO {
     }
 
     public Object readKey() throws IOException {
-        int keyLength = IndexKey.getKeyLength(index.types);
+        int keyLength = IndexKey.getKeyLength(index.info.types);
         byte[] buf = new byte[keyLength];
         file.read(buf, 0, keyLength);
-        return new IndexKey(index.types, buf);
+        return new IndexKey(index.info.types, buf);
     }
 
 }
