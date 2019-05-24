@@ -6,15 +6,20 @@ import meta.IndexInfo;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class System {
     private static Database System;
     private static Database curDB;
 
+    private static HashMap<String,Database> dbMap;
+
 
     public System()throws IOException{
+        dbMap = new HashMap<>();
         disk.System.loadSystem();
+
     }
 
     /**
@@ -62,6 +67,7 @@ public class System {
         System.tables.put(databases.info.tableName, databases);
         System.tables.put(tables.info.tableName, tables);
         System.tables.put(indexes.info.tableName,indexes);
+        dbMap.put("System",System);
     }
 
 
@@ -82,14 +88,26 @@ public class System {
      * load a database to the system and set it as the current database
      * @param name name of the database
      */
-    public static Database loadDataBase(String name)throws IOException{
+    public static void loadDataBase(String name)throws IOException{
+        curDB = getDataBase(name);
+    }
+
+
+    /**
+     * get a database
+     * @param name name of the database
+     */
+    public static Database getDataBase(String name)throws IOException{
         checkSystemLoaded();
+
+        if(dbMap.containsKey(name))
+            return dbMap.get(name);
 
         if(!databaseExistence(name))
             return null;
         Database database = new Database(name,false);
         database.loadTables();
-        curDB = database;
+        dbMap.put(name,database);
         return database;
     }
 
@@ -112,8 +130,11 @@ public class System {
 
         Object[] databaseData = databaseData(name);
 
-        if(System.tables.get(Logger.databaseTableName).insert(databaseData) != null)
-            return new Database(name,false);
+        if(System.tables.get(Logger.databaseTableName).insert(databaseData) != null) {
+            Database ndb =  new Database(name, false);
+            dbMap.put(ndb.dataBaseName,ndb);
+            return ndb;
+        }
         return null;
     }
 
@@ -148,6 +169,7 @@ public class System {
             database.removeTable(table);
         databases.delete(0,databasePK(database.dataBaseName));
         Logger.deleteDir(new File(Logger.databaseDirectoryPath(database)));
+        dbMap.remove(database.dataBaseName);
     }
 
     /**
@@ -216,8 +238,7 @@ public class System {
     /**
      * remove the current database from memory
      */
-    public static void removeDatabase()throws IOException{
-        curDB.close();
+    public static void resetCurDB(){
         curDB = null;
     }
 
@@ -226,8 +247,17 @@ public class System {
      * @param name name of the database
      */
     public static void switchDatabase(String name)throws IOException{
-        removeDatabase();
+        resetCurDB();
         loadDataBase(name);
+    }
+
+
+    /**
+     * save all the file system to disk
+     */
+    public static void saveSystem()throws IOException{
+        for(Database ele : dbMap.values())
+            ele.save();
     }
 
 }

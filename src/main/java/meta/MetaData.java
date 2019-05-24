@@ -25,7 +25,7 @@ public class MetaData {
     public static DatabaseInfo getDatabaseByName(String name)throws IOException{
         if(!databaseExistence(name))
             return null;
-        return new DatabaseInfo(Objects.requireNonNull(System.loadDataBase(name)));
+        return new DatabaseInfo(Objects.requireNonNull(System.getDataBase(name)));
     }
 
 
@@ -38,7 +38,7 @@ public class MetaData {
         if(!databaseExistence(databaseName))
             return false;
 
-        Database database =  System.loadDataBase(databaseName);
+        Database database =  System.getDataBase(databaseName);
 
 
         assert database != null;
@@ -53,7 +53,7 @@ public class MetaData {
     public static TableInfo getTableInfoByName(String databaseName,String tableName)throws IOException {
         if(!tableExistence(databaseName,tableName))
             return null;
-        Database database =  System.loadDataBase(databaseName);
+        Database database =  System.getDataBase(databaseName);
         assert database != null;
         return database.tables.get(tableName).info;
     }
@@ -69,7 +69,7 @@ public class MetaData {
         if(!databaseExistence(databaseName) || ! tableExistence(databaseName,tableName))
             return false;
 
-        Database database = System.loadDataBase(databaseName);
+        Database database = System.getDataBase(databaseName);
 
 
         assert database != null;
@@ -92,7 +92,7 @@ public class MetaData {
         if(!databaseExistence(databaseName) || ! tableExistence(databaseName,tableName))
             return null;
 
-        Database database = System.loadDataBase(databaseName);
+        Database database = System.getDataBase(databaseName);
 
 
         assert database != null;
