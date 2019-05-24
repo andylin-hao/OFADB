@@ -82,6 +82,12 @@ public class MetaData {
     }
 
 
+    /**
+     * get columninfo of the input column
+     * @param databaseName name of the database
+     * @param tableName name of the table
+     * @param columnName name of the column
+     */
     public static ColumnInfo getColumnType(String databaseName, String tableName, String columnName)throws IOException{
         if(!databaseExistence(databaseName) || ! tableExistence(databaseName,tableName))
             return null;
@@ -99,6 +105,11 @@ public class MetaData {
     }
 
 
+    /**
+     * get indexInfos of the input table in the form of List<IndexInfo>
+     * @param databaseName name of database
+     * @param tableName name of the table
+     */
     public static List<IndexInfo> getIndexesInfo(String databaseName,String tableName)throws IOException{
         Table tables = System.getTablesTable();
         Table indexes = System.getIndexesTable();

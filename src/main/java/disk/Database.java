@@ -46,6 +46,12 @@ public class Database {
         }
     }
 
+    public void close() throws IOException{
+        save();
+        this.cache = null;
+        this.eventLogger = null;
+    }
+
 
     /**
      * create a new table in the current database

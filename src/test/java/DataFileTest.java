@@ -15,8 +15,9 @@ public class DataFileTest {
     public static void main(String[] args) throws IOException {
         System.loadSystem();
         System.createNewDatabase("testbase");
-        Database database = System.loadDataBase("testbase");
-        System.removeDatabase(database);
+        System.loadDataBase("testbase");
+        Database database = System.getCurDB();
+//                System.removeDatabase(database);
 //        database.removeTable(database.tables.get("tt2"));
 
 //        database.loadTables();

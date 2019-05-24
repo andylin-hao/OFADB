@@ -10,34 +10,49 @@ import java.util.List;
 
 public class System {
     private static Database System;
+    private static Database curDB;
+
 
     public System()throws IOException{
         disk.System.loadSystem();
     }
 
+    /**
+     * get the system database
+     */
     public static Database getSystem()throws IOException{
         checkSystemLoaded();
         return System;
     }
 
+
+    /**
+     * get the table which stores metadata of database in the system database
+     */
     public static Table getDatabaseTable()throws IOException{
         checkSystemLoaded();
         return System.tables.get(Logger.databaseTableName);
     }
 
+    /**
+     * get the table which stores metadata of table in the system database
+     */
     public static Table getTablesTable()throws IOException{
         checkSystemLoaded();
         return System.tables.get(Logger.tablesTableName);
     }
 
 
+    /**
+     * get the table which stores metadata of index in the system database
+     */
     public static Table getIndexesTable()throws IOException{
         checkSystemLoaded();
         return System.tables.get(Logger.indexesTableName);
     }
 
     /**
-     * load the file system
+     * load the system database
      */
     public static void loadSystem() throws IOException {
         System = new Database(Logger.systemDatabaseName, true);
@@ -62,6 +77,11 @@ public class System {
         return result.size() > 0;
     }
 
+
+    /**
+     * load a database to the system and set it as the current database
+     * @param name name of the database
+     */
     public static Database loadDataBase(String name)throws IOException{
         checkSystemLoaded();
 
@@ -69,14 +89,24 @@ public class System {
             return null;
         Database database = new Database(name,false);
         database.loadTables();
+        curDB = database;
         return database;
     }
 
+
+    /**
+     * check if the system database is loaded
+     */
     public static void checkSystemLoaded() throws IOException {
         if (System == null)
             disk.System.loadSystem();
     }
 
+
+    /**
+     * create a new database
+     * @param name name of the database
+     */
     public static Database createNewDatabase(String name) throws IOException {
         checkSystemLoaded();
 
@@ -88,6 +118,12 @@ public class System {
     }
 
 
+    /**
+     * insert a  newindex metadata into the table of index in system database
+     * @param databaseName name of database
+     * @param tableName name of table
+     * @param info info of the index to be inserted
+     */
     public static IndexInfo createNewIndex(String databaseName,String tableName,IndexInfo info)throws IOException{
         Object[] indexData =indexData(databaseName,tableName,info);
         if(getIndexesTable().insert(indexData)!=null)
@@ -96,9 +132,16 @@ public class System {
             return null;
     }
 
+
+    /**
+     * delete a database from the  database system
+     * @param database the database to be deleted
+     */
     public static void removeDatabase(Database database)throws IOException{
         if(database == null)
             return;
+        if(database == curDB)
+            curDB = null;
 
         Table databases = getDatabaseTable();
         for(Table table : database.tables.values())
@@ -107,13 +150,23 @@ public class System {
         Logger.deleteDir(new File(Logger.databaseDirectoryPath(database)));
     }
 
-
+    /**
+     * create a row data for the table of database in system database
+     * @param name name of database
+     */
     public static Object[] databaseData(String name) {
         Object[] data = new Object[1];
         data[0] = name;
         return data;
     }
 
+
+    /**
+     * create a row data for the table of index in system database
+     * @param databaseName name of the database
+     * @param tableName name of the table
+     * @param info info of the index
+     */
     public static Object[] indexData(String databaseName,String tableName,IndexInfo info)
     {
         Object[] data = new Object[4];
@@ -124,6 +177,12 @@ public class System {
         return data;
     }
 
+
+    /**
+     * create a indexkey for a searching in table table of index table in system databse
+     * @param dataBaseName name of the database
+     * @param tableName name of the table
+     */
     public static IndexKey tablePK(String dataBaseName,String tableName){
         Object[] data = new Object[2];
         data[0] = dataBaseName;
@@ -134,12 +193,41 @@ public class System {
         return new IndexKey(types,data);
     }
 
+    /**
+     * get a indexkey in the table of database in system database
+     * @param dataBaseName name of the database
+     */
     public static IndexKey databasePK(String dataBaseName){
         Object[] data = new Object[1];
         data[0] = dataBaseName;
         Type[] types = new Type[1];
         types[0] = Logger.columnTypesOfdatabaseTable[0];
         return new IndexKey(types,data);
+    }
+
+    /**
+     * get the current database
+     */
+    public static Database getCurDB(){
+        return curDB;
+    }
+
+
+    /**
+     * remove the current database from memory
+     */
+    public static void removeDatabase()throws IOException{
+        curDB.close();
+        curDB = null;
+    }
+
+    /**
+     * switch the current database to the input database
+     * @param name name of the database
+     */
+    public static void switchDatabase(String name)throws IOException{
+        removeDatabase();
+        loadDataBase(name);
     }
 
 }
