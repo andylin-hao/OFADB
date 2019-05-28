@@ -148,4 +148,6 @@ public class Type {
     public static Type boolType(){ return new Type(ColumnTypes.COL_BOOL); }
 
     public static Type longType(){ return new Type(ColumnTypes.COL_LONG); }
+
+    public ColumnTypes getColumnTypes() {return typeCode; }
 }

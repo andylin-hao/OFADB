@@ -1,13 +1,13 @@
 package expression.select;
 
 import expression.Expression;
+import meta.MetaData;
 import types.ExprTypes;
 import types.RangeTableTypes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeMap;
 
 public class SelectExpr extends Expression {
 
@@ -112,6 +112,26 @@ public class SelectExpr extends Expression {
         }
     }
 
+    private void checkTableNames(HashSet<String> tableNames) {
+        for (String tableName: tableNames) {
+            if (tableName.contains(".")) {
+                String[] dbTable = tableName.split(".");
+                if (dbTable.length != 2)
+                    throw new RuntimeException("Incorrect table name: " + tableName);
+                String db = dbTable[0];
+                String table = dbTable[1];
+                try {
+                    if (MetaData.isDBNotExist(db) || MetaData.istableNotExist(db, table))
+                        throw new RuntimeException(tableName + " not exists");
+                } catch (IOException e) {
+                    throw new RuntimeException("IO error when checking table names");
+                }
+            } else {
+                // TODO Check current database
+            }
+        }
+    }
+
     @Override
     public void checkValidity() {
         // Acquire the table names in the statement and verify sub-select statement
@@ -121,6 +141,9 @@ public class SelectExpr extends Expression {
             if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY)
                 ((SubSelectExpr) rangeTableExpr).getSelectExpr().checkValidity();
         }
+
+        // Verify the table names against database names
+        checkTableNames(tableNames);
 
         // Verify the uniqueness of table names
         if (tableNames.size() != fromTableList.size())
@@ -153,7 +176,9 @@ public class SelectExpr extends Expression {
                 if (joinExpr.getQualifierExpr() != null) {
                     ArrayList<QualifyEleExpr> attrELes = joinExpr.getQualifierExpr().getAttrELes();
                     checkAttrEles(tables, attrELes, "on");
+
                 }
+
 
                 // TODO Verify the column names against table names in on-clause and using-clause
                 fromRoot = joinExpr.getLhs();
@@ -163,8 +188,6 @@ public class SelectExpr extends Expression {
 
         // Verify the table names in where-clause
         checkWhereClause(whereExpr);
-
-        // TODO Verify the table names against database names
 
         // TODO Verify the column names against table names
 

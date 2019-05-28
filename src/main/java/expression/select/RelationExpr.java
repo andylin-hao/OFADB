@@ -41,4 +41,12 @@ public class RelationExpr extends RangeTableExpr {
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
+
+    @Override
+    public String toString() {
+        if (!alias.equals(""))
+            return alias;
+        else
+            return dbName + "." +tableName;
+    }
 }

@@ -54,7 +54,7 @@ public class System {
      * check if the database with input name exists
      * @param name name of the database
      */
-    public static boolean databaseExistence(String name)throws IOException{
+    public static boolean isDBExist(String name)throws IOException{
         checkSystemLoaded();
 
         Table databases = System.tables.get(Logger.databaseTableName);
@@ -65,7 +65,7 @@ public class System {
     public static Database loadDataBase(String name)throws IOException{
         checkSystemLoaded();
 
-        if(!databaseExistence(name))
+        if(!isDBExist(name))
             return null;
         Database database = new Database(name,false);
         database.loadTables();

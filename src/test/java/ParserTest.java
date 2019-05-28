@@ -46,7 +46,7 @@ class ParserTest {
     void selectTest() throws IOException {
         String sql =
                 "select db.sc.class_num, classname as name\n" +
-                        "from db.sc, (select * from class where class.gno = 'grade one') as sub on a = 1 join sc using (abc)\n" +
+                        "from db.sc, (select * from class where class.gno = 'grade one') as sub on sc.a = 1 join sc using (abc)\n" +
                         "where sc.no = 4 and sc.yes = 5 or sc.a = 8 and sc.b > (9+3*4+(4-3)*7)/10+7/10\n";
         SelectExpr stmt = (SelectExpr) getParseResult(sql);
 

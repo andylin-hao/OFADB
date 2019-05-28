@@ -14,8 +14,8 @@ public class MetaData {
      * check if the database exists
      * @param name name of the database
      */
-    public static boolean databaseExistence(String name)throws IOException {
-        return System.databaseExistence(name);
+    public static boolean isDBNotExist(String name)throws IOException {
+        return !System.isDBExist(name);
     }
 
     /**
@@ -23,7 +23,7 @@ public class MetaData {
      * @param name name of database
      */
     public static DatabaseInfo getDatabaseByName(String name)throws IOException{
-        if(!databaseExistence(name))
+        if(isDBNotExist(name))
             return null;
         return new DatabaseInfo(Objects.requireNonNull(System.loadDataBase(name)));
     }
@@ -34,15 +34,15 @@ public class MetaData {
      * @param databaseName name of the database which the table belongs to
      * @param tableName name of the table
      */
-    public static boolean tableExistence(String databaseName,String tableName)throws IOException{
-        if(!databaseExistence(databaseName))
-            return false;
+    public static boolean istableNotExist(String databaseName, String tableName)throws IOException{
+        if(isDBNotExist(databaseName))
+            return true;
 
         Database database =  System.loadDataBase(databaseName);
 
 
         assert database != null;
-        return database.tables.containsKey(tableName);
+        return !database.tables.containsKey(tableName);
     }
 
     /**
@@ -51,7 +51,7 @@ public class MetaData {
      * @param tableName name of the table
      */
     public static TableInfo getTableInfoByName(String databaseName,String tableName)throws IOException {
-        if(!tableExistence(databaseName,tableName))
+        if(istableNotExist(databaseName, tableName))
             return null;
         Database database =  System.loadDataBase(databaseName);
         assert database != null;
@@ -66,7 +66,7 @@ public class MetaData {
      * @param columnName name of the column
      */
     public static boolean columnExistence(String databaseName,String tableName,String columnName)throws IOException{
-        if(!databaseExistence(databaseName) || ! tableExistence(databaseName,tableName))
+        if(isDBNotExist(databaseName) || istableNotExist(databaseName, tableName))
             return false;
 
         Database database = System.loadDataBase(databaseName);
@@ -83,7 +83,7 @@ public class MetaData {
 
 
     public static ColumnInfo getColumnType(String databaseName, String tableName, String columnName)throws IOException{
-        if(!databaseExistence(databaseName) || ! tableExistence(databaseName,tableName))
+        if(isDBNotExist(databaseName) || istableNotExist(databaseName, tableName))
             return null;
 
         Database database = System.loadDataBase(databaseName);
