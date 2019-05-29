@@ -37,22 +37,10 @@ public class DeleteExpr extends Expression {
         this.whereExpr = whereExpr;
     }
 
-    private void checkWhereClause(WhereExpr root) throws IOException {
-        if (root.getExprType() == ExprTypes.EXPR_QUALIFIER) {
-            QualifierExpr qualifierExpr = ((QualifierExpr) root);
-            ArrayList<QualifyEleExpr> attrELes = qualifierExpr.getAttrELes();
-            SelectExpr.checkAttrEles(table, attrELes);
-            qualifierExpr.checkValidity(table);
-        } else {
-            checkWhereClause(root.getRight());
-            checkWhereClause(root.getLeft());
-        }
-    }
-
     @Override
     public void checkValidity() throws IOException {
         table.checkValidity();
 
-        checkWhereClause(whereExpr);
+        SelectExpr.checkWhereClause(whereExpr, table);
     }
 }

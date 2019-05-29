@@ -97,19 +97,19 @@ public class SelectExpr extends Expression {
         return tableNames;
     }
 
-    private void checkWhereClause(WhereExpr root) throws IOException {
+    public static void checkWhereClause(WhereExpr root, RangeTableExpr table) throws IOException {
         if (root.getExprType() == ExprTypes.EXPR_QUALIFIER) {
             QualifierExpr qualifierExpr = ((QualifierExpr) root);
             ArrayList<QualifyEleExpr> attrELes = qualifierExpr.getAttrELes();
-            checkAttrEles(fromExpr, attrELes);
-            qualifierExpr.checkValidity(fromExpr);
+            checkAttrEles(table, attrELes);
+            qualifierExpr.checkValidity(table);
         } else {
-            checkWhereClause(root.getRight());
-            checkWhereClause(root.getLeft());
+            checkWhereClause(root.getRight(), table);
+            checkWhereClause(root.getLeft(), table);
         }
     }
 
-    public static void checkAttrEles(RangeTableExpr rangeTableExpr, ArrayList<QualifyEleExpr> attrELes) throws IOException {
+    private static void checkAttrEles(RangeTableExpr rangeTableExpr, ArrayList<QualifyEleExpr> attrELes) throws IOException {
         for (QualifyEleExpr eleExpr : attrELes) {
             ResultColumnExpr attr = (ResultColumnExpr) eleExpr.getValue();
             checkColumnExpr(attr, rangeTableExpr);
@@ -270,6 +270,6 @@ public class SelectExpr extends Expression {
         }
 
         // Verify the table names in where-clause
-        checkWhereClause(whereExpr);
+        checkWhereClause(whereExpr, fromExpr);
     }
 }

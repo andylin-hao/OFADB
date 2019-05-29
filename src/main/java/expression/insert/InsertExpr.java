@@ -1,13 +1,18 @@
 package expression.insert;
 
+import disk.Type;
 import expression.Expression;
+import expression.select.RangeTableExpr;
 import expression.select.RelationExpr;
+import meta.ColumnInfo;
 import meta.MetaData;
+import meta.TableInfo;
 import types.ColumnTypes;
 import types.ExprTypes;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class InsertExpr extends Expression {
     private RelationExpr table = new RelationExpr();
@@ -40,7 +45,8 @@ public class InsertExpr extends Expression {
         return values;
     }
 
-    private boolean objectEqualsColumnType(Object object, ColumnTypes type) {
+    private static boolean objectEqualsColumnType(Object object, Type columnType) {
+        ColumnTypes type = columnType.typeCode;
         if (object instanceof Long) {
             return type.equals(ColumnTypes.COL_SHORT) ||
                     type.equals(ColumnTypes.COL_INT) ||
@@ -53,22 +59,48 @@ public class InsertExpr extends Expression {
         }
 
         if (object instanceof String) {
-            return type.equals(ColumnTypes.COL_VARCHAR) ||
-                    type.equals(ColumnTypes.COL_CHAR);
+            if (type.equals(ColumnTypes.COL_VARCHAR) ||
+                    type.equals(ColumnTypes.COL_CHAR)) {
+                if (((String) object).length() > columnType.maxLength)
+                    throw new RuntimeException("The string is too long");
+                return true;
+            }
+
+            return false;
         }
 
         if (object instanceof Boolean) {
             return type.equals(ColumnTypes.COL_BOOL);
+        } else
+            throw new RuntimeException("Unknown insert value type");
+    }
+
+    public static void checkColumnsValues(RelationExpr table, ArrayList<String> columns, ArrayList<ArrayList<Object>> values) throws IOException {
+        table.checkValidity();
+        TableInfo tableInfo = MetaData.getTableInfoByName(table.getDbName(), table.getTableName());
+        if (columns.size() == 0) {
+            ColumnInfo[] columnInfos = Objects.requireNonNull(tableInfo).columns;
+            for (ColumnInfo columnInfo : columnInfos) {
+                columns.add(columnInfo.columnName);
+            }
+        } else {
+            for (String columnName : columns) {
+                if (!MetaData.isColumnExist(table.getDbName(), table.getTableName(), columnName))
+                    throw new RuntimeException("Column " + columnName + " does not exist");
+            }
         }
 
-        else
-            throw new RuntimeException("Unknown insert value type");
+        if (values.size() != columns.size())
+            throw new RuntimeException("Inserted values is not enough for specified columns");
+
+        for (int i = 0; i < values.size(); i++) {
+            if (!objectEqualsColumnType(values, Objects.requireNonNull(MetaData.getColumnType(table.getDbName(), table.getTableName(), columns.get(i))).columnType))
+                throw new RuntimeException("Value type does not match column type");
+        }
     }
 
     @Override
     public void checkValidity() throws IOException {
-        if (columns.size() == 0) {
-            // TODO
-        }
+        checkColumnsValues(table, columns, values);
     }
 }

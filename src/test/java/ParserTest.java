@@ -15,6 +15,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import parser.SQLParser;
@@ -42,6 +43,10 @@ class ParserTest {
         return constructor.getExpr();
     }
 
+    @Test
+    void noTest() {
+        assertEquals(1, 1);
+    }
 
     void selectTest() throws IOException {
         String sql =
@@ -151,7 +156,7 @@ class ParserTest {
         assertEquals(stmt.getExprType(), ExprTypes.EXPR_SHOW_DB);
     }
 
-    @Test
+
     void insertTest() throws IOException {
         String sql = "insert into db.test (a,b,c,d) values" +
                 "(1,1.0,true,'now')," +
@@ -170,7 +175,7 @@ class ParserTest {
         }
     }
 
-    @Test
+
     void updateTest() throws IOException {
         String sql = "update db.table set a = 1 where b > 1 and c < 3";
         UpdateExpr stmt = (UpdateExpr) getParseResult(sql);
