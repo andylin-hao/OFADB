@@ -1,13 +1,16 @@
 package expression.select;
 
+import disk.System;
 import expression.Expression;
 import meta.MetaData;
+import types.ColumnTypes;
 import types.ExprTypes;
+import types.QualifyEleTypes;
 import types.RangeTableTypes;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 
 public class SelectExpr extends Expression {
 
@@ -32,7 +35,7 @@ public class SelectExpr extends Expression {
         return resultColumnExprs;
     }
 
-    public RangeTableExpr getFromExpr() {
+    private RangeTableExpr getFromExpr() {
         return fromExpr;
     }
 
@@ -46,6 +49,15 @@ public class SelectExpr extends Expression {
 
     public void setWhereExpr(WhereExpr whereExpr) {
         this.whereExpr = whereExpr;
+    }
+
+    private ResultColumnExpr getColumn(String columnName) {
+        for (ResultColumnExpr columnExpr : this.resultColumnExprs) {
+            if (columnExpr.getName().equals(columnName))
+                return columnExpr;
+        }
+
+        return null;
     }
 
     private ArrayList<RangeTableExpr> getFromTableList(RangeTableExpr root) {
@@ -63,24 +75,21 @@ public class SelectExpr extends Expression {
         }
     }
 
-    private HashSet<String> getTableNameList(RangeTableExpr root) {
+    private HashMap<String, String> getTableNameList(RangeTableExpr root) {
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(root);
-        HashSet<String> tableNames = new HashSet<>();
+        HashMap<String, String> tableNames = new HashMap<>();
         for (RangeTableExpr tableExpr : fromTableList) {
             if (tableExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY) {
                 SubSelectExpr subSelectExpr = (SubSelectExpr) tableExpr;
                 if (subSelectExpr.getAlias() == null)
                     throw new RuntimeException("The sub-select statement needs an alias");
-                tableNames.add(((SubSelectExpr) tableExpr).getAlias());
+                tableNames.put(((SubSelectExpr) tableExpr).getAlias(), null);
             } else if (tableExpr.getRtTypes() == RangeTableTypes.RT_RELATION) {
                 RelationExpr relationExpr = (RelationExpr) tableExpr;
                 if (!relationExpr.getAlias().equals(""))
-                    tableNames.add(relationExpr.getAlias());
+                    tableNames.put(relationExpr.getAlias(), relationExpr.getTableName());
                 else {
-                    if (!relationExpr.getDbName().equals(""))
-                        tableNames.add(relationExpr.getDbName() + "." + relationExpr.getTableName());
-                    else
-                        tableNames.add(relationExpr.getTableName());
+                    tableNames.put(relationExpr.getTableName(), relationExpr.getTableName());
                 }
             } else
                 throw new RuntimeException("The from expression wasn't expanded correctly");
@@ -90,44 +99,126 @@ public class SelectExpr extends Expression {
 
     private void checkWhereClause(WhereExpr root) {
         if (root.getExprType() == ExprTypes.EXPR_QUALIFIER) {
-            HashSet<String> tableNames = getTableNameList(fromExpr);
-            ArrayList<QualifyEleExpr> attrELes = ((QualifierExpr) root).getAttrELes();
-            checkAttrEles(tableNames, attrELes, "where");
+            QualifierExpr qualifierExpr = ((QualifierExpr) root);
+            ArrayList<QualifyEleExpr> attrELes = qualifierExpr.getAttrELes();
+            checkAttrEles(fromExpr, attrELes);
+            qualifierExpr.checkValidity(this, fromExpr);
         } else {
             checkWhereClause(root.getRight());
             checkWhereClause(root.getLeft());
         }
     }
 
-    private void checkAttrEles(HashSet<String> tableNames, ArrayList<QualifyEleExpr> attrELes, String clause) {
+    private void checkAttrEles(RangeTableExpr rangeTableExpr, ArrayList<QualifyEleExpr> attrELes) {
         for (QualifyEleExpr eleExpr : attrELes) {
             ResultColumnExpr attr = (ResultColumnExpr) eleExpr.getValue();
-            if (attr.getTableName().equals(""))
-                continue;
-            String dbPrefix = "";
-            if (!attr.getDbName().equals(""))
-                dbPrefix = attr.getDbName() + ".";
-            if (!tableNames.contains(dbPrefix + attr.getTableName()))
-                throw new RuntimeException("The table name " + dbPrefix + attr.getTableName() + " in " + clause + " clause is illegal");
+            checkColumnExpr(attr, rangeTableExpr);
         }
     }
 
-    private void checkTableNames(HashSet<String> tableNames) {
-        for (String tableName: tableNames) {
-            if (tableName.contains(".")) {
-                String[] dbTable = tableName.split(".");
-                if (dbTable.length != 2)
-                    throw new RuntimeException("Incorrect table name: " + tableName);
-                String db = dbTable[0];
-                String table = dbTable[1];
-                try {
-                    if (MetaData.isDBNotExist(db) || MetaData.istableNotExist(db, table))
-                        throw new RuntimeException(tableName + " not exists");
-                } catch (IOException e) {
-                    throw new RuntimeException("IO error when checking table names");
+    private void checkTableNames(HashMap<String, String> tableNames) {
+        String dbName = System.getCurDB().dataBaseName;
+        for (String tableAlias : tableNames.keySet()) {
+            try {
+                String tableName = tableNames.get(tableAlias);
+                if (tableName == null)
+                    continue;
+                if (MetaData.isTableNotExist(dbName, tableName))
+                    throw new RuntimeException(tableName + " does not exist in " + dbName);
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    ColumnTypes checkColumnExpr(ResultColumnExpr columnExpr, RangeTableExpr rangeTableExpr) {
+        ArrayList<RangeTableExpr> fromTableList = getFromTableList(rangeTableExpr);
+        HashMap<String, String> tableNames = getTableNameList(rangeTableExpr);
+        String dbName = System.getCurDB().dataBaseName;
+        String tableName = tableNames.get(columnExpr.getTableName());
+        SubSelectExpr subSelectExpr = null;
+
+        if (!columnExpr.getDbName().equals(""))
+            throw new RuntimeException("Syntax error of writing database name in query statement");
+
+        // Verify column name that has no table name
+        if (columnExpr.getTableName().equals("")) {
+            int occurTimes = 0;
+            for (RangeTableExpr fromExpr : fromTableList) {
+                if (fromExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY &&
+                        ((SubSelectExpr) fromExpr).getSelectExpr().getColumn(columnExpr.getAttrName()) != null) {
+                    occurTimes += 1;
+                    subSelectExpr = (SubSelectExpr) fromExpr;
+                    tableName = null;
+                    columnExpr.setTableName(subSelectExpr.getAlias());
+                } else {
+                    try {
+                        if (fromExpr.getRtTypes() == RangeTableTypes.RT_RELATION &&
+                                MetaData.isColumnExist(dbName, ((RelationExpr) fromExpr).getTableName(), columnExpr.getAttrName())) {
+                            occurTimes += 1;
+                            tableName = ((RelationExpr) fromExpr).getTableName();
+                            columnExpr.setTableName(((RelationExpr) fromExpr).getName());
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException("IO error");
+                    }
                 }
-            } else {
-                // TODO Check current database
+            }
+
+            if (occurTimes == 0)
+                throw new RuntimeException("Column name " + columnExpr.getAttrName() + " does not exist");
+            if (occurTimes > 1)
+                throw new RuntimeException("Ambiguous column name " + columnExpr.getAttrName());
+            else{
+                if (tableName == null) {
+                    SelectExpr selectExpr = subSelectExpr.getSelectExpr();
+                    return selectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr());
+                } else {
+                    try {
+                        return MetaData.getColumnType(System.getCurDB().dataBaseName, tableName, columnExpr.getAttrName()).columnType.typeCode;
+                    } catch (IOException e) {
+                        throw new RuntimeException("IO error");
+                    }
+                }
+            }
+        }
+
+        // Verify column name of sub query or not-exist table name
+        if (tableName == null) {
+            for (RangeTableExpr fromExpr : fromTableList) {
+                if (fromExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY &&
+                        ((SubSelectExpr) fromExpr).getAlias().equals(columnExpr.getTableName())) {
+                    if (((SubSelectExpr) fromExpr).getSelectExpr().getColumn(columnExpr.getAttrName()) == null)
+                        throw new RuntimeException("Column name " + columnExpr.getAttrName() + " does not exist");
+                    else {
+                        SelectExpr selectExpr = ((SubSelectExpr) fromExpr).getSelectExpr();
+                        return selectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr());
+                    }
+                }
+            }
+            throw new RuntimeException("Table name " + columnExpr.getTableName() + " does not exist");
+        }
+
+        // Verify column name of relation
+        try {
+            if (!MetaData.isColumnExist(dbName, tableName, columnExpr.getAttrName()))
+                throw new RuntimeException("Column " + columnExpr.getAttrName() + " does not exist in table " + tableName);
+            else {
+                return MetaData.getColumnType(System.getCurDB().dataBaseName, tableName, columnExpr.getAttrName()).columnType.typeCode;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("IO error");
+        }
+    }
+
+    private void checkColumnUniqueness(ArrayList<ResultColumnExpr> columnExprs) {
+        for (int i = 0; i < columnExprs.size(); i++) {
+            String columnName = columnExprs.get(i).getName();
+
+            for (int j = 0; j < i; j++) {
+                if (columnName.equals(columnExprs.get(i).getName()))
+                    throw new RuntimeException("The expression can't have two identical column names");
             }
         }
     }
@@ -136,28 +227,26 @@ public class SelectExpr extends Expression {
     public void checkValidity() {
         // Acquire the table names in the statement and verify sub-select statement
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(fromExpr);
-        HashSet<String> tableNames = getTableNameList(fromExpr);
+        HashMap<String, String> tableNames = getTableNameList(fromExpr);
         for (RangeTableExpr rangeTableExpr : fromTableList) {
             if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY)
                 ((SubSelectExpr) rangeTableExpr).getSelectExpr().checkValidity();
+            if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_RELATION && !((RelationExpr) rangeTableExpr).getDbName().equals(""))
+                throw new RuntimeException("Syntax error of writing database name in query statement");
         }
 
-        // Verify the table names against database names
-        checkTableNames(tableNames);
+        checkColumnUniqueness(resultColumnExprs);
 
         // Verify the uniqueness of table names
         if (tableNames.size() != fromTableList.size())
             throw new RuntimeException("The from expression can't have two identical table names");
 
+        // Verify the table names against database names
+        checkTableNames(tableNames);
+
         // Verify the table names in the statement
         for (ResultColumnExpr columnExpr : resultColumnExprs) {
-            if (columnExpr.getTableName().equals(""))
-                continue;
-            String dbPrefix = "";
-            if (!columnExpr.getDbName().equals(""))
-                dbPrefix = columnExpr.getDbName() + ".";
-            if (!tableNames.contains(dbPrefix + columnExpr.getTableName()))
-                throw new RuntimeException("The table name " + dbPrefix + columnExpr.getTableName() + " in select-columns is illegal");
+            checkColumnExpr(columnExpr, fromExpr);
         }
 
         // Verify the table names, on-clause and using-clause in from expression
@@ -168,19 +257,29 @@ public class SelectExpr extends Expression {
                 break;
             else if (fromRoot.getRtTypes() == RangeTableTypes.RT_JOIN) {
                 JoinExpr joinExpr = (JoinExpr) fromRoot;
-                HashSet<String> tables = getTableNameList(joinExpr);
+                HashMap<String, String> tables = getTableNameList(joinExpr);
 
                 if (joinExpr.isNatural() && (joinExpr.getQualifierExpr() != null || joinExpr.getUsingExpr() != null))
                     throw new RuntimeException("Natural join cannot have on-clause and using-clause");
 
                 if (joinExpr.getQualifierExpr() != null) {
-                    ArrayList<QualifyEleExpr> attrELes = joinExpr.getQualifierExpr().getAttrELes();
-                    checkAttrEles(tables, attrELes, "on");
-
+                    QualifierExpr qualifierExpr = joinExpr.getQualifierExpr();
+                    ArrayList<QualifyEleExpr> attrELes = qualifierExpr.getAttrELes();
+                    checkAttrEles(joinExpr, attrELes);
+                    qualifierExpr.checkValidity(this, joinExpr);
                 }
 
+                if (joinExpr.getUsingExpr() != null) {
+                    ArrayList<ResultColumnExpr> usingExpr = joinExpr.getUsingExpr();
+                    checkColumnUniqueness(usingExpr);
+                    for (ResultColumnExpr using : usingExpr) {
+                        if (!using.getTableName().equals(""))
+                            throw new RuntimeException("Using clause should not has table name");
+                        checkColumnExpr(using, joinExpr.getLhs());
+                        checkColumnExpr(using, joinExpr.getRhs());
+                    }
+                }
 
-                // TODO Verify the column names against table names in on-clause and using-clause
                 fromRoot = joinExpr.getLhs();
             } else
                 throw new RuntimeException("The from expression wasn't expanded correctly");
@@ -188,19 +287,5 @@ public class SelectExpr extends Expression {
 
         // Verify the table names in where-clause
         checkWhereClause(whereExpr);
-
-        // TODO Verify the column names against table names
-
-        /*
-        TODO Verify the where clause and join-on qualifier
-         with respect to the qualifier types (only = and <> can qualify boolean)
-          and the consistency of column types and expression types
-         (call corresponding checkValidity function in QualifierExpr)
-         */
-
-        // TODO Verify ambiguous attributes
-
-        // TODO Verify the uniqueness of column names
-
     }
 }

@@ -46,12 +46,30 @@ public class QualifierExpr extends WhereExpr {
         this.rhs = rhs;
     }
 
-    public ArrayList<QualifyEleExpr> getAttrELes() {
+    ArrayList<QualifyEleExpr> getAttrELes() {
         ArrayList<QualifyEleExpr> result = new ArrayList<>();
         if (lhs.getEleTypes() == QualifyEleTypes.QUA_ELE_ATTR)
             result.add(lhs);
         if (rhs.getEleTypes() == QualifyEleTypes.QUA_ELE_ATTR)
             result.add(rhs);
         return result;
+    }
+
+    void checkValidity(SelectExpr selectExpr, RangeTableExpr rangeTableExpr) {
+        QualifyEleTypes leftType = lhs.getBasicEleTypes(selectExpr, rangeTableExpr);
+        QualifyEleTypes rightType = rhs.getBasicEleTypes(selectExpr, rangeTableExpr);
+
+        // Integer is comparable with respect to Double
+        if (leftType.equals(QualifyEleTypes.QUA_ELE_DOUBLE))
+            leftType = QualifyEleTypes.QUA_ELE_INT;
+        if (rightType.equals(QualifyEleTypes.QUA_ELE_DOUBLE))
+            rightType = QualifyEleTypes.QUA_ELE_INT;
+
+        if (!leftType.equals(rightType))
+            throw new RuntimeException("The types of two sides of a qualifier must remain consistent");
+        if (leftType.equals(QualifyEleTypes.QUA_ELE_BOOL) &&
+                (!qualifyTypes.equals(QualifyTypes.QUA_EQ) && !qualifyTypes.equals(QualifyTypes.QUA_NOT_EQ)))
+            throw new RuntimeException("Bool comparision must be = or <>");
+
     }
 }

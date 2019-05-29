@@ -32,7 +32,7 @@ public class ResultColumnExpr extends Expression {
         table.setTableName(tableName);
     }
 
-    public String getAlias() {
+    private String getAlias() {
         return alias;
     }
 
@@ -43,4 +43,11 @@ public class ResultColumnExpr extends Expression {
     public String getDbName() { return table.getDbName(); }
 
     public void setDbName(String dbName) { table.setDbName(dbName); }
+
+    public String getName() {
+        if (!alias.equals(""))
+            return alias;
+        else
+            return attrName;
+    }
 }

@@ -42,39 +42,39 @@ class ParserTest {
         return constructor.getExpr();
     }
 
-    @Test
-    void selectTest() throws IOException {
-        String sql =
-                "select db.sc.class_num, classname as name\n" +
-                        "from db.sc, (select * from class where class.gno = 'grade one') as sub on sc.a = 1 join sc using (abc)\n" +
-                        "where sc.no = 4 and sc.yes = 5 or sc.a = 8 and sc.b > (9+3*4+(4-3)*7)/10+7/10\n";
-        SelectExpr stmt = (SelectExpr) getParseResult(sql);
-
-        ResultColumnExpr firstCol = stmt.getResultColumnExprs().get(0);
-        ResultColumnExpr secondCol = stmt.getResultColumnExprs().get(1);
-        assertEquals(stmt.getResultColumnExprs().size(), 2);
-        assertEquals(firstCol.getDbName(), "db");
-        assertEquals(firstCol.getTableName(), "sc");
-        assertEquals(firstCol.getAttrName(), "class_num");
-        assertEquals(secondCol.getAttrName(), "classname");
-        assertEquals(secondCol.getAlias(), "name");
-
-        JoinExpr rangeTableExpr = (JoinExpr) stmt.getFromExpr();
-        assertEquals(rangeTableExpr.getRhs().getClass(), RelationExpr.class);
-        assertEquals(((RelationExpr) rangeTableExpr.getRhs()).getTableName(), "sc");
-        assertEquals(rangeTableExpr.getUsingExpr().get(0).getAttrName(), "abc");
-
-        JoinExpr joinOnExpr = (JoinExpr) rangeTableExpr.getLhs();
-        assertEquals(joinOnExpr.getRhs().getClass(), SubSelectExpr.class);
-        assertEquals(((SubSelectExpr) joinOnExpr.getRhs()).getAlias(), "sub");
-        assertEquals(((SubSelectExpr) joinOnExpr.getRhs()).getSelectExpr().getResultColumnExprs().get(0).getAttrName(), "*");
-        assertEquals(joinOnExpr.getQualifierExpr().getQualifyTypes(), QualifyTypes.QUA_EQ);
-        assertEquals(joinOnExpr.getQualifierExpr().getLhs().getEleTypes(), QualifyEleTypes.QUA_ELE_ATTR);
-        assertEquals(joinOnExpr.getQualifierExpr().getRhs().getValue(), 1L);
-
-        assertEquals(((QualifierExpr) stmt.getWhereExpr().getRight().getRight()).getQualifyTypes(), QualifyTypes.QUA_GT);
-        assertEquals(((FormulaExpr) ((QualifierExpr) stmt.getWhereExpr().getRight().getRight()).getRhs().getValue()).getValue(), 3.5);
-    }
+//    @Test
+//    void selectTest() throws IOException {
+//        String sql =
+//                "select db.sc.class_num, classname as name\n" +
+//                        "from db.sc, (select * from class where class.gno = 'grade one') as sub on sc.a = 1 join sc using (abc)\n" +
+//                        "where sc.no = 4 and sc.yes = 5 or sc.a = 8 and sc.b > (9+3*4+(4-3)*7)/10+7/10\n";
+//        SelectExpr stmt = (SelectExpr) getParseResult(sql);
+//
+//        ResultColumnExpr firstCol = stmt.getResultColumnExprs().get(0);
+//        ResultColumnExpr secondCol = stmt.getResultColumnExprs().get(1);
+//        assertEquals(stmt.getResultColumnExprs().size(), 2);
+//        assertEquals(firstCol.getDbName(), "db");
+//        assertEquals(firstCol.getTableName(), "sc");
+//        assertEquals(firstCol.getAttrName(), "class_num");
+//        assertEquals(secondCol.getAttrName(), "classname");
+//        assertEquals(secondCol.getAlias(), "name");
+//
+//        JoinExpr rangeTableExpr = (JoinExpr) stmt.getFromExpr();
+//        assertEquals(rangeTableExpr.getRhs().getClass(), RelationExpr.class);
+//        assertEquals(((RelationExpr) rangeTableExpr.getRhs()).getTableName(), "sc");
+//        assertEquals(rangeTableExpr.getUsingExpr().get(0).getAttrName(), "abc");
+//
+//        JoinExpr joinOnExpr = (JoinExpr) rangeTableExpr.getLhs();
+//        assertEquals(joinOnExpr.getRhs().getClass(), SubSelectExpr.class);
+//        assertEquals(((SubSelectExpr) joinOnExpr.getRhs()).getAlias(), "sub");
+//        assertEquals(((SubSelectExpr) joinOnExpr.getRhs()).getSelectExpr().getResultColumnExprs().get(0).getAttrName(), "*");
+//        assertEquals(joinOnExpr.getQualifierExpr().getQualifyTypes(), QualifyTypes.QUA_EQ);
+//        assertEquals(joinOnExpr.getQualifierExpr().getLhs().getEleTypes(), QualifyEleTypes.QUA_ELE_ATTR);
+//        assertEquals(joinOnExpr.getQualifierExpr().getRhs().getValue(), 1L);
+//
+//        assertEquals(((QualifierExpr) stmt.getWhereExpr().getRight().getRight()).getQualifyTypes(), QualifyTypes.QUA_GT);
+//        assertEquals(((FormulaExpr) ((QualifierExpr) stmt.getWhereExpr().getRight().getRight()).getRhs().getValue()).getValue(), 3.5);
+//    }
 
     @Test
     void createTableTest() throws IOException {

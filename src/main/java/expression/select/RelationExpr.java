@@ -22,7 +22,7 @@ public class RelationExpr extends RangeTableExpr {
         return tableName;
     }
 
-    public String getAlias() {
+    String getAlias() {
         return alias;
     }
 
@@ -42,11 +42,10 @@ public class RelationExpr extends RangeTableExpr {
         this.dbName = dbName;
     }
 
-    @Override
-    public String toString() {
+    public String getName() {
         if (!alias.equals(""))
             return alias;
         else
-            return dbName + "." +tableName;
+            return tableName;
     }
 }

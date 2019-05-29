@@ -15,8 +15,9 @@ public class DataFileTest {
     public static void main(String[] args) throws IOException {
         System.loadSystem();
         System.createNewDatabase("testbase");
-        Database database = System.loadDataBase("testbase");
-        System.removeDatabase(database);
+        System.loadDataBase("testbase");
+        Database database = System.getCurDB();
+//                System.removeDatabase(database);
 //        database.removeTable(database.tables.get("tt2"));
 
 //        database.loadTables();
@@ -50,7 +51,6 @@ public class DataFileTest {
 //        data[0] = 3;
 //        data[1] = "DataFileTest";
 //        List<Row> result = hey.tables.get("test1").equivalenceFind(0,hey.tables.get("test1").indexes.get(0).getIndexAccessor(data));
-        return;
     }
 
     private static void BPlusTreeTest() {
