@@ -2,6 +2,8 @@ package expression;
 
 import types.ExprTypes;
 
+import java.io.IOException;
+
 public class Expression {
     private ExprTypes exprType;
 
@@ -17,5 +19,5 @@ public class Expression {
         this.exprType = exprType;
     }
 
-    public void checkValidity() {}
+    public void checkValidity() throws IOException {}
 }

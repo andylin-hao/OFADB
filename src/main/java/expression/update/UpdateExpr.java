@@ -5,6 +5,7 @@ import expression.select.RelationExpr;
 import expression.select.WhereExpr;
 import types.ExprTypes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class UpdateExpr extends Expression {
@@ -53,5 +54,10 @@ public class UpdateExpr extends Expression {
 
     public void setWhereExpr(WhereExpr whereExpr) {
         this.whereExpr = whereExpr;
+    }
+
+    @Override
+    public void checkValidity() throws IOException {
+
     }
 }

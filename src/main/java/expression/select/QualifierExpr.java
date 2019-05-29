@@ -4,6 +4,7 @@ import types.ExprTypes;
 import types.QualifyEleTypes;
 import types.QualifyTypes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class QualifierExpr extends WhereExpr {
@@ -46,7 +47,7 @@ public class QualifierExpr extends WhereExpr {
         this.rhs = rhs;
     }
 
-    ArrayList<QualifyEleExpr> getAttrELes() {
+    public ArrayList<QualifyEleExpr> getAttrELes() {
         ArrayList<QualifyEleExpr> result = new ArrayList<>();
         if (lhs.getEleTypes() == QualifyEleTypes.QUA_ELE_ATTR)
             result.add(lhs);
@@ -55,9 +56,9 @@ public class QualifierExpr extends WhereExpr {
         return result;
     }
 
-    void checkValidity(SelectExpr selectExpr, RangeTableExpr rangeTableExpr) {
-        QualifyEleTypes leftType = lhs.getBasicEleTypes(selectExpr, rangeTableExpr);
-        QualifyEleTypes rightType = rhs.getBasicEleTypes(selectExpr, rangeTableExpr);
+    public void checkValidity(RangeTableExpr rangeTableExpr) throws IOException {
+        QualifyEleTypes leftType = lhs.getBasicEleTypes(rangeTableExpr);
+        QualifyEleTypes rightType = rhs.getBasicEleTypes(rangeTableExpr);
 
         // Integer is comparable with respect to Double
         if (leftType.equals(QualifyEleTypes.QUA_ELE_DOUBLE))

@@ -5,6 +5,8 @@ import types.ColumnTypes;
 import types.ExprTypes;
 import types.QualifyEleTypes;
 
+import java.io.IOException;
+
 public class QualifyEleExpr extends Expression {
     private QualifyEleTypes eleTypes;
     private Object value;
@@ -54,10 +56,10 @@ public class QualifyEleExpr extends Expression {
         }
     }
 
-    QualifyEleTypes getBasicEleTypes(SelectExpr selectExpr, RangeTableExpr rangeTableExpr) {
+    QualifyEleTypes getBasicEleTypes(RangeTableExpr rangeTableExpr) throws IOException {
         switch (eleTypes) {
             case QUA_ELE_ATTR:
-                ColumnTypes type = selectExpr.checkColumnExpr((ResultColumnExpr)value, rangeTableExpr);
+                ColumnTypes type = SelectExpr.checkColumnExpr((ResultColumnExpr)value, rangeTableExpr);
                 return columnTypeToEleType(type);
             case QUA_ELE_FORMULA:
                 Number result = ((FormulaExpr) value).getValue();

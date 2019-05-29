@@ -4,6 +4,8 @@ import expression.Expression;
 import expression.select.RelationExpr;
 import types.ExprTypes;
 
+import java.io.IOException;
+
 public class ShowTableExpr extends Expression {
     private RelationExpr table = new RelationExpr();
 
@@ -23,5 +25,10 @@ public class ShowTableExpr extends Expression {
 
     public String getTableName() {
         return table.getTableName();
+    }
+
+    @Override
+    public void checkValidity() throws IOException {
+        table.checkValidity();
     }
 }

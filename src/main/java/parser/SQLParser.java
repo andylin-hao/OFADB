@@ -17,6 +17,7 @@ import types.*;
 import expression.use.UseDBExpr;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,7 +111,11 @@ public class SQLParser extends SQLiteBaseListener {
 
     @Override
     public void exitParse(SQLiteParser.ParseContext ctx) {
-        expr.checkValidity();
+        try {
+            expr.checkValidity();
+        } catch (IOException e) {
+            throw new RuntimeException("IO error");
+        }
     }
 
     @Override

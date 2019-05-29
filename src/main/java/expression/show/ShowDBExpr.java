@@ -1,7 +1,10 @@
 package expression.show;
 
 import expression.Expression;
+import meta.MetaData;
 import types.ExprTypes;
+
+import java.io.IOException;
 
 public class ShowDBExpr extends Expression {
     private String dbName;
@@ -17,5 +20,11 @@ public class ShowDBExpr extends Expression {
 
     public String getDbName() {
         return dbName;
+    }
+
+    @Override
+    public void checkValidity() throws IOException {
+        if (MetaData.isDBNotExist(dbName))
+            throw new RuntimeException("Database " + dbName + " does not exist");
     }
 }

@@ -35,7 +35,7 @@ public class SelectExpr extends Expression {
         return resultColumnExprs;
     }
 
-    private RangeTableExpr getFromExpr() {
+    public RangeTableExpr getFromExpr() {
         return fromExpr;
     }
 
@@ -60,7 +60,7 @@ public class SelectExpr extends Expression {
         return null;
     }
 
-    private ArrayList<RangeTableExpr> getFromTableList(RangeTableExpr root) {
+    private static ArrayList<RangeTableExpr> getFromTableList(RangeTableExpr root) {
         ArrayList<RangeTableExpr> result = new ArrayList<>();
         while (true) {
             if (root.getRtTypes() == RangeTableTypes.RT_RELATION ||
@@ -75,7 +75,7 @@ public class SelectExpr extends Expression {
         }
     }
 
-    private HashMap<String, String> getTableNameList(RangeTableExpr root) {
+    private static HashMap<String, String> getTableNameList(RangeTableExpr root) {
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(root);
         HashMap<String, String> tableNames = new HashMap<>();
         for (RangeTableExpr tableExpr : fromTableList) {
@@ -97,42 +97,38 @@ public class SelectExpr extends Expression {
         return tableNames;
     }
 
-    private void checkWhereClause(WhereExpr root) {
+    private void checkWhereClause(WhereExpr root) throws IOException {
         if (root.getExprType() == ExprTypes.EXPR_QUALIFIER) {
             QualifierExpr qualifierExpr = ((QualifierExpr) root);
             ArrayList<QualifyEleExpr> attrELes = qualifierExpr.getAttrELes();
             checkAttrEles(fromExpr, attrELes);
-            qualifierExpr.checkValidity(this, fromExpr);
+            qualifierExpr.checkValidity(fromExpr);
         } else {
             checkWhereClause(root.getRight());
             checkWhereClause(root.getLeft());
         }
     }
 
-    private void checkAttrEles(RangeTableExpr rangeTableExpr, ArrayList<QualifyEleExpr> attrELes) {
+    public static void checkAttrEles(RangeTableExpr rangeTableExpr, ArrayList<QualifyEleExpr> attrELes) throws IOException {
         for (QualifyEleExpr eleExpr : attrELes) {
             ResultColumnExpr attr = (ResultColumnExpr) eleExpr.getValue();
             checkColumnExpr(attr, rangeTableExpr);
         }
     }
 
-    private void checkTableNames(HashMap<String, String> tableNames) {
+    private void checkTableNames(HashMap<String, String> tableNames) throws IOException {
         String dbName = System.getCurDB().dataBaseName;
         for (String tableAlias : tableNames.keySet()) {
-            try {
-                String tableName = tableNames.get(tableAlias);
-                if (tableName == null)
-                    continue;
-                if (MetaData.isTableNotExist(dbName, tableName))
-                    throw new RuntimeException(tableName + " does not exist in " + dbName);
-            } catch (IOException e) {
-                throw new RuntimeException(e.getMessage());
-            }
+            String tableName = tableNames.get(tableAlias);
+            if (tableName == null)
+                continue;
+            if (MetaData.isTableNotExist(dbName, tableName))
+                throw new RuntimeException(tableName + " does not exist in " + dbName);
         }
     }
 
     @SuppressWarnings("ConstantConditions")
-    ColumnTypes checkColumnExpr(ResultColumnExpr columnExpr, RangeTableExpr rangeTableExpr) {
+    static ColumnTypes checkColumnExpr(ResultColumnExpr columnExpr, RangeTableExpr rangeTableExpr) throws IOException {
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(rangeTableExpr);
         HashMap<String, String> tableNames = getTableNameList(rangeTableExpr);
         String dbName = System.getCurDB().dataBaseName;
@@ -153,15 +149,11 @@ public class SelectExpr extends Expression {
                     tableName = null;
                     columnExpr.setTableName(subSelectExpr.getAlias());
                 } else {
-                    try {
-                        if (fromExpr.getRtTypes() == RangeTableTypes.RT_RELATION &&
-                                MetaData.isColumnExist(dbName, ((RelationExpr) fromExpr).getTableName(), columnExpr.getAttrName())) {
-                            occurTimes += 1;
-                            tableName = ((RelationExpr) fromExpr).getTableName();
-                            columnExpr.setTableName(((RelationExpr) fromExpr).getName());
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException("IO error");
+                    if (fromExpr.getRtTypes() == RangeTableTypes.RT_RELATION &&
+                            MetaData.isColumnExist(dbName, ((RelationExpr) fromExpr).getTableName(), columnExpr.getAttrName())) {
+                        occurTimes += 1;
+                        tableName = ((RelationExpr) fromExpr).getTableName();
+                        columnExpr.setTableName(((RelationExpr) fromExpr).getName());
                     }
                 }
             }
@@ -173,13 +165,9 @@ public class SelectExpr extends Expression {
             else{
                 if (tableName == null) {
                     SelectExpr selectExpr = subSelectExpr.getSelectExpr();
-                    return selectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr());
+                    return SelectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr());
                 } else {
-                    try {
-                        return MetaData.getColumnType(System.getCurDB().dataBaseName, tableName, columnExpr.getAttrName()).columnType.typeCode;
-                    } catch (IOException e) {
-                        throw new RuntimeException("IO error");
-                    }
+                    return MetaData.getColumnType(System.getCurDB().dataBaseName, tableName, columnExpr.getAttrName()).columnType.typeCode;
                 }
             }
         }
@@ -193,7 +181,7 @@ public class SelectExpr extends Expression {
                         throw new RuntimeException("Column name " + columnExpr.getAttrName() + " does not exist");
                     else {
                         SelectExpr selectExpr = ((SubSelectExpr) fromExpr).getSelectExpr();
-                        return selectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr());
+                        return SelectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr());
                     }
                 }
             }
@@ -201,14 +189,10 @@ public class SelectExpr extends Expression {
         }
 
         // Verify column name of relation
-        try {
-            if (!MetaData.isColumnExist(dbName, tableName, columnExpr.getAttrName()))
-                throw new RuntimeException("Column " + columnExpr.getAttrName() + " does not exist in table " + tableName);
-            else {
-                return MetaData.getColumnType(System.getCurDB().dataBaseName, tableName, columnExpr.getAttrName()).columnType.typeCode;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("IO error");
+        if (!MetaData.isColumnExist(dbName, tableName, columnExpr.getAttrName()))
+            throw new RuntimeException("Column " + columnExpr.getAttrName() + " does not exist in table " + tableName);
+        else {
+            return MetaData.getColumnType(System.getCurDB().dataBaseName, tableName, columnExpr.getAttrName()).columnType.typeCode;
         }
     }
 
@@ -224,7 +208,7 @@ public class SelectExpr extends Expression {
     }
 
     @Override
-    public void checkValidity() {
+    public void checkValidity() throws IOException {
         // Acquire the table names in the statement and verify sub-select statement
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(fromExpr);
         HashMap<String, String> tableNames = getTableNameList(fromExpr);
@@ -266,7 +250,7 @@ public class SelectExpr extends Expression {
                     QualifierExpr qualifierExpr = joinExpr.getQualifierExpr();
                     ArrayList<QualifyEleExpr> attrELes = qualifierExpr.getAttrELes();
                     checkAttrEles(joinExpr, attrELes);
-                    qualifierExpr.checkValidity(this, joinExpr);
+                    qualifierExpr.checkValidity(joinExpr);
                 }
 
                 if (joinExpr.getUsingExpr() != null) {

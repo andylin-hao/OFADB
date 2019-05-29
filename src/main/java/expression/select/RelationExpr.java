@@ -1,6 +1,10 @@
 package expression.select;
 
+import disk.System;
+import meta.MetaData;
 import types.RangeTableTypes;
+
+import java.io.IOException;
 
 public class RelationExpr extends RangeTableExpr {
     private String tableName = "";
@@ -27,7 +31,10 @@ public class RelationExpr extends RangeTableExpr {
     }
 
     public String getDbName() {
-        return dbName;
+        if (dbName.equals(""))
+            return System.getCurDB().dataBaseName;
+        else
+            return dbName;
     }
 
     public void setTableName(String tableName) {
@@ -47,5 +54,11 @@ public class RelationExpr extends RangeTableExpr {
             return alias;
         else
             return tableName;
+    }
+
+    @Override
+    public void checkValidity() throws IOException {
+        if (MetaData.isTableNotExist(getDbName(), getTableName()))
+            throw new RuntimeException("Table " + getTableName() + " does not exist");
     }
 }
