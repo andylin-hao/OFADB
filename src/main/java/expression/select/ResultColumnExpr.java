@@ -50,4 +50,14 @@ public class ResultColumnExpr extends Expression {
         else
             return attrName;
     }
+
+    @Override
+    protected ResultColumnExpr clone() throws CloneNotSupportedException {
+        super.clone();
+        ResultColumnExpr newColumn = new ResultColumnExpr();
+        newColumn.attrName = attrName;
+        newColumn.table = table;
+        newColumn.alias = alias;
+        return newColumn;
+    }
 }

@@ -24,4 +24,14 @@ public class RangeTableExpr extends Expression {
         this.rtTypes = rtTypes;
     }
 
+    public String getRangeTableName() {
+        switch (this.rtTypes) {
+            case RT_RELATION:
+                return ((RelationExpr)this).getName();
+            case RT_SUB_QUERY:
+                return ((SubSelectExpr)this).getAlias();
+            default:
+                return null;
+        }
+    }
 }

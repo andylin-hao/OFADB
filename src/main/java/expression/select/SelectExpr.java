@@ -2,15 +2,15 @@ package expression.select;
 
 import disk.System;
 import expression.Expression;
+import meta.ColumnInfo;
 import meta.MetaData;
-import types.ColumnTypes;
-import types.ExprTypes;
-import types.QualifyEleTypes;
-import types.RangeTableTypes;
+import meta.TableInfo;
+import types.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class SelectExpr extends Expression {
 
@@ -98,6 +98,8 @@ public class SelectExpr extends Expression {
     }
 
     public static void checkWhereClause(WhereExpr root, RangeTableExpr table) throws IOException {
+        if (root == null)
+            return;
         if (root.getExprType() == ExprTypes.EXPR_QUALIFIER) {
             QualifierExpr qualifierExpr = ((QualifierExpr) root);
             ArrayList<QualifyEleExpr> attrELes = qualifierExpr.getAttrELes();
@@ -112,7 +114,7 @@ public class SelectExpr extends Expression {
     private static void checkAttrEles(RangeTableExpr rangeTableExpr, ArrayList<QualifyEleExpr> attrELes) throws IOException {
         for (QualifyEleExpr eleExpr : attrELes) {
             ResultColumnExpr attr = (ResultColumnExpr) eleExpr.getValue();
-            checkColumnExpr(attr, rangeTableExpr);
+            checkColumnExpr(attr, rangeTableExpr, true);
         }
     }
 
@@ -128,7 +130,7 @@ public class SelectExpr extends Expression {
     }
 
     @SuppressWarnings("ConstantConditions")
-    static ColumnTypes checkColumnExpr(ResultColumnExpr columnExpr, RangeTableExpr rangeTableExpr) throws IOException {
+    static ColumnTypes checkColumnExpr(ResultColumnExpr columnExpr, RangeTableExpr rangeTableExpr, boolean addTableName) throws IOException {
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(rangeTableExpr);
         HashMap<String, String> tableNames = getTableNameList(rangeTableExpr);
         String dbName = System.getCurDB().dataBaseName;
@@ -147,13 +149,15 @@ public class SelectExpr extends Expression {
                     occurTimes += 1;
                     subSelectExpr = (SubSelectExpr) fromExpr;
                     tableName = null;
-                    columnExpr.setTableName(subSelectExpr.getAlias());
+                    if (addTableName)
+                        columnExpr.setTableName(subSelectExpr.getAlias());
                 } else {
                     if (fromExpr.getRtTypes() == RangeTableTypes.RT_RELATION &&
                             MetaData.isColumnExist(dbName, ((RelationExpr) fromExpr).getTableName(), columnExpr.getAttrName())) {
                         occurTimes += 1;
                         tableName = ((RelationExpr) fromExpr).getTableName();
-                        columnExpr.setTableName(((RelationExpr) fromExpr).getName());
+                        if (addTableName)
+                            columnExpr.setTableName(((RelationExpr) fromExpr).getName());
                     }
                 }
             }
@@ -162,10 +166,10 @@ public class SelectExpr extends Expression {
                 throw new RuntimeException("Column name " + columnExpr.getAttrName() + " does not exist");
             if (occurTimes > 1)
                 throw new RuntimeException("Ambiguous column name " + columnExpr.getAttrName());
-            else{
+            else {
                 if (tableName == null) {
                     SelectExpr selectExpr = subSelectExpr.getSelectExpr();
-                    return SelectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr());
+                    return SelectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr(), true);
                 } else {
                     return MetaData.getColumnType(System.getCurDB().dataBaseName, tableName, columnExpr.getAttrName()).columnType.typeCode;
                 }
@@ -181,7 +185,7 @@ public class SelectExpr extends Expression {
                         throw new RuntimeException("Column name " + columnExpr.getAttrName() + " does not exist");
                     else {
                         SelectExpr selectExpr = ((SubSelectExpr) fromExpr).getSelectExpr();
-                        return SelectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr());
+                        return SelectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr(), true);
                     }
                 }
             }
@@ -230,7 +234,7 @@ public class SelectExpr extends Expression {
 
         // Verify the table names in the statement
         for (ResultColumnExpr columnExpr : resultColumnExprs) {
-            checkColumnExpr(columnExpr, fromExpr);
+            checkColumnExpr(columnExpr, fromExpr, true);
         }
 
         // Verify the table names, on-clause and using-clause in from expression
@@ -259,8 +263,8 @@ public class SelectExpr extends Expression {
                     for (ResultColumnExpr using : usingExpr) {
                         if (!using.getTableName().equals(""))
                             throw new RuntimeException("Using clause should not has table name");
-                        checkColumnExpr(using, joinExpr.getLhs());
-                        checkColumnExpr(using, joinExpr.getRhs());
+                        checkColumnExpr(using, joinExpr.getLhs(), false);
+                        checkColumnExpr(using, joinExpr.getRhs(), false);
                     }
                 }
 
@@ -271,5 +275,92 @@ public class SelectExpr extends Expression {
 
         // Verify the table names in where-clause
         checkWhereClause(whereExpr, fromExpr);
+    }
+
+    public void trimWhere(HashSet<String> trimTargetTables) {
+        if (whereExpr != null)
+            whereExpr.trim(trimTargetTables);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private HashSet<String> getColumns(RangeTableExpr table) throws IOException {
+        HashSet<String> result = new HashSet<>();
+        if (table.getRtTypes().equals(RangeTableTypes.RT_SUB_QUERY)) {
+            for (ResultColumnExpr columnExpr : ((SubSelectExpr) table).getSelectExpr().getResultColumnExprs()) {
+                result.add(columnExpr.getAttrName());
+            }
+        } else if (table.getRtTypes().equals(RangeTableTypes.RT_RELATION)) {
+            TableInfo tableInfo = MetaData.getTableInfoByName(System.getCurDB().dataBaseName, ((RelationExpr) table).getTableName());
+            for (ColumnInfo columnInfo : tableInfo.columns) {
+                result.add(columnInfo.columnName);
+            }
+        } else {
+            throw new RuntimeException("Table must be relation or sub query");
+        }
+
+        return result;
+    }
+
+    public void trimJoin() throws IOException {
+        alterJoinQualifier(fromExpr);
+    }
+
+    private void alterJoinQualifier(RangeTableExpr root) throws IOException {
+        if (root.getRtTypes().equals(RangeTableTypes.RT_JOIN)) {
+            JoinExpr joinExpr = (JoinExpr) root;
+            if (joinExpr.getQualifierExpr() != null) {
+                whereExpr = new WhereExpr(joinExpr.getQualifierExpr(), whereExpr, OpTypes.OP_AND);
+            }
+            if (joinExpr.getUsingExpr() != null) {
+                ArrayList<ResultColumnExpr> usingExpr = joinExpr.getUsingExpr();
+                for (ResultColumnExpr using : usingExpr) {
+                    if (!using.getTableName().equals(""))
+                        throw new RuntimeException("Using clause should not has table name");
+                    try {
+                        ResultColumnExpr rightUsing = using.clone();
+                        ResultColumnExpr leftUsing = using.clone();
+                        checkColumnExpr(leftUsing, joinExpr.getLhs(), true);
+                        checkColumnExpr(rightUsing, joinExpr.getRhs(), true);
+
+                        QualifyEleExpr leftEle = new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, leftUsing);
+                        QualifyEleExpr rightEle = new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, rightUsing);
+
+                        QualifierExpr qualifierExpr = new QualifierExpr(QualifyTypes.QUA_EQ, leftEle, rightEle);
+
+                        whereExpr = new WhereExpr(whereExpr, qualifierExpr, OpTypes.OP_AND);
+                    } catch (CloneNotSupportedException e) {
+                        throw new RuntimeException("Class cast error");
+                    }
+                }
+            }
+            if (joinExpr.isNatural() && joinExpr.getQualifierExpr() == null && joinExpr.getUsingExpr() == null) {
+                RangeTableExpr right = joinExpr.getRhs();
+                HashSet<String> rightColumnNames = getColumns(right);
+                RangeTableExpr left = joinExpr.getLhs();
+                HashSet<String> leftColumnNames;
+                if (left.getRtTypes().equals(RangeTableTypes.RT_JOIN))
+                    leftColumnNames = getColumns(((JoinExpr) left).getRhs());
+                else
+                    leftColumnNames = getColumns(left);
+                HashSet<String> interColumns = new HashSet<>(rightColumnNames);
+                interColumns.retainAll(leftColumnNames);
+                for (String columnName : interColumns) {
+                    ResultColumnExpr leftColumn = new ResultColumnExpr();
+                    leftColumn.setTableName(left.getRangeTableName());
+                    leftColumn.setAttrName(columnName);
+                    QualifyEleExpr leftEle = new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, leftColumn);
+
+                    ResultColumnExpr rightColumn = new ResultColumnExpr();
+                    rightColumn.setTableName(right.getRangeTableName());
+                    rightColumn.setAttrName(columnName);
+                    QualifyEleExpr rightEle = new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, leftColumn);
+
+                    QualifierExpr qualifierExpr = new QualifierExpr(QualifyTypes.QUA_EQ, leftEle, rightEle);
+                    whereExpr = new WhereExpr(whereExpr, qualifierExpr, OpTypes.OP_AND);
+                }
+            }
+
+            alterJoinQualifier(joinExpr.getLhs());
+        }
     }
 }

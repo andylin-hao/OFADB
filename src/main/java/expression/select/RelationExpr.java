@@ -61,4 +61,10 @@ public class RelationExpr extends RangeTableExpr {
         if (MetaData.isTableNotExist(getDbName(), getTableName()))
             throw new RuntimeException("Table " + getTableName() + " does not exist");
     }
+
+    @Override
+    protected RelationExpr clone() throws CloneNotSupportedException {
+        super.clone();
+        return new RelationExpr(tableName, alias, dbName);
+    }
 }
