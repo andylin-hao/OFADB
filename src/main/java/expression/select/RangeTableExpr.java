@@ -4,6 +4,9 @@ import expression.Expression;
 import types.ExprTypes;
 import types.RangeTableTypes;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class RangeTableExpr extends Expression {
     private RangeTableTypes rtTypes;
 
@@ -24,12 +27,16 @@ public class RangeTableExpr extends Expression {
         this.rtTypes = rtTypes;
     }
 
+    public ArrayList<String> getColumnNames() throws IOException {
+        return new ArrayList<>();
+    }
+
     public String getRangeTableName() {
         switch (this.rtTypes) {
             case RT_RELATION:
-                return ((RelationExpr)this).getName();
+                return ((RelationExpr) this).getName();
             case RT_SUB_QUERY:
-                return ((SubSelectExpr)this).getAlias();
+                return ((SubSelectExpr) this).getAlias();
             default:
                 return null;
         }

@@ -1,10 +1,14 @@
 package expression.select;
 
 import disk.System;
+import meta.ColumnInfo;
 import meta.MetaData;
+import meta.TableInfo;
 import types.RangeTableTypes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Objects;
 
 public class RelationExpr extends RangeTableExpr {
     private String tableName = "";
@@ -66,5 +70,16 @@ public class RelationExpr extends RangeTableExpr {
     protected RelationExpr clone() throws CloneNotSupportedException {
         super.clone();
         return new RelationExpr(tableName, alias, dbName);
+    }
+
+    @Override
+    public ArrayList<String> getColumnNames() throws IOException {
+        ArrayList<String> result = new ArrayList<>();
+        TableInfo tableInfo = MetaData.getTableInfoByName(System.getCurDB().dataBaseName, tableName);
+        for (ColumnInfo info: Objects.requireNonNull(tableInfo).columns) {
+            result.add(info.columnName);
+        }
+
+        return result;
     }
 }
