@@ -5,6 +5,7 @@ import expression.Expression;
 import meta.ColumnInfo;
 import meta.MetaData;
 import meta.TableInfo;
+import server.Server;
 import types.*;
 
 import java.io.IOException;
@@ -219,13 +220,14 @@ public class SelectExpr extends Expression {
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(fromExpr);
         HashMap<String, String> tableNames = getTableNameList(fromExpr);
         for (RangeTableExpr rangeTableExpr : fromTableList) {
-            if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY)
-                ((SubSelectExpr) rangeTableExpr).getSelectExpr().checkValidity();
+            if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY) {
+                SelectExpr selectExpr = ((SubSelectExpr) rangeTableExpr).getSelectExpr();
+                selectExpr.checkValidity();
+                selectExpr.checkColumnUniqueness(selectExpr.resultColumnExprs);
+            }
             if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_RELATION && !((RelationExpr) rangeTableExpr).getDbName().equals(""))
                 throw new RuntimeException("Syntax error of writing database name in query statement");
         }
-
-        checkColumnUniqueness(resultColumnExprs);
 
         // Verify the uniqueness of table names
         if (tableNames.size() != fromTableList.size())
