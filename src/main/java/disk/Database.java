@@ -113,6 +113,9 @@ public class Database {
         }
     }
 
+    public Table getTable(String tableName){
+        return this.tables.get(tableName);
+    }
 
 
 }
