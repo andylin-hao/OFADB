@@ -4,6 +4,21 @@ import expression.Expression;
 import types.ExprTypes;
 import types.OpTypes;
 
+/**
+ * The formula expression.
+ *
+ * <p>This class is the representation of a formula such as:
+ * 1+2*3, 1+6/2, (1+4)*5, which supports the basic arithmetic including
+ * multiplication, division, addition, subtraction and bracket. A function
+ * {@code getValue} is provided to calculate the value of a formula automatically.
+ * The structure of the formula expression is a binary tree, and the node type is
+ * {@code FormulaNodeExpr}</p>
+ *
+ * @see FormulaNodeExpr
+ * @author Hao Lin
+ * @version 1.0
+ * @since 1.0
+ */
 
 public class FormulaExpr extends Expression {
     private FormulaExpr left;
@@ -21,6 +36,10 @@ public class FormulaExpr extends Expression {
         this.op = op;
     }
 
+    /**
+     * A function to calculate the value of a formula
+     * @return {@code Number} type's subclass including {@code Integer} and {@code Double}
+     */
     public Number getValue() {
         Number leftValue = left.getValue();
         Number rightValue = right.getValue();

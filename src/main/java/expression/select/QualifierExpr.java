@@ -7,6 +7,20 @@ import types.QualifyTypes;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * The qualifier expression. Derived from {@code WhereExpr}.
+ *
+ * <p>The qualifier expression used in where clause, join-on clause, etc.
+ * It's a ternary expression consists of two elements and a operator,
+ * which represents the relation between two elements. For instances,
+ * ele1 = ele2, ele1 > ele2, etc. The type of qualifier's element is {@code QualifyEleExpr}</p>
+ *
+ * @see WhereExpr
+ * @author Hao Lin
+ * @version 1.0
+ * @since 1.0
+ */
+
 public class QualifierExpr extends WhereExpr {
     private QualifyTypes qualifyTypes;
     private QualifyEleExpr lhs;
@@ -47,6 +61,10 @@ public class QualifierExpr extends WhereExpr {
         this.rhs = rhs;
     }
 
+    /**
+     * Acquire all the qualifier elements of attribute types in a qualify expression
+     * @return {@code ArrayList} of {@code QualifyELeExpr}
+     */
     ArrayList<QualifyEleExpr> getAttrELes() {
         ArrayList<QualifyEleExpr> result = new ArrayList<>();
         if (lhs.getEleTypes() == QualifyEleTypes.QUA_ELE_ATTR)

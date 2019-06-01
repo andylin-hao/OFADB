@@ -23,13 +23,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * A parser for SQL language based on ANTLR-4
+ *
+ * <p>This class provides the implementation of the ANTLR listener.
+ * Despite the fact that certain features of SQL are omitted,
+ * this class does complete the basic structure of a SQL parser.
+ * For detail functions of this class, please refer to the official
+ * document of ANTLR-4: https://github.com/antlr/antlr4/blob/master/doc/index.md</p>
+ *
+ * @author Hao Lin
+ * @version 1.0
+ * @since 1.0
+ */
+
 public class SQLParser extends SQLiteBaseListener {
-
     private Expression expr;
-
     private ParseTreeProperty<Expression> ctxExpr = new ParseTreeProperty<>();
 
-
+    /**
+     * This function if for acquiring the parsing result.
+     * @return A {@code Expression} type variable.
+     */
     public Expression getExpr() {
         return expr;
     }

@@ -1,5 +1,13 @@
 package types;
 
+/**
+ * The types of expression.
+ *
+ * @author Hao Lin
+ * @version 1.0
+ * @since 1.0
+ */
+
 public enum ExprTypes {
     EXPR_COLUMN,
     EXPR_COLUMN_DEF,

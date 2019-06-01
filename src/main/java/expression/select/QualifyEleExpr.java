@@ -7,6 +7,15 @@ import types.QualifyEleTypes;
 
 import java.io.IOException;
 
+/**
+ * The basic element expression in a qualifier.
+ *
+ * @see QualifierExpr
+ * @author Hao Lin
+ * @version 1.0
+ * @since 1.0
+ */
+
 public class QualifyEleExpr extends Expression {
     private QualifyEleTypes eleTypes;
     private Object value;
@@ -37,6 +46,14 @@ public class QualifyEleExpr extends Expression {
         this.value = value;
     }
 
+    /**
+     * Convert column types to corresponding QualifyEleTypes for comparison.
+     * For instance, the {@code COL_SHORT}, {@code COL_INT}, {@code COL_LONG}
+     * types are converted to {@code QUA_ELE_INT}
+     *
+     * @param type a {@code ColumnTypes} variable for converting
+     * @return The corresponding {@code QualifyEleTypes} of the parameter
+     */
     private QualifyEleTypes columnTypeToEleType(ColumnTypes type) {
         switch (type) {
             case COL_FLOAT:
@@ -56,6 +73,14 @@ public class QualifyEleExpr extends Expression {
         }
     }
 
+    /**
+     * Convert the attribute and formula types of elements to their actual types
+     *
+     * @param rangeTableExpr The range table field of the possible attribute.
+     *                       Can be {@code null} if the target qualifier type is formula.
+     * @return The basic qualifier type: {@code QUA_ELE_INT}, {@code QUA_ELE_DOUBLE}, {@code QUA_ELE_STR}, {@code QUA_ELE_BOOL}
+     * @throws IOException IO exception
+     */
     QualifyEleTypes getBasicEleTypes(RangeTableExpr rangeTableExpr) throws IOException {
         switch (eleTypes) {
             case QUA_ELE_ATTR:
