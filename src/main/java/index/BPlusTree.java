@@ -32,7 +32,7 @@ public abstract class BPlusTree {
 
     public BPlusTree(int order, NodeBPlus treeroot) {
         if (order < 3)
-            throw new Error("order of B+ Tree should > 3");
+            throw new RuntimeException("order of B+ Tree should > 3");
         root = treeroot;
         this.order = order;
     }

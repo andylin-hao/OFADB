@@ -1,70 +1,106 @@
 package result;
 
-import block.BlockInfo;
-import disk.System;
-import disk.Table;
-import expression.select.RangeTableExpr;
-import expression.select.RelationExpr;
 import expression.select.ResultColumnExpr;
+import expression.select.SelectExpr;
+import expression.select.SubSelectExpr;
 import types.ResultType;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class QueryResult extends Result {
     private QueryResult[] subResult;
-    private RelationExpr tableExpr;
-    private ArrayList<ArrayList<String>> datas;
-    private HashMap<String,ResultColumnExpr> selectColumns;
+    private QueryResult basedResult;
+    protected ArrayList<ArrayList<String>> datas;
+    private HashMap<String,ResultColumnExpr> selectColumns = null;
 
-    public QueryResult(RelationExpr table) throws IOException{
+    public void setFinalResult(boolean finalResult) {
+        isFinalResult = finalResult;
+    }
+
+    private boolean isFinalResult = false;
+    private SubSelectExpr selectExpr;
+
+    public QueryResult(){
         super(ResultType.RESULT_QUERY);
-        subResult = null;
-        selectColumns = null;
-        this.tableExpr = table;
+        subResult   = null;
+        basedResult = null;
+        selectExpr = null;
+    }
+
+    public QueryResult(QueryResult base){
+        super(ResultType.RESULT_QUERY);
+        basedResult = base;
         datas = new ArrayList<>();
-        initResultByTable();
+        subResult = null;
+        this.selectExpr = null;
     }
 
-    public void initResultByTable()throws IOException {
-        String databaseName = tableExpr.getDbName();
-        String tableName = tableExpr.getTableName();
-        Table table = Objects.requireNonNull(System.getDataBase(databaseName)).getTable(tableName);
-        List<BlockInfo> blockInfos = table.dataFileManager.blockInfos;
-        for(int i = 0;i<blockInfos.size();i++){
-            for(int j = 0;j<blockInfos.get(i).emptyRecord.size();j++)
-                if(blockInfos.get(i).emptyRecord.get(j)) {
-                    ArrayList<String> data = new ArrayList<>();
-                    data.add(i + ","+ j);
-                    datas.add(data);
-                }
-        }
-
+    public QueryResult(QueryResult base,SubSelectExpr tableExpr){
+        super(ResultType.RESULT_QUERY);
+        basedResult = base;
+        datas = new ArrayList<>();
+        subResult = null;
+        this.selectExpr = tableExpr;
     }
+
+    public QueryResult(QueryResult r1,QueryResult r2){
+        super(ResultType.RESULT_QUERY);
+        basedResult = null;
+        subResult = getMergedSubResultArray(r1,r2);
+        datas = new ArrayList<>();
+        this.selectExpr = null;
+    }
+
+    public ArrayList<ArrayList<String>> getDatas() {
+        return datas;
+    }
+
+    public void setDatas(ArrayList<ArrayList<String>> datas) {
+        this.datas = datas;
+    }
+
 
     public void insert(ArrayList<String> data){
         this.datas.add(data);
     }
 
-    public SingleResult getValue(String position)throws IOException{
-        if(tableExpr != null){
-                String databaseName = tableExpr.getDbName();
-                String tableName = tableExpr.getTableName();
-                Table table = Objects.requireNonNull(System.getDataBase(databaseName)).getTable(tableName);
-                String[] br = position.split(",");
-                int blockIndex = Integer.valueOf(br[0]);
-                int rowIndex = Integer.valueOf(br[1]);
-                Object[] rowData = table.dataFileManager.get(blockIndex, rowIndex).rowData;
-                HashMap<String, Object> data = new HashMap<>();
-                for (int i = 0; i < table.info.columns.length; i++)
-                    data.put(table.info.columns[i].columnName, rowData[i]);
-                return new SingleResult(position, tableExpr.getName(), data);
+
+    private QueryResult[] getMergedSubResultArray(QueryResult r1,QueryResult r2){
+        QueryResult[] r1Array;
+        QueryResult[] r2Array;
+        if(r1.subResult == null)
+        {
+            r1Array  = new QueryResult[1];
+            r1Array[0] = r1;
         }
         else{
-            ArrayList<String> positions = datas.get(Integer.valueOf(position));
+            r1Array = r1.subResult;
+        }
+        if(r2.subResult == null)
+        {
+            r2Array  = new QueryResult[1];
+            r2Array[0] = r2;
+        }
+        else{
+            r2Array = r2.subResult;
+        }
+
+        QueryResult[] merged = new QueryResult[r1Array.length + r2Array.length];
+        System.arraycopy(r1Array, 0, merged, 0, r1Array.length);
+        System.arraycopy(r2Array, 0, merged, r1Array.length, r2Array.length);
+        return merged;
+
+    }
+
+
+    /**
+     * return the actual data of the insert position,if the result is a finish version of a select expression ,then it return the data of select sub-expresion
+     * else it return the hole data of all table involved
+     * @param positions the positions of this line in different sub-result
+     */
+    public SingleResult getValue(ArrayList<String> positions)throws IOException{
+        if(!isFinalResult){
             SingleResult result = new SingleResult();
             for(int i = 0;i<subResult.length;i++){
                 SingleResult subSingle = subResult[i].getValue(positions.get(i));
@@ -72,21 +108,52 @@ public class QueryResult extends Result {
             }
             return result;
         }
-    }
-
-    public Object getColumnValue(String column,String position)throws IOException{
-        if(tableExpr != null){
-            SingleResult holeData = this.getValue(position);
-            String tableName = tableExpr.getName();
-            return holeData.getValue(column,tableName);
-        }
         else{
-            ResultColumnExpr columnExpr = selectColumns.get(column);
-            SingleResult holeData = this.getValue(position);
-            String tableName = tableExpr.getName();
-            return holeData.getValue(columnExpr);
+            SingleResult result = new SingleResult();
+            for(int i = 0;i<subResult.length;i++){
+                SingleResult subSingle = subResult[i].getValue(positions.get(i));
+                result.merge(subSingle);
+            }
+            HashMap<String,Object> data= new HashMap<>();
+            for(Map.Entry<String,ResultColumnExpr> ele : selectColumns.entrySet()){
+                String columnName = ele.getKey();
+                Object object= result.getValue(ele.getValue());
+                data.put(columnName,object);
+            }
+            String index = String.valueOf(this.datas.indexOf(positions));
+            return new SingleResult(index,selectExpr.getRangeTableName(),data);
         }
     }
 
 
+    /**
+     * return the data with the input index in the datas list
+     * @param position the index of the line in datas
+     */
+    public SingleResult getValue(String position)throws IOException{
+        if(basedResult != null)
+            return basedResult.getValue(basedResult.datas.get(Integer.parseInt(position)));
+        else {
+            return getValue(datas.get(Integer.parseInt(position)));
+        }
+    }
+
+    public SingleResult getValue(int position)throws IOException{
+        if(basedResult != null)
+            return basedResult.getValue(basedResult.datas.get(position));
+        else {
+            return getValue(datas.get(position));
+        }
+    }
+
+
+    public HashMap<String, ResultColumnExpr> getSelectColumns() {
+        return selectColumns;
+    }
+
+    public void setSelectColumns(SelectExpr expr) {
+        this.selectColumns = new HashMap<>();
+        for(ResultColumnExpr columnExpr : expr.getResultColumnExprs())
+            this.selectColumns.put(columnExpr.getName(),columnExpr);
+    }
 }

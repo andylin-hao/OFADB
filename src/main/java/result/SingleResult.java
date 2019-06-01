@@ -7,6 +7,23 @@ import java.util.HashMap;
 
 public class SingleResult {
     private ArrayList<String> positions = new ArrayList<>();
+
+    public ArrayList<String> getPositions() {
+        return positions;
+    }
+
+    public void setPositions(ArrayList<String> positions) {
+        this.positions = positions;
+    }
+
+    private HashMap<String, HashMap<String, Object>> getDatas() {
+        return datas;
+    }
+
+    public void setDatas(HashMap<String, HashMap<String, Object>> datas) {
+        this.datas = datas;
+    }
+
     private HashMap<String,HashMap<String,Object>> datas = new HashMap<>();
 
     public SingleResult(String position,String tableName,HashMap<String,Object> data){
@@ -41,4 +58,12 @@ public class SingleResult {
         return datas.get(tableName).get(columnName);
     }
 
+    public static SingleResult merge(SingleResult r1,SingleResult r2){
+        SingleResult result = new SingleResult();
+        result.getPositions().addAll(r1.getPositions());
+        result.getPositions().addAll(r2.getPositions());
+        result.getDatas().putAll(r1.getDatas());
+        result.getDatas().putAll(r2.getDatas());
+        return result;
+    }
 }

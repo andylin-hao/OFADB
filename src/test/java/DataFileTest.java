@@ -1,3 +1,4 @@
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,13 +7,40 @@ import java.util.Random;
 
 import disk.System;
 import disk.*;
+import expression.Expression;
 import index.*;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import parser.SQLParser;
+import parser.SQLiteLexer;
+import parser.SQLiteParser;
 import types.ColumnTypes;
 
 public class DataFileTest {
     private static Database database;
 
+    Expression getParseResult(String sql) throws IOException {
+        ByteArrayInputStream is = new ByteArrayInputStream(sql.getBytes());
+        CharStream stream = CharStreams.fromStream(is);
+        SQLiteLexer lexer = new SQLiteLexer(stream);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        SQLiteParser parser = new SQLiteParser(tokens);
+        parser.setBuildParseTree(true);
+        ParseTree tree = parser.parse();
+        ParseTreeWalker walker = new ParseTreeWalker();
+        SQLParser constructor = new SQLParser();
+        walker.walk(constructor, tree);
+        return constructor.getExpr();
+    }
+
     public static void main(String[] args) throws IOException {
+
+
+
+
         System.loadSystem();
         System.createNewDatabase("testbase");
         System.loadDataBase("testbase");
@@ -77,7 +105,7 @@ public class DataFileTest {
 //        Row c = new Row(table, b);
 //        for (int i = 0; i < data.length; i++) {
 //            if (!data[i].equals(c.rowData[i]))
-//                throw new Error("baisc rowIO has something wrong");
+//                throw new RuntimeException("baisc rowIO has something wrong");
 //        }
 //    }
 //
@@ -94,10 +122,10 @@ public class DataFileTest {
 //            for (int i = 0; i < data.length; i++) {
 //                if (data[i] != null) {
 //                    if (!data[i].equals(c.rowData[i]))
-//                        throw new Error("rowIO has something wrong with typeCode:" + (types[i].typeCode));
+//                        throw new RuntimeException("rowIO has something wrong with typeCode:" + (types[i].typeCode));
 //                } else {
 //                    if (c.rowData[i] != null)
-//                        throw new Error("rowIO has something wrong" + (types[i].typeCode));
+//                        throw new RuntimeException("rowIO has something wrong" + (types[i].typeCode));
 //                }
 //            }
 //        }
@@ -186,7 +214,7 @@ public class DataFileTest {
 //                || (a.emptyPointer != b.emptyPointer)
 //                || a.rowNum != b.rowNum
 //        )
-//            throw new Error("emtpy block io wrong");
+//            throw new RuntimeException("emtpy block io wrong");
 //    }
 //
 //    private static void testBlockSingleInsert() throws IOException {
@@ -200,10 +228,10 @@ public class DataFileTest {
 //        byte[] data = b.readRowData(index);
 //        byte[] data2 = b.readRowData(index1);
 //        if (data.length != originData.length || data2.length != originData.length)
-//            throw new Error("block insert wrong");
+//            throw new RuntimeException("block insert wrong");
 //        for (int i = 0; i < data.length; i++)
 //            if (data[i] != originData[i] || data2[i] != originData[i])
-//                throw new Error("block insert wrong");
+//                throw new RuntimeException("block insert wrong");
 //    }
 //
 //    private static void testBLockMiddleDelete() throws IOException {
@@ -217,13 +245,13 @@ public class DataFileTest {
 //        a.delete(index1);
 //        BlockIO b = new BlockIO(table, a.content, 0);
 //        if (!b.emptyRecord.get(index1) || b.rowNum != a.rowNum)
-//            throw new Error("block delete wrong:block meta wrong");
+//            throw new RuntimeException("block delete wrong:block meta wrong");
 //        if (b.readRowData(index1) != null)
-//            throw new Error("block delete wrong:get null data wrong");
+//            throw new RuntimeException("block delete wrong:get null data wrong");
 //        byte[] data2 = b.readRowData(index2);
 //        for (int i = 0; i < data2.length; i++)
 //            if (data2[i] != originData[i])
-//                throw new Error("block delete wrong:other data wrong");
+//                throw new RuntimeException("block delete wrong:other data wrong");
 //    }
 //
 //    private static void testBLockLastDelete() throws IOException {
@@ -237,14 +265,14 @@ public class DataFileTest {
 //        a.delete(index2);
 //        BlockIO b = new BlockIO(table, a.content, 0);
 //        if (b.rowNum != a.rowNum)
-//            throw new Error("block delete wrong:block meta wrong");
+//            throw new RuntimeException("block delete wrong:block meta wrong");
 //        if (b.readRowData(index2) != null)
-//            throw new Error("block delete wrong:get null data wrong");
+//            throw new RuntimeException("block delete wrong:get null data wrong");
 //        byte[] data = b.readRowData(index1);
 //        byte[] data2 = b.readRowData(index);
 //        for (int i = 0; i < data2.length; i++)
 //            if (data2[i] != originData[i] || data[i] != originData[i])
-//                throw new Error("block delete wrong:other data wrong");
+//                throw new RuntimeException("block delete wrong:other data wrong");
 //    }
 //
 //    private static void testBLockEmptyDelete() throws IOException {
@@ -266,7 +294,7 @@ public class DataFileTest {
 //                || a.emptySize != b.emptySize
 //                || a.rowNum != b.rowNum
 //        )
-//            throw new Error("block with one row delete wrong");
+//            throw new RuntimeException("block with one row delete wrong");
 //    }
 //
 //    private static void testBLockEqualUpdate() throws IOException {
@@ -281,12 +309,12 @@ public class DataFileTest {
 //                || a.emptySize != b.emptySize
 //                || a.rowNum != b.rowNum
 //        )
-//            throw new Error("block equal update wrong");
+//            throw new RuntimeException("block equal update wrong");
 //        byte[] data1 = a.readRowData(index);
 //        byte[] data2 = b.readRowData(index);
 //        for (int i = 0; i < data1.length; i++)
 //            if (data1[i] != data2[i])
-//                throw new Error("block equal update wrong");
+//                throw new RuntimeException("block equal update wrong");
 //    }
 //
 //    private static void testBLockLQUpdate() throws IOException {
@@ -304,15 +332,15 @@ public class DataFileTest {
 //                || a.emptySize != b.emptySize
 //                || a.rowNum != b.rowNum
 //        )
-//            throw new Error("block equal update wrong");
+//            throw new RuntimeException("block equal update wrong");
 //        byte[] data1 = b.readRowData(index);
 //        byte[] data2 = b.readRowData(index2);
 //        for (int i = 0; i < data1.length; i++)
 //            if (data1[i] != LQdata[i])
-//                throw new Error("block equal update wrong");
+//                throw new RuntimeException("block equal update wrong");
 //        for (int i = 0; i < data2.length; i++)
 //            if (data2[i] != originData[i])
-//                throw new Error("block equal update wrong");
+//                throw new RuntimeException("block equal update wrong");
 //    }
 //
 //    private static void testBLockGQUpdate() throws IOException {
@@ -331,15 +359,15 @@ public class DataFileTest {
 //                || a.emptySize != b.emptySize
 //                || a.rowNum != b.rowNum
 //        )
-//            throw new Error("block equal update wrong");
+//            throw new RuntimeException("block equal update wrong");
 //        byte[] data1 = b.readRowData(index);
 //        byte[] data2 = b.readRowData(index2);
 //        for (int i = 0; i < data1.length; i++)
 //            if (data1[i] != LQdata[i])
-//                throw new Error("block equal update wrong");
+//                throw new RuntimeException("block equal update wrong");
 //        for (int i = 0; i < data2.length; i++)
 //            if (data2[i] != originData[i])
-//                throw new Error("block equal update wrong");
+//                throw new RuntimeException("block equal update wrong");
 //    }
 
     private static void testFixedIndex() throws IOException {
@@ -360,9 +388,9 @@ public class DataFileTest {
             File file1 = new File("index.txt");
             File file2 = new File("index2.txt");
             if (!file1.delete())
-                throw new Error("delete file failed");
+                throw new RuntimeException("delete file failed");
             if (!file2.delete())
-                throw new Error("delete file failed");
+                throw new RuntimeException("delete file failed");
         }
     }
 
@@ -384,7 +412,7 @@ public class DataFileTest {
 
         }
         if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
-            throw new Error("test");
+            throw new RuntimeException("test");
 
         Random random = new Random(10000);
         for (int i = 0; i < testSize; i++) {
@@ -399,7 +427,7 @@ public class DataFileTest {
                 File reload = index.fileIO.info;
                 index = new IndexBase(null, 3, new int[1], reload, types,false);
                 if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
-                    throw new Error("test");
+                    throw new RuntimeException("test");
             }
         }
 
@@ -415,7 +443,7 @@ public class DataFileTest {
             index = new IndexBase(null, 3, new int[1], reload, types,false);
             index2.remove(indexKey, new Row(null, i + 1, i + 1));
             if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
-                throw new Error("test");
+                throw new RuntimeException("test");
 
         }
         index.fileIO.file.close();
@@ -471,9 +499,9 @@ public class DataFileTest {
             File file1 = new File("index.txt");
             File file2 = new File("index2.txt");
             if (!file1.delete())
-                throw new Error("delete file failed");
+                throw new RuntimeException("delete file failed");
             if (!file2.delete())
-                throw new Error("delete file failed");
+                throw new RuntimeException("delete file failed");
         }
     }
 
@@ -494,7 +522,7 @@ public class DataFileTest {
             index2.insert(new IndexKey(types, objects), new Row(null, i + 1, i + 1));
         }
         if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
-            throw new Error("test");
+            throw new RuntimeException("test");
 
         Random random = new Random(10000);
         for (int i = 0; i < testSize; i++) {
@@ -510,7 +538,7 @@ public class DataFileTest {
                 File reload = index.fileIO.info;
                 index = new IndexBase(null, 3, new int[1], reload, types,false);
                 if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
-                    throw new Error("test");
+                    throw new RuntimeException("test");
             }
         }
 
@@ -526,7 +554,7 @@ public class DataFileTest {
             index = new IndexBase(null, 3, new int[1], reload, types,false);
             index2.remove(indexKey, new Row(null, i + 1, i + 1));
             if (!NodeIndex.equal((NodeIndex) index.root, (NodeIndex) index2.root))
-                throw new Error("test");
+                throw new RuntimeException("test");
 
         }
         index.fileIO.file.close();

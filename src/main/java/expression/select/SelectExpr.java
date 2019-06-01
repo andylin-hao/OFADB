@@ -60,7 +60,7 @@ public class SelectExpr extends Expression {
         return null;
     }
 
-    private static ArrayList<RangeTableExpr> getFromTableList(RangeTableExpr root) {
+    public static ArrayList<RangeTableExpr> getFromTableList(RangeTableExpr root) {
         ArrayList<RangeTableExpr> result = new ArrayList<>();
         while (true) {
             if (root.getRtTypes() == RangeTableTypes.RT_RELATION ||
@@ -276,6 +276,7 @@ public class SelectExpr extends Expression {
 
         // Verify the table names in where-clause
         checkWhereClause(whereExpr, fromExpr);
+        trimJoin();
     }
 
     public void trimWhere(HashSet<String> trimTargetTables) {
@@ -302,7 +303,7 @@ public class SelectExpr extends Expression {
         return result;
     }
 
-    public void trimJoin() throws IOException {
+    private void trimJoin() throws IOException {
         alterJoinQualifier(fromExpr);
     }
 
