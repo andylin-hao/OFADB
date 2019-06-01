@@ -5,6 +5,7 @@ import expression.Expression;
 import meta.ColumnInfo;
 import meta.MetaData;
 import meta.TableInfo;
+import result.Result;
 import server.Server;
 import types.*;
 
@@ -206,7 +207,7 @@ public class SelectExpr extends Expression {
             String columnName = columnExprs.get(i).getName();
 
             for (int j = 0; j < i; j++) {
-                if (columnName.equals(columnExprs.get(i).getName()))
+                if (columnName.equals(columnExprs.get(j).getName()))
                     throw new RuntimeException("The expression can't have two identical column names");
             }
         }
@@ -225,6 +226,7 @@ public class SelectExpr extends Expression {
                 selectExpr.checkValidity();
                 selectExpr.checkColumnUniqueness(selectExpr.resultColumnExprs);
             }
+            //TODO Wrong
             if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_RELATION && !((RelationExpr) rangeTableExpr).getDbName().equals(""))
                 throw new RuntimeException("Syntax error of writing database name in query statement");
         }
@@ -312,8 +314,16 @@ public class SelectExpr extends Expression {
 
     private void alterStarColumn() throws IOException {
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(fromExpr);
-        if (resultColumnExprs.size() != 1 || !resultColumnExprs.get(0).getAttrName().equals("*"))
-            throw new RuntimeException("Illegal star in select expression");
+        if (resultColumnExprs.size() != 1) {
+            for (ResultColumnExpr columnExpr: resultColumnExprs) {
+                if (columnExpr.getAttrName().equals("*"))
+                    throw new RuntimeException("Illegal star in select expression");
+            }
+            return;
+        }
+        resultColumnExprs.size();
+        if (!resultColumnExprs.get(0).getAttrName().equals("*"))
+            return;
         resultColumnExprs.clear();
         for (RangeTableExpr table: fromTableList) {
             for (String columnName: table.getColumnNames()) {

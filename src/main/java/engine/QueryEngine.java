@@ -30,15 +30,17 @@ public class QueryEngine{
         }
     }
 
-    private boolean dataValid(SingleResult data, WhereExpr where){
+    private boolean dataValid(SingleResult data, WhereExpr where)throws IOException{
+        if(where == null)
+            return true;
         if(where.isInvalid())
             return true;
-        if(where.getExprType() == ExprTypes.EXPR_QUALIFIER){
+        if(where.getExprType().equals( ExprTypes.EXPR_QUALIFIER)){
             QualifyEleExpr left = ((QualifierExpr)where).getLhs();
             QualifyEleExpr right = ((QualifierExpr)where).getRhs();
             Object leftData = getQualifyEleExprValue(data,left);
             Object rightData = getQualifyEleExprValue(data,right);
-            return qualify(leftData,rightData,left.getEleTypes(),((QualifierExpr)where).getQualifyTypes());
+            return qualify(leftData,rightData,left.getBasicEleTypes(selectExpr.getFromExpr()),((QualifierExpr)where).getQualifyTypes());
         }
         else if (where.getOp().equals(OpTypes.OP_AND)){
             return dataValid(data,where.getLeft()) && dataValid(data,where.getRight());
@@ -72,13 +74,13 @@ public class QueryEngine{
                 return subSelectFilter(subResult,(SubSelectExpr)joins);
             case RT_JOIN:
                 QueryResult lResult = buildJoin(((JoinExpr)joins).getLhs());
-                QueryResult rResult = buildJoin(((JoinExpr)joins).getLhs());
+                QueryResult rResult = buildJoin(((JoinExpr)joins).getRhs());
                 QueryResult joinResult = new QueryResult(lResult,rResult);
                 whereTrim(usedRelation(joins));
                 for(int i = 0; i< Objects.requireNonNull(lResult).getDatas().size(); i++){
                     for(int j = 0; j< Objects.requireNonNull(rResult).getDatas().size(); j++){
-                        SingleResult lData = lResult.getValue(i);
-                        SingleResult rData  = rResult.getValue(j);
+                        SingleResult lData = lResult.getValue(lResult.getDatas().get(i));
+                        SingleResult rData  = rResult.getValue(rResult.getDatas().get(j));
                         SingleResult mergeData = SingleResult.merge(lData,rData);
                         if(dataValid(mergeData,selectExpr.getWhereExpr()))
                             joinResult.insert(mergeData.getPositions());
@@ -109,7 +111,7 @@ public class QueryEngine{
 
     private QueryResult subSelectFilter(QueryResult subResult,SubSelectExpr tableExpr) throws IOException{
         QueryResult filter = new QueryResult(subResult,tableExpr);
-
+        subResult.setSelectExpr(tableExpr);
         HashSet<String> used = new HashSet<>();
         used.add(tableExpr.getRangeTableName());
         whereTrim(used);
@@ -152,12 +154,33 @@ public class QueryEngine{
         selectExpr.trimWhere(unused);
     }
 
+    private Long objectToLong(Object object){
+        if(object instanceof Integer)
+            return new Long((Integer)object);
+        else if(object instanceof Short)
+            return new Long((Short)object);
+        else if(object instanceof Long)
+            return (Long)object;
+        else
+            throw new RuntimeException("Error in qualifier element type");
+    }
+
+    public Double objectToDouble(Object object){
+        if(object instanceof Float)
+            return new Double((Float)object);
+        else if(object instanceof Double)
+            return (Double)object;
+        else
+            throw new RuntimeException("Error in qualifier element type");
+    }
+
     private boolean qualify(Object objectLeft, Object objectRight, QualifyEleTypes objectType, QualifyTypes op){
+        //TODO : 添加左右类型判断
         switch (objectType){
             case QUA_ELE_INT:
-                return compare((Integer)objectLeft,(Integer)objectRight,op);
+                return compare(objectToLong(objectLeft),objectToLong(objectRight),op);
             case QUA_ELE_DOUBLE:
-                return compare((Double) objectLeft,(Double) objectRight,op);
+                return compare(objectToDouble(objectLeft),objectToDouble(objectRight),op);
             case QUA_ELE_BOOL:
                 return compare((Boolean) objectLeft,(Boolean) objectRight,op);
             case QUA_ELE_STR:
@@ -167,20 +190,20 @@ public class QueryEngine{
         }
     }
 
-    private boolean compare(Integer integer1,Integer integer2,QualifyTypes op){
+    private boolean compare(Long long1,Long Long2,QualifyTypes op){
         switch (op){
             case QUA_EQ:
-                return integer1.equals(integer2);
+                return long1.equals(Long2);
             case QUA_GT:
-                return integer1 > integer2;
+                return long1 > Long2;
             case QUA_LT:
-                return integer1 < integer2;
+                return long1 < Long2;
             case QUA_GET:
-                return integer1 >= integer2;
+                return long1 >= Long2;
             case QUA_LET:
-                return integer1 <= integer2;
+                return long1 <= Long2;
             case QUA_NOT_EQ:
-                return !integer1.equals(integer2);
+                return !long1.equals(Long2);
             default:
                 throw new RuntimeException("No such qualify type");
         }

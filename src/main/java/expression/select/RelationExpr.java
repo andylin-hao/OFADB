@@ -35,10 +35,7 @@ public class RelationExpr extends RangeTableExpr {
     }
 
     public String getDbName() {
-        if (dbName.equals(""))
-            return System.getCurDB().dataBaseName;
-        else
-            return dbName;
+        return dbName;
     }
 
     public void setTableName(String tableName) {

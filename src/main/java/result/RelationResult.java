@@ -29,7 +29,7 @@ public class RelationResult extends QueryResult{
         List<BlockInfo> blockInfos = table.dataFileManager.blockInfos;
         for(int i = 0;i<blockInfos.size();i++){
             for(int j = 0;j<blockInfos.get(i).emptyRecord.size();j++)
-                if(blockInfos.get(i).emptyRecord.get(j)) {
+                if(!blockInfos.get(i).emptyRecord.get(j)) {
                     ArrayList<String> data = new ArrayList<>();
                     data.add(i + ","+ j);
                     datas.add(data);
@@ -38,8 +38,7 @@ public class RelationResult extends QueryResult{
     }
 
     @Override
-    public SingleResult getValue(ArrayList<String> positions) throws IOException {
-        String position = positions.get(0);
+    public SingleResult getValue(String position) throws IOException {
         String tableName = tableExpr.getTableName();
         Table table = Objects.requireNonNull(System.getCurDB().getTable(tableName));
 
@@ -51,6 +50,12 @@ public class RelationResult extends QueryResult{
         HashMap<String, Object> data = new HashMap<>();
         for (int i = 0; i < table.info.columns.length; i++)
             data.put(table.info.columns[i].columnName, rowData[i]);
-        return new SingleResult(position, tableExpr.getName(), data);
+        return new SingleResult(String.valueOf(datas.indexOf(new ArrayList<String>(){{add(position);}})), tableExpr.getName(), data);
+    }
+
+    @Override
+    public SingleResult getValue(ArrayList<String> positions) throws IOException {
+        String position = positions.get(0);
+        return getValue(position);
     }
 }

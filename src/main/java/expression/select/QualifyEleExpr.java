@@ -56,14 +56,14 @@ public class QualifyEleExpr extends Expression {
         }
     }
 
-    QualifyEleTypes getBasicEleTypes(RangeTableExpr rangeTableExpr) throws IOException {
+    public QualifyEleTypes getBasicEleTypes(RangeTableExpr rangeTableExpr) throws IOException {
         switch (eleTypes) {
             case QUA_ELE_ATTR:
                 ColumnTypes type = SelectExpr.checkColumnExpr((ResultColumnExpr)value, rangeTableExpr, true);
                 return columnTypeToEleType(type);
             case QUA_ELE_FORMULA:
                 Number result = ((FormulaExpr) value).getValue();
-                if (result instanceof Long)
+                if (result instanceof Integer)
                     return QualifyEleTypes.QUA_ELE_INT;
                 else if (result instanceof Double)
                     return QualifyEleTypes.QUA_ELE_DOUBLE;

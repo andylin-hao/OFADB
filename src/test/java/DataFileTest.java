@@ -7,8 +7,13 @@ import java.util.Random;
 
 import disk.System;
 import disk.*;
+import engine.Engine;
+import engine.QueryEngine;
 import expression.Expression;
+import expression.select.SelectExpr;
 import index.*;
+import meta.ColumnInfo;
+import meta.IndexInfo;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -17,12 +22,16 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import parser.SQLParser;
 import parser.SQLiteLexer;
 import parser.SQLiteParser;
+import result.QueryResult;
+import result.Result;
+import result.SingleResult;
 import types.ColumnTypes;
 
-public class DataFileTest {
-    private static Database database;
+import javax.print.attribute.standard.NumberUp;
 
-    Expression getParseResult(String sql) throws IOException {
+public class DataFileTest {
+
+    static Expression getParseResult(String sql) throws IOException {
         ByteArrayInputStream is = new ByteArrayInputStream(sql.getBytes());
         CharStream stream = CharStreams.fromStream(is);
         SQLiteLexer lexer = new SQLiteLexer(stream);
@@ -38,13 +47,25 @@ public class DataFileTest {
 
     public static void main(String[] args) throws IOException {
 
-
-
-
         System.loadSystem();
-        System.createNewDatabase("testbase");
+//        System.createNewDatabase("testbase");
         System.loadDataBase("testbase");
         Database database = System.getCurDB();
+        Table table = database.getTable("tt2");
+//        Object[] data = new Object[2];
+//        data[0] = 4;
+//        data[1] = "5";
+//        table.insert(data);
+//        table.save();
+
+        String sql_subSelect = "select t.name1 from (select id as id1, name as name1 from tt2) t, tt2 where t.id1 = 6-(4-2) or t.name1 = '5'";
+        String sql_simplest = "select * from tt2";
+        String sql_where = "select * from tt2 where id = 6-(4-2) and name = '5'";
+        SelectExpr select = (SelectExpr) getParseResult(sql_subSelect);
+        Result result = Engine.expressionExec(select);
+//        SingleResult data = ((QueryResult)result).getValue("3");
+        int a = 1;
+
 //                System.removeDatabase(database);
 //        database.removeTable(database.tables.get("tt2"));
 
@@ -56,11 +77,11 @@ public class DataFileTest {
 
 
 
-//        ColumnInfo[] columns = new ColumnInfo[3];
+//        ColumnInfo[] columns = new ColumnInfo[2];
 //        columns[0] = new ColumnInfo("id",Type.intType(),false,false,0);
 //        columns[1] = new ColumnInfo("name",Type.stringType(20),false,false,0);
-//        columns[2] = new ColumnInfo("age",Type.longType(),false,false,0);
-//        database.createNewTable("tt2",columns,new ArrayList<IndexInfo>(){{add(new IndexInfo("0",true));add(new IndexInfo("2",false));}},0);
+////        columns[2] = new ColumnInfo("age",Type.longType(),false,false,0);
+//        database.createNewTable("tt2",columns,new ArrayList<IndexInfo>(){{add(new IndexInfo("0",true));add(new IndexInfo("1",false));}},0);
 //
 //        Object[] data = new Object[3];
 //        data[0] = 2;
