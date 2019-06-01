@@ -110,7 +110,7 @@ public class Cache {
             if (loaded != null)
                 putIn(loaded, accessor);
             else
-                throw new Error("try to load block which has over index");
+                throw new RuntimeException("try to load block which has over index");
             return loaded;
         }
     }
@@ -152,7 +152,7 @@ public class Cache {
             saveBlockToFile(blockIO);
             blockHashMap.remove(accessor);
         } else {
-            throw new Error("try to pop null block from cache");
+            throw new RuntimeException("try to pop null block from cache");
         }
     }
 

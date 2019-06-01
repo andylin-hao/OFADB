@@ -10,10 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 
 public class System {
-    private static Database System;
+    private static Database system;
     private static Database curDB;
 
-    private static HashMap<String,Database> dbMap;
+    private static HashMap<String,Database> dbMap = new HashMap<>();
 
 
     public System()throws IOException{
@@ -27,7 +27,7 @@ public class System {
      */
     public static Database getSystem()throws IOException{
         checkSystemLoaded();
-        return System;
+        return system;
     }
 
 
@@ -36,7 +36,7 @@ public class System {
      */
     public static Table getDatabaseTable()throws IOException{
         checkSystemLoaded();
-        return System.tables.get(Logger.databaseTableName);
+        return system.tables.get(Logger.databaseTableName);
     }
 
     /**
@@ -44,7 +44,7 @@ public class System {
      */
     public static Table getTablesTable()throws IOException{
         checkSystemLoaded();
-        return System.tables.get(Logger.tablesTableName);
+        return system.tables.get(Logger.tablesTableName);
     }
 
 
@@ -53,21 +53,21 @@ public class System {
      */
     public static Table getIndexesTable()throws IOException{
         checkSystemLoaded();
-        return System.tables.get(Logger.indexesTableName);
+        return system.tables.get(Logger.indexesTableName);
     }
 
     /**
      * load the system database
      */
     public static void loadSystem() throws IOException {
-        System = new Database(Logger.systemDatabaseName, true);
-        Table databases = new Table(System, Logger.datebasesTableType(), Logger.databaseTableName, new ArrayList<IndexInfo>(){{add(new IndexInfo("0",true));}}, System.cache, 0);
-        Table tables = new Table(System, Logger.tablesTableType(), Logger.tablesTableName, new ArrayList<IndexInfo>(){{add(new IndexInfo("1,0",true));}}, System.cache, 0);
-        Table indexes = new Table(System,Logger.indexesTableType(),Logger.indexesTableName,new ArrayList<IndexInfo>(){{add(new IndexInfo("1,0",false));}},System.cache,-1);
-        System.tables.put(databases.info.tableName, databases);
-        System.tables.put(tables.info.tableName, tables);
-        System.tables.put(indexes.info.tableName,indexes);
-        dbMap.put("System",System);
+        system = new Database(Logger.systemDatabaseName, true);
+        Table databases = new Table(system, Logger.datebasesTableType(), Logger.databaseTableName, new ArrayList<IndexInfo>(){{add(new IndexInfo("0",true));}}, system.cache, 0);
+        Table tables = new Table(system, Logger.tablesTableType(), Logger.tablesTableName, new ArrayList<IndexInfo>(){{add(new IndexInfo("1,0",true));}}, system.cache, 0);
+        Table indexes = new Table(system,Logger.indexesTableType(),Logger.indexesTableName,new ArrayList<IndexInfo>(){{add(new IndexInfo("1,0",false));}},system.cache,-1);
+        system.tables.put(databases.info.tableName, databases);
+        system.tables.put(tables.info.tableName, tables);
+        system.tables.put(indexes.info.tableName,indexes);
+        dbMap.put("System",system);
     }
 
 
@@ -78,7 +78,7 @@ public class System {
     public static boolean isDBExist(String name)throws IOException{
         checkSystemLoaded();
 
-        Table databases = System.tables.get(Logger.databaseTableName);
+        Table databases = system.tables.get(Logger.databaseTableName);
         List<Row> result = databases.equivalenceFind(0,new IndexKey(Logger.columnTypesOfdatabaseTable,databaseData(name)));
         return result.size() > 0;
     }
@@ -117,7 +117,7 @@ public class System {
      * check if the system database is loaded
      */
     public static void checkSystemLoaded() throws IOException {
-        if (System == null)
+        if (system == null)
             disk.System.loadSystem();
     }
 
@@ -131,7 +131,7 @@ public class System {
 
         Object[] databaseData = databaseData(name);
 
-        if(System.tables.get(Logger.databaseTableName).insert(databaseData) != null) {
+        if(system.tables.get(Logger.databaseTableName).insert(databaseData) != null) {
             Database ndb =  new Database(name, false);
             dbMap.put(ndb.dataBaseName,ndb);
             return ndb;

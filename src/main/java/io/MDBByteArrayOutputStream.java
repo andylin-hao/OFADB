@@ -85,7 +85,7 @@ public class MDBByteArrayOutputStream {
     /**
      * does nothing
      */
-    public void flush() throws IOException {
+    public void flush() {
     }
 
     // methods that extend java.io.OutputStream
@@ -108,7 +108,7 @@ public class MDBByteArrayOutputStream {
         return new String(buffer, 0, count);
     }
 
-    public void close() throws IOException {
+    public void close() {
     }
 
     // additional public methods not in similar java.util classes
@@ -222,7 +222,7 @@ public class MDBByteArrayOutputStream {
         this.buffer = buffer;
     }
 
-    public void writeObject(Object data) throws IOException {
+    public void writeObject(Object data) {
         if (data instanceof Integer)
             writeInt((int) data);
         else if (data instanceof Character)
@@ -240,14 +240,14 @@ public class MDBByteArrayOutputStream {
         else if (data instanceof Boolean)
             writeBoolean((boolean) data);
         else
-            throw new Error("invalid data type");
+            throw new RuntimeException("invalid data type");
     }
 
     public void skip(int walks) {
         count = Math.min(buffer.length, walks + count);
     }
 
-    public void writeObjects(Object[] data) throws IOException {
+    public void writeObjects(Object[] data) {
         for (Object datum : data) writeObject(datum);
     }
 }

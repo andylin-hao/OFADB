@@ -48,7 +48,7 @@ public class IndexFileIO {
 //            setLength();
             load(file);
         } catch (Exception e) {
-            throw new Error("can't access file:" + file.getName());
+            throw new RuntimeException("can't access file:" + file.getName());
         }
     }
 
@@ -100,7 +100,7 @@ public class IndexFileIO {
      **/
     public void saveEmptyList() throws IOException {
         if (emptyList.size() == 0)
-            throw new Error("empty List is empty");
+            throw new RuntimeException("empty List is empty");
 
         setEmptyHead(this.emptyList.get(0));
 
@@ -132,7 +132,7 @@ public class IndexFileIO {
      * Get an empty offset in file
      **/
     public NdxFIleInfo getPreOffset(int size) {
-        NdxFIleInfo preOffset = null;
+        NdxFIleInfo preOffset;
 
         //if there's no gap in the file
         if (emptyList.size() == 1) {
@@ -302,7 +302,7 @@ public class IndexFileIO {
 
 
         //children List
-        int i = 0;
+        int i;
         for (i = 0; i < node.keys.size(); i++) {
             //key of the child
             writeObject(node.keys.get(i).getKey());
@@ -332,14 +332,14 @@ public class IndexFileIO {
 
 
         //child list
-        int i = 0;
+        int i;
         for (i = 0; i < node.keys.size(); i++) {
             //key
             writeObject(node.keys.get(i).getKey());
 
             NodeLeaf leaf = (NodeLeaf) node.keys.get(i).getValue();
             if (leaf == null)
-                throw new Error("leaf is null");
+                throw new RuntimeException("leaf is null");
 
             file.writeInt(leaf.rowInfos.size());
             for (int j = 0; j < leaf.rowInfos.size(); j++) {
@@ -367,7 +367,7 @@ public class IndexFileIO {
      **/
     public byte[] emptyHolderForString(int length) {
         if (length < 0)
-            throw new Error("key size overflow");
+            throw new RuntimeException("key size overflow");
         return new byte[length];
     }
 
@@ -454,7 +454,7 @@ public class IndexFileIO {
 
                 if (offset == nullOffset())
                     break;
-                nodeIndex.keys.add(new AbstractMap.SimpleEntry<Comparable, Object>(key, null));
+                nodeIndex.keys.add(new AbstractMap.SimpleEntry<>(key, null));
                 NodeIndex child = readNode(offset, false);
                 child.parent = nodeIndex;
                 nodeIndex.children.add(child);
