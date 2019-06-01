@@ -2,6 +2,9 @@ package expression.select;
 
 import types.RangeTableTypes;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class SubSelectExpr extends RangeTableExpr {
     private String alias;
     private SelectExpr selectExpr;
@@ -21,5 +24,15 @@ public class SubSelectExpr extends RangeTableExpr {
 
     public String getAlias() {
         return alias;
+    }
+
+    @Override
+    public ArrayList<String> getColumnNames() throws IOException {
+        ArrayList<String> result = new ArrayList<>();
+        for (ResultColumnExpr columnExpr: selectExpr.getResultColumnExprs()) {
+            result.add(columnExpr.getName());
+        }
+
+        return result;
     }
 }

@@ -5,6 +5,7 @@ import expression.Expression;
 import meta.ColumnInfo;
 import meta.MetaData;
 import meta.TableInfo;
+import server.Server;
 import types.*;
 
 import java.io.IOException;
@@ -213,6 +214,8 @@ public class SelectExpr extends Expression {
 
     @Override
     public void checkValidity() throws IOException {
+        alterStarColumn();
+
         // Acquire the table names in the statement and verify sub-select statement
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(fromExpr);
         HashMap<String, String> tableNames = getTableNameList(fromExpr);
@@ -305,6 +308,21 @@ public class SelectExpr extends Expression {
 
     private void trimJoin() throws IOException {
         alterJoinQualifier(fromExpr);
+    }
+
+    private void alterStarColumn() throws IOException {
+        ArrayList<RangeTableExpr> fromTableList = getFromTableList(fromExpr);
+        if (resultColumnExprs.size() != 1 || !resultColumnExprs.get(0).getAttrName().equals("*"))
+            throw new RuntimeException("Illegal star in select expression");
+        resultColumnExprs.clear();
+        for (RangeTableExpr table: fromTableList) {
+            for (String columnName: table.getColumnNames()) {
+                ResultColumnExpr columnExpr = new ResultColumnExpr();
+                columnExpr.setTableName(table.getRangeTableName());
+                columnExpr.setAttrName(columnName);
+                resultColumnExprs.add(columnExpr);
+            }
+        }
     }
 
     private void alterJoinQualifier(RangeTableExpr root) throws IOException {
