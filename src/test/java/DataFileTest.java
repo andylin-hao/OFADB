@@ -86,7 +86,7 @@ public class DataFileTest {
 //        columns[1] = new ColumnInfo("name",Type.stringType(20),false,false,0);
 ////        columns[2] = new ColumnInfo("age",Type.longType(),false,false,0);
 //        database.createNewTable("tt2",columns,new ArrayList<IndexInfo>(){{add(new IndexInfo("0",true));add(new IndexInfo("1",false));}},0);
-//
+
 //        Object[] data = new Object[3];
 //        data[0] = 2;
 //        data[1] = "jack";

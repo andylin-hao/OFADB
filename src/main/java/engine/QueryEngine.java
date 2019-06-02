@@ -100,14 +100,36 @@ public class QueryEngine{
         used.add(whole.getName());
         whereTrim(used);
 
-        for(int i = 0;i<whole.getDatas().size();i++)
-            if(dataValid(whole.getValue(whole.getDatas().get(i).get(0)),selectExpr.getWhereExpr())) {
+        if(selectExpr.getWhereExpr() == null || selectExpr.getWhereExpr().isInvalid())
+        {
+            for (int i = 0; i < whole.getDatas().size(); i++) {
                 ArrayList<String> ele = new ArrayList<>();
                 ele.add(String.valueOf(i));
                 filter.insert(ele);
             }
+        }
+        else if(whole.indexUsable(selectExpr.getWhereExpr())){
+            whole.indexFilter(selectExpr.getWhereExpr());
+            for (int i = 0; i < whole.getDatas().size(); i++) {
+                ArrayList<String> ele = new ArrayList<>();
+                ele.add(String.valueOf(i));
+                filter.insert(ele);
+            }
+        }
+        else
+            {
+            for (int i = 0; i < whole.getDatas().size(); i++)
+                if (dataValid(whole.getValue(whole.getDatas().get(i).get(0)), selectExpr.getWhereExpr())) {
+                    ArrayList<String> ele = new ArrayList<>();
+                    ele.add(String.valueOf(i));
+                    filter.insert(ele);
+                }
+        }
         return filter;
     }
+
+
+
 
     private QueryResult subSelectFilter(QueryResult subResult,SubSelectExpr tableExpr) throws IOException{
         QueryResult filter = new QueryResult(subResult,tableExpr);
@@ -157,22 +179,48 @@ public class QueryEngine{
 
     @SuppressWarnings("unchecked")
     private boolean compare(Comparable left, Comparable right, QualifyTypes op){
-        switch (op){
-            case QUA_EQ:
-                return left.equals(right);
-            case QUA_GT:
-                return (left.compareTo(right) > 0);
-            case QUA_LT:
-                return (left.compareTo(right) < 0);
-            case QUA_GET:
-                return (left.compareTo(right) >= 0);
-            case QUA_LET:
-                return (left.compareTo(right) <= 0);
-            case QUA_NOT_EQ:
-                return !left.equals(right);
-            default:
-                throw new RuntimeException("No such qualify type");
+        if(left == null || right == null)
+            return false;
+        if(left instanceof String || left instanceof Boolean) {
+            switch (op) {
+                case QUA_EQ:
+                    return left.equals(right);
+                case QUA_GT:
+                    return (left.compareTo(right) > 0);
+                case QUA_LT:
+                    return (left.compareTo(right) < 0);
+                case QUA_GET:
+                    return (left.compareTo(right) >= 0);
+                case QUA_LET:
+                    return (left.compareTo(right) <= 0);
+                case QUA_NOT_EQ:
+                    return !left.equals(right);
+                default:
+                    throw new RuntimeException("No such qualify type");
+            }
         }
+        else if(left instanceof Short || left instanceof Integer || left instanceof Long || left instanceof Float || left instanceof Double){
+            switch (op) {
+                case QUA_EQ:
+                    return ((Number)left).doubleValue() == ((Number)right).doubleValue();
+                case QUA_GT:
+                    return ((Number)left).doubleValue() > ((Number)right).doubleValue();
+                case QUA_LT:
+                    return ((Number)left).doubleValue() < ((Number)right).doubleValue();
+                case QUA_GET:
+                    return ((Number)left).doubleValue() >= ((Number)right).doubleValue();
+                case QUA_LET:
+                    return ((Number)left).doubleValue() <= ((Number)right).doubleValue();
+                case QUA_NOT_EQ:
+                    return ((Number)left).doubleValue() != ((Number)right).doubleValue();
+                default:
+                    throw new RuntimeException("No such qualify type");
+            }
+        }
+        else{
+            throw new RuntimeException("Error in qualifier compare");
+        }
+
     }
 
 

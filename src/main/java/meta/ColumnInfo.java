@@ -3,6 +3,8 @@ package meta;
 import disk.Logger;
 import disk.Table;
 import disk.Type;
+import index.IndexBase;
+
 
 public class ColumnInfo {
     public Type columnType;
@@ -68,5 +70,20 @@ public class ColumnInfo {
 
     public void setTable(Table table){
         this.table = table;
+    }
+
+    public IndexBase hasIndex(){
+        int index = 0;
+        for(int i = 0;i<table.info.columns.length;i++) {
+            if (table.info.columns[i].equals(this)) {
+                index = i;
+                break;
+            }
+            if(i == table.info.columns.length-1)
+                throw new RuntimeException("Error in check index of column");
+        }
+        int[] columnIndexs = new int[1];
+        columnIndexs[0] = index;
+        return table.getIndexByColumns(columnIndexs);
     }
 }

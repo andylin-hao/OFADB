@@ -7,6 +7,7 @@ import disk.Row;
 import disk.Table;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -15,13 +16,15 @@ import java.util.HashMap;
 
 public class Cache {
     public HashMap<CacheKey, BlockIO> blockHashMap;                                        //the storage of block in memory
+    private ArrayList<CacheKey> keys;
     public Database database;
-    public int cacheSize;                                                           //the hole size of the cache
+    private int cacheSize;                                                           //the hole size of the cache
 
 
     public Cache(Database database) {
         this.database = database;
         blockHashMap = new HashMap<>();
+        keys = new ArrayList<>();
         cacheSize = 0;
     }
 
@@ -88,6 +91,7 @@ public class Cache {
      **/
     public byte[] get(Table table, int blockIndex, int rowIndex) throws IOException {
         BlockIO block = loadBlock(getAccessor(table, blockIndex));
+
         return block.readRowData(rowIndex);
     }
 
@@ -96,9 +100,10 @@ public class Cache {
      *
      * @param accessor : the cache key of the block
      **/
-    public BlockIO loadBlock(CacheKey accessor) throws IOException {
+    private BlockIO loadBlock(CacheKey accessor) throws IOException {
         //the block is in memory
         if (blockHashMap.containsKey(accessor)) {
+            visitBlock(accessor);
             return blockHashMap.get(accessor);
         }
         //the block is not in memory
@@ -115,7 +120,7 @@ public class Cache {
         }
     }
 
-    public CacheKey getAccessor(Table table, int index) {
+    private CacheKey getAccessor(Table table, int index) {
         return new CacheKey(table, index);
     }
 
@@ -124,14 +129,16 @@ public class Cache {
      *
      * @param accessor : the key of the block in cache
      **/
-    public void putIn(BlockIO loaded, CacheKey accessor) {
+    private void putIn(BlockIO loaded, CacheKey accessor) throws IOException{
         //the cache has enough space
         if (cacheSize + loaded.blockSize <= Logger.cacheSizeLimit) {
             blockHashMap.put(accessor, loaded);
+            keys.add(accessor);
         }
         //the cache overflowed
         else {
-            blockHashMap.put(accessor, loaded);
+            pop();
+            putIn(loaded,accessor);
         }
     }
 
@@ -139,8 +146,23 @@ public class Cache {
     /**
      * Save block to file
      **/
-    public void saveBlockToFile(BlockIO blockIO) throws IOException {
+    private void saveBlockToFile(BlockIO blockIO) throws IOException {
         blockIO.table.dataFileManager.writeBlockToDisk(blockIO.blockIndex, blockIO.content);
+    }
+
+    /**
+     * Remove a block from the cache
+     **/
+    public void pop() throws IOException {
+        CacheKey accessor = keys.get(0);
+        BlockIO blockIO = blockHashMap.get(accessor);
+        if (blockIO != null) {
+            saveBlockToFile(blockIO);
+            blockHashMap.remove(accessor);
+            keys.remove(accessor);
+        } else {
+            throw new RuntimeException("try to pop null block from cache");
+        }
     }
 
     /**
@@ -151,6 +173,7 @@ public class Cache {
         if (blockIO != null) {
             saveBlockToFile(blockIO);
             blockHashMap.remove(accessor);
+            keys.remove(accessor);
         } else {
             throw new RuntimeException("try to pop null block from cache");
         }
@@ -163,4 +186,13 @@ public class Cache {
         }
     }
 
+    private void visitBlock(CacheKey accessor){
+        int pos = keys.indexOf(accessor);
+        accessor = keys.get(pos);
+        accessor.visited();
+        keys.remove(pos);
+        keys.add(accessor);
+    }
+
 }
+
