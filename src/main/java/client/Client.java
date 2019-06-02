@@ -32,7 +32,7 @@ public class Client extends JFrame {
     private JButton button = new JButton("Confirm");
     private JScrollPane scrollPaneTable;
 
-    private final static String URL = "http://localhost:8080/webtest_war_exploded/result";
+    private final static String URL = "http://localhost:8080/OFADB_war_exploded/result";
     private final static String USERNAME = "OFADB";
     private final static String PASSWORD = "OFADB";
 
