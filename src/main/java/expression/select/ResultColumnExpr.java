@@ -3,6 +3,17 @@ package expression.select;
 import expression.Expression;
 import types.ExprTypes;
 
+/**
+ * The column expression.
+ *
+ * <P>This is the representation of a column expression.
+ * For instance, {@code A.b as a}</P>
+ *
+ * @author Hao Lin
+ * @version 1.0
+ * @since 1.0
+ */
+
 public class ResultColumnExpr extends Expression {
     private String attrName = "";
     private RelationExpr table = new RelationExpr();
@@ -44,6 +55,10 @@ public class ResultColumnExpr extends Expression {
 
     public void setDbName(String dbName) { table.setDbName(dbName); }
 
+    /**
+     * Acquire the real name of a column, which means alias if exist.
+     * @return {@code String}
+     */
     public String getName() {
         if (!alias.equals(""))
             return alias;

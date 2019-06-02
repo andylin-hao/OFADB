@@ -14,6 +14,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * The select expression.
+ *
+ * <p>This class is the representation of a select expression.
+ * It contains the column clause, from clause and where clause{@code nullable} of a select expression.
+ * In addition, it provides multiple utility static function for information acquiring and validity checking.</p>
+ *
+ * @author Hao Lin
+ * @version 1.0
+ * @since 1.0
+ */
+
 public class SelectExpr extends Expression {
 
     private ArrayList<ResultColumnExpr> resultColumnExprs = new ArrayList<>();
@@ -53,6 +65,15 @@ public class SelectExpr extends Expression {
         this.whereExpr = whereExpr;
     }
 
+    /**
+     * Acquire corresponding {@code ResultColumnExpr} variable with column name.
+     * When the column has alias, it returns the column that has alias equaling column name.
+     * Noticeably, the column variable is not a copy of the original column.
+     * Thus, be careful when editing the return value of this function.
+     *
+     * @param columnName The column name of intended column.
+     * @return {@code ResultColumnExpr} variable.
+     */
     private ResultColumnExpr getColumn(String columnName) {
         for (ResultColumnExpr columnExpr : this.resultColumnExprs) {
             if (columnExpr.getName().equals(columnName))
@@ -62,6 +83,11 @@ public class SelectExpr extends Expression {
         return null;
     }
 
+    /**
+     * Transform the tree structure of join expression to array form.
+     * @param root {@code RangeTableExpr} variable
+     * @return {@code ArrayList} of {@code RangeTableExpr}
+     */
     public static ArrayList<RangeTableExpr> getFromTableList(RangeTableExpr root) {
         ArrayList<RangeTableExpr> result = new ArrayList<>();
         while (true) {
@@ -77,6 +103,13 @@ public class SelectExpr extends Expression {
         }
     }
 
+    /**
+     * Acquire the map from table alias to table name.
+     * For sub query, the alias is mapped to null.
+     * For range table that has no alias, the table name is mapped to itself.
+     * @param root {@code RangeTableExpr} variable.
+     * @return {@code HashMap} of {@code String} to {@code String}.
+     */
     private static HashMap<String, String> getTableNameList(RangeTableExpr root) {
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(root);
         HashMap<String, String> tableNames = new HashMap<>();
@@ -99,6 +132,12 @@ public class SelectExpr extends Expression {
         return tableNames;
     }
 
+    /**
+     * Verify where clause.
+     * @param root {@code WhereExpr}.
+     * @param table {@code RangeTableExpr} variable is the field of where clause.
+     * @throws IOException IO exception.
+     */
     public static void checkWhereClause(WhereExpr root, RangeTableExpr table) throws IOException {
         if (root == null)
             return;
@@ -226,7 +265,6 @@ public class SelectExpr extends Expression {
                 selectExpr.checkValidity();
                 selectExpr.checkColumnUniqueness(selectExpr.resultColumnExprs);
             }
-            //TODO Wrong
             if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_RELATION && !((RelationExpr) rangeTableExpr).getDbName().equals(""))
                 throw new RuntimeException("Syntax error of writing database name in query statement");
         }

@@ -10,6 +10,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * The relation type of range table.
+ *
+ * <p>This class is a deriving class of {@code RangeTableExpr}.
+ * It is the representation of a relational range table.</p>
+ *
+ * @see RangeTableExpr
+ * @author Hao Lin
+ * @version 1.0
+ * @since 1.0
+ */
+
 public class RelationExpr extends RangeTableExpr {
     private String tableName = "";
     private String alias = "";

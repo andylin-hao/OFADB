@@ -156,9 +156,9 @@ public class QueryEngine{
 
     private Long objectToLong(Object object){
         if(object instanceof Integer)
-            return new Long((Integer)object);
+            return Long.valueOf((Integer) object);
         else if(object instanceof Short)
-            return new Long((Short)object);
+            return Long.valueOf((Short) object);
         else if(object instanceof Long)
             return (Long)object;
         else
