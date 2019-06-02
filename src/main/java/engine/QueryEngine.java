@@ -179,6 +179,8 @@ public class QueryEngine{
 
     @SuppressWarnings("unchecked")
     private boolean compare(Comparable left, Comparable right, QualifyTypes op){
+        if(left == null || right == null)
+            return false;
         if(left instanceof String || left instanceof Boolean) {
             switch (op) {
                 case QUA_EQ:

@@ -58,9 +58,9 @@ public class DataFileTest {
 //        table.insert(data);
 //        table.save();
 
-        String sql_subSelect = "select t.name1,tt2.name from (select id as id1, name as name1 from tt2) t, tt2 where t.id1 > (5*5)/10 or t.name1 = '5'";
+        String sql_subSelect = "select t.name1,tt2.name from (select id as id1, name as name1 from tt2) t, tt2 where  (5*6)/10 >= t.id1  or t.name1 = '5'";
         String sql_simplest = "select * from tt2";
-        String sql_where = "select * from tt2 where id <> 6-(4-1) and name = '5'";
+        String sql_where = "select * from tt2 where  name < '5'";
         Result result = Engine.expressionExec(sql_where);
         String[] names = ((QueryResult)result).getColumnName();
         while(((QueryResult)result).hasNext()){
