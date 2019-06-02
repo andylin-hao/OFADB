@@ -28,11 +28,11 @@ public class NodeIndex implements NodeBPlus {
     public NodeIndex(boolean isRoot, boolean isLeaf) {
         this.isLeaf = isLeaf;
         this.isRoot = isRoot;
-        this.keys = new ArrayList<Map.Entry<Comparable, Object>>();
+        this.keys = new ArrayList<>();
         this.offset = null;
 
         if (!this.isLeaf)
-            this.children = new ArrayList<NodeIndex>();
+            this.children = new ArrayList<>();
     }
 
     /**
@@ -68,7 +68,7 @@ public class NodeIndex implements NodeBPlus {
     public void setNodeMiddle() {
         this.isLeaf = false;
         if (this.getChildren() == null)
-            this.children = new ArrayList<NodeIndex>();
+            this.children = new ArrayList<>();
     }
 
     @Override
@@ -238,8 +238,8 @@ public class NodeIndex implements NodeBPlus {
                     right.setParent(newRoot);
                     newRoot.getChildren().add(left);
                     newRoot.getChildren().add(right);
-                    newRoot.keys.add(new AbstractMap.SimpleEntry<Comparable, Object>(left.lastKey(), null));
-                    newRoot.keys.add(new AbstractMap.SimpleEntry<Comparable, Object>(right.lastKey(), null));
+                    newRoot.keys.add(new AbstractMap.SimpleEntry<>(left.lastKey(), null));
+                    newRoot.keys.add(new AbstractMap.SimpleEntry<>(right.lastKey(), null));
 
                     newRoot.offset = offset;
                     ((IndexBase) tree).indexChange.addNewUpdate(newRoot);
@@ -256,8 +256,8 @@ public class NodeIndex implements NodeBPlus {
                     right.setParent(this.parent);
                     this.parent.getChildren().add(insertPos, left);
                     this.parent.getChildren().add(insertPos + 1, right);
-                    this.parent.keys.add(insertPos, new AbstractMap.SimpleEntry<Comparable, Object>(left.lastKey(), null));
-                    this.parent.keys.add(insertPos + 1, new AbstractMap.SimpleEntry<Comparable, Object>(right.lastKey(), null));
+                    this.parent.keys.add(insertPos, new AbstractMap.SimpleEntry<>(left.lastKey(), null));
+                    this.parent.keys.add(insertPos + 1, new AbstractMap.SimpleEntry<>(right.lastKey(), null));
                     parent.recursiveUpdate(tree);
 
                     left.offset = offset;
@@ -297,7 +297,7 @@ public class NodeIndex implements NodeBPlus {
 
             int indexPos = parent.getChildren().indexOf(this);
             if (!this.lastKey().equals(parent.keys.get(indexPos))) {
-                parent.keys.set(indexPos, new AbstractMap.SimpleEntry<Comparable, Object>(this.lastKey(), null));
+                parent.keys.set(indexPos, new AbstractMap.SimpleEntry<>(this.lastKey(), null));
                 ((IndexBase) tree).indexChange.addNewUpdate(parent);
                 parent.recursiveUpdate(tree);
             }
@@ -309,11 +309,11 @@ public class NodeIndex implements NodeBPlus {
             for (int i = 0; i < keys.size(); i++) {
                 if (i < (tree.getOrder() + 1) / 2) {
                     left.getChildren().add(children.get(i));
-                    left.keys.add(new AbstractMap.SimpleEntry<Comparable, Object>(children.get(i).lastKey(), null));
+                    left.keys.add(new AbstractMap.SimpleEntry<>(children.get(i).lastKey(), null));
                     children.get(i).setParent(left);
                 } else {
                     right.getChildren().add(children.get(i));
-                    right.keys.add(new AbstractMap.SimpleEntry<Comparable, Object>(children.get(i).lastKey(), null));
+                    right.keys.add(new AbstractMap.SimpleEntry<>(children.get(i).lastKey(), null));
                     children.get(i).setParent(right);
                 }
             }
@@ -342,8 +342,8 @@ public class NodeIndex implements NodeBPlus {
                 parent.keys.remove(indexPos);
                 parent.getChildren().add(indexPos, left);
                 parent.getChildren().add(indexPos + 1, right);
-                parent.keys.add(indexPos, new AbstractMap.SimpleEntry<Comparable, Object>(left.lastKey(), null));
-                parent.keys.add(indexPos + 1, new AbstractMap.SimpleEntry<Comparable, Object>(right.lastKey(), null));
+                parent.keys.add(indexPos, new AbstractMap.SimpleEntry<>(left.lastKey(), null));
+                parent.keys.add(indexPos + 1, new AbstractMap.SimpleEntry<>(right.lastKey(), null));
                 left.setParent(parent);
                 right.setParent(parent);
                 parent.recursiveUpdate(tree);
@@ -365,7 +365,7 @@ public class NodeIndex implements NodeBPlus {
                     && previous.keys.size() > tree.getOrder() / 2
                     && previous.keys.size() > 2
                     && previous.parent == parent) {
-                Map.Entry<Comparable, Object> entry = new AbstractMap.SimpleEntry<Comparable, Object>(previous.lastKey(), null);
+                Map.Entry<Comparable, Object> entry = new AbstractMap.SimpleEntry<>(previous.lastKey(), null);
                 NodeIndex lastChild = previous.getChildren().get(previous.getChildren().size() - 1);
                 int prevPos = parent.keys.indexOf(entry);
                 int indexPos = prevPos + 1;
@@ -376,8 +376,8 @@ public class NodeIndex implements NodeBPlus {
                 children.add(0, lastChild);
                 lastChild.setParent(this);
 
-                parent.keys.set(prevPos, new AbstractMap.SimpleEntry<Comparable, Object>(previous.lastKey(), null));
-                parent.keys.set(indexPos, new AbstractMap.SimpleEntry<Comparable, Object>(lastKey(), null));
+                parent.keys.set(prevPos, new AbstractMap.SimpleEntry<>(previous.lastKey(), null));
+                parent.keys.set(indexPos, new AbstractMap.SimpleEntry<>(lastKey(), null));
 
                 ((IndexBase) tree).indexChange.addNewUpdate(previous);
                 ((IndexBase) tree).indexChange.addNewUpdate(this);
@@ -389,9 +389,9 @@ public class NodeIndex implements NodeBPlus {
                     && next.keys.size() > tree.getOrder() / 2
                     && next.keys.size() > 2
                     && next.parent == parent) {
-                Map.Entry<Comparable, Object> entry = new AbstractMap.SimpleEntry<Comparable, Object>(next.keys.get(0).getKey(), null);
+                Map.Entry<Comparable, Object> entry = new AbstractMap.SimpleEntry<>(next.keys.get(0).getKey(), null);
                 NodeIndex firstChild = next.getChildren().get(0);
-                int nextPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<Comparable, Object>(next.lastKey(), null));
+                int nextPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(next.lastKey(), null));
                 int indexPos = nextPos - 1;
                 next.keys.remove(0);
                 next.getChildren().remove(0);
@@ -399,8 +399,8 @@ public class NodeIndex implements NodeBPlus {
                 children.add(firstChild);
                 firstChild.setParent(this);
 
-                parent.keys.set(nextPos, new AbstractMap.SimpleEntry<Comparable, Object>(next.lastKey(), null));
-                parent.keys.set(indexPos, new AbstractMap.SimpleEntry<Comparable, Object>(lastKey(), null));
+                parent.keys.set(nextPos, new AbstractMap.SimpleEntry<>(next.lastKey(), null));
+                parent.keys.set(indexPos, new AbstractMap.SimpleEntry<>(lastKey(), null));
 
                 ((IndexBase) tree).indexChange.addNewUpdate(next);
                 ((IndexBase) tree).indexChange.addNewUpdate(this);
@@ -414,7 +414,7 @@ public class NodeIndex implements NodeBPlus {
                     if (previous.keys.size() == tree.getOrder() / 2
                             || previous.keys.size() <= 2
                             && previous.parent == parent) {
-                        int prevPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<Comparable, Object>(previous.lastKey(), null));
+                        int prevPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(previous.lastKey(), null));
                         int indexPos = prevPos + 1;
 
                         for (int i = 0; i < keys.size(); i++) {
@@ -424,7 +424,7 @@ public class NodeIndex implements NodeBPlus {
                         }
                         parent.keys.remove(indexPos);
                         parent.getChildren().remove(indexPos);
-                        parent.keys.set(prevPos, new AbstractMap.SimpleEntry<Comparable, Object>(previous.lastKey(), null));
+                        parent.keys.set(prevPos, new AbstractMap.SimpleEntry<>(previous.lastKey(), null));
 
 
                         ((IndexBase) tree).indexChange.addNewUpdate(previous);
@@ -439,7 +439,7 @@ public class NodeIndex implements NodeBPlus {
                     if (next.keys.size() == tree.getOrder() / 2
                             || next.keys.size() <= 2
                             && next.parent == parent) {
-                        int nextPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<Comparable, Object>(next.lastKey(), null));
+                        int nextPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(next.lastKey(), null));
                         int indexPos = nextPos - 1;
 
                         for (int i = keys.size() - 1; i >= 0; i--) {
@@ -505,6 +505,24 @@ public class NodeIndex implements NodeBPlus {
         return -1;
     }
 
+    public NodeIndex insertPlace(Comparable key){
+        if(!isLeaf){
+            if (key.compareTo(this.keys.get(0).getKey()) <= 0)
+                return this.getChildren().get(0).insertPlace(key);
+            else if(key.compareTo(this.keys.get(this.keys.size() - 1).getKey()) > 0)
+                return null;
+            else{
+                for (int i = 1; i < this.keys.size(); i++) {
+                    if (key.compareTo(this.keys.get(i).getKey()) <= 0) {
+                        return this.getChildren().get(i).insertPlace(key);
+                    }
+                }
+            }
+        }
+        return this;
+    }
+
+
     /**
      * Cut connect with other things
      **/
@@ -569,7 +587,7 @@ public class NodeIndex implements NodeBPlus {
                                 && previous.keys.size() > tree.getOrder() / 2
                                 && previous.keys.size() > 2
                                 && previous.parent == parent) {
-                            Map.Entry<Comparable, Object> entry = new AbstractMap.SimpleEntry<Comparable, Object>(previous.lastKey(), null);
+                            Map.Entry<Comparable, Object> entry = new AbstractMap.SimpleEntry<>(previous.lastKey(), null);
                             int prevPos = parent.keys.indexOf(entry);
                             int indexPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(lastKey(), null));
 
@@ -577,8 +595,8 @@ public class NodeIndex implements NodeBPlus {
                             keys.add(0, previous.keys.remove(previous.keys.size() - 1));
                             delete(key);
 
-                            parent.keys.set(prevPos, new AbstractMap.SimpleEntry<Comparable, Object>(previous.lastKey(), null));
-                            parent.keys.set(indexPos, new AbstractMap.SimpleEntry<Comparable, Object>(lastKey(), null));
+                            parent.keys.set(prevPos, new AbstractMap.SimpleEntry<>(previous.lastKey(), null));
+                            parent.keys.set(indexPos, new AbstractMap.SimpleEntry<>(lastKey(), null));
 
 
                             ((IndexBase) tree).indexChange.addNewUpdate(previous);
@@ -592,16 +610,16 @@ public class NodeIndex implements NodeBPlus {
                                 && next.keys.size() > tree.getOrder() / 2
                                 && next.keys.size() > 2
                                 && next.parent == parent) {
-                            Map.Entry<Comparable, Object> entry = new AbstractMap.SimpleEntry<Comparable, Object>(next.keys.get(0).getKey(), null);
-                            int nextPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<Comparable, Object>(next.lastKey(), null));
+                            Map.Entry<Comparable, Object> entry = new AbstractMap.SimpleEntry<>(next.keys.get(0).getKey(), null);
+                            int nextPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(next.lastKey(), null));
                             int indexPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(lastKey(), null));
 
 
                             keys.add(next.keys.remove(0));
                             delete(key);
 
-                            parent.keys.set(nextPos, new AbstractMap.SimpleEntry<Comparable, Object>(next.lastKey(), null));
-                            parent.keys.set(indexPos, new AbstractMap.SimpleEntry<Comparable, Object>(lastKey(), null));
+                            parent.keys.set(nextPos, new AbstractMap.SimpleEntry<>(next.lastKey(), null));
+                            parent.keys.set(indexPos, new AbstractMap.SimpleEntry<>(lastKey(), null));
 
 
                             ((IndexBase) tree).indexChange.addNewUpdate(next);
@@ -615,16 +633,15 @@ public class NodeIndex implements NodeBPlus {
                             if ((previous != null) &&
                                     (previous.keys.size() == tree.getOrder() / 2
                                             || previous.keys.size() <= 2) && previous.parent == parent) {
-                                int prevPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<Comparable, Object>(previous.lastKey(), null));
-                                int indexPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<Comparable, Object>(lastKey(), null));
+                                int prevPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(previous.lastKey(), null));
+                                int indexPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(lastKey(), null));
                                 delete(key);
 
-                                for (int i = 0; i < keys.size(); i++) {
-                                    previous.keys.add(keys.get(i));
-                                }
+                                previous.keys.addAll(keys);
+
                                 parent.keys.remove(indexPos);
                                 parent.getChildren().remove(indexPos);
-                                parent.keys.set(prevPos, new AbstractMap.SimpleEntry<Comparable, Object>(previous.lastKey(), null));
+                                parent.keys.set(prevPos, new AbstractMap.SimpleEntry<>(previous.lastKey(), null));
                                 previous.setNext(next);
                                 if (next != null)
                                     next.setPrevious(previous);
@@ -640,8 +657,8 @@ public class NodeIndex implements NodeBPlus {
                                     if ((next.keys.size() == tree.getOrder() / 2
                                             || next.keys.size() <= 2)
                                             && next.parent == parent) {
-                                        int nextPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<Comparable, Object>(next.lastKey(), null));
-                                        int indexPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<Comparable, Object>(lastKey(), null));
+                                        int nextPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(next.lastKey(), null));
+                                        int indexPos = parent.keys.indexOf(new AbstractMap.SimpleEntry<>(lastKey(), null));
                                         delete(key);
                                         for (int i = keys.size() - 1; i >= 0; i--) {
                                             next.keys.add(0, keys.get(i));

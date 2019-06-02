@@ -3,6 +3,7 @@ package disk;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import meta.ColumnInfo;
@@ -91,6 +92,8 @@ public class Table {
 
         return rowList;
     }
+
+
 
 
     /**
@@ -213,6 +216,16 @@ public class Table {
             indexBase.indexChange.saveChange();
             indexBase.fileIO.file.close();
         }
+    }
+
+    public IndexBase getIndexByColumns(int[] columns){
+        Arrays.sort(columns);
+        for(IndexBase indexBase : indexes){
+            Arrays.sort(indexBase.info.columnIndex);
+            if(Arrays.equals(indexBase.info.columnIndex, columns))
+                return indexBase;
+        }
+        return null;
     }
 
 }

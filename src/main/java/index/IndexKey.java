@@ -19,10 +19,9 @@ public class IndexKey implements Comparable{
     public IndexKey(Type[] types1,byte[] buf)throws IOException {
         types = types1;
         values = fromBytes(buf);
-
     }
 
-    public byte[] toBytes()throws IOException{
+    public byte[] toBytes(){
         int totalLength = IndexKey.getKeyLength(this.types);
         byte[] bytes = new byte[totalLength];
         MDBByteArrayOutputStream outputStream = new MDBByteArrayOutputStream(bytes);
@@ -55,7 +54,7 @@ public class IndexKey implements Comparable{
         return totalLength;
     }
 
-    public String stringFilter(String origin)throws IOException{
+    public String stringFilter(String origin) {
         StringBuilder resultStr = new StringBuilder();
         for(int i = 0;i<origin.length();i++){
             if(origin.charAt(i) != '\0')
