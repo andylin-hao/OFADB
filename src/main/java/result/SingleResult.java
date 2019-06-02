@@ -16,7 +16,7 @@ public class SingleResult {
         this.positions = positions;
     }
 
-    private HashMap<String, HashMap<String, Object>> getDatas() {
+    public HashMap<String, HashMap<String, Object>> getDatas() {
         return datas;
     }
 

@@ -58,11 +58,16 @@ public class DataFileTest {
 //        table.insert(data);
 //        table.save();
 
-        String sql_subSelect = "select t.name1 from (select id as id1, name as name1 from tt2) t, tt2 where t.id1 = 6-(4-2) or t.name1 = '5'";
+        String sql_subSelect = "select t.name1,tt2.name from (select id as id1, name as name1 from tt2) t, tt2 where t.id1 = (5*8)/10 or t.name1 = '5'";
         String sql_simplest = "select * from tt2";
         String sql_where = "select * from tt2 where id = 6-(4-2) and name = '5'";
         SelectExpr select = (SelectExpr) getParseResult(sql_subSelect);
         Result result = Engine.expressionExec(select);
+        String[] names = ((QueryResult)result).getColumnName();
+        while(((QueryResult)result).hasNext()){
+            Object[] data = ((QueryResult)result).next();
+            int a = 1;
+        }
 //        SingleResult data = ((QueryResult)result).getValue("3");
         int a = 1;
 

@@ -30,7 +30,7 @@ public class QueryEngine{
         }
     }
 
-    private boolean dataValid(SingleResult data, WhereExpr where)throws IOException{
+    private boolean dataValid(SingleResult data, WhereExpr where){
         if(where == null)
             return true;
         if(where.isInvalid())
@@ -40,7 +40,7 @@ public class QueryEngine{
             QualifyEleExpr right = ((QualifierExpr)where).getRhs();
             Object leftData = getQualifyEleExprValue(data,left);
             Object rightData = getQualifyEleExprValue(data,right);
-            return qualify(leftData,rightData,left.getBasicEleTypes(selectExpr.getFromExpr()),((QualifierExpr)where).getQualifyTypes());
+            return compare((Comparable) leftData,(Comparable) rightData,((QualifierExpr)where).getQualifyTypes());
         }
         else if (where.getOp().equals(OpTypes.OP_AND)){
             return dataValid(data,where.getLeft()) && dataValid(data,where.getRight());
@@ -154,104 +154,22 @@ public class QueryEngine{
         selectExpr.trimWhere(unused);
     }
 
-    private Long objectToLong(Object object){
-        if(object instanceof Integer)
-            return Long.valueOf((Integer) object);
-        else if(object instanceof Short)
-            return Long.valueOf((Short) object);
-        else if(object instanceof Long)
-            return (Long)object;
-        else
-            throw new RuntimeException("Error in qualifier element type");
-    }
 
-    public Double objectToDouble(Object object){
-        if(object instanceof Float)
-            return new Double((Float)object);
-        else if(object instanceof Double)
-            return (Double)object;
-        else
-            throw new RuntimeException("Error in qualifier element type");
-    }
-
-    private boolean qualify(Object objectLeft, Object objectRight, QualifyEleTypes objectType, QualifyTypes op){
-        //TODO : 添加左右类型判断
-        switch (objectType){
-            case QUA_ELE_INT:
-                return compare(objectToLong(objectLeft),objectToLong(objectRight),op);
-            case QUA_ELE_DOUBLE:
-                return compare(objectToDouble(objectLeft),objectToDouble(objectRight),op);
-            case QUA_ELE_BOOL:
-                return compare((Boolean) objectLeft,(Boolean) objectRight,op);
-            case QUA_ELE_STR:
-                return compare((String) objectLeft,(String)objectRight,op);
-            default:
-                throw new RuntimeException("No such qualify element type");
-        }
-    }
-
-    private boolean compare(Long long1,Long Long2,QualifyTypes op){
+    @SuppressWarnings("unchecked")
+    private boolean compare(Comparable left, Comparable right, QualifyTypes op){
         switch (op){
             case QUA_EQ:
-                return long1.equals(Long2);
+                return left.equals(right);
             case QUA_GT:
-                return long1 > Long2;
+                return (left.compareTo(right) > 0);
             case QUA_LT:
-                return long1 < Long2;
+                return (left.compareTo(right) < 0);
             case QUA_GET:
-                return long1 >= Long2;
+                return (left.compareTo(right) >= 0);
             case QUA_LET:
-                return long1 <= Long2;
+                return (left.compareTo(right) <= 0);
             case QUA_NOT_EQ:
-                return !long1.equals(Long2);
-            default:
-                throw new RuntimeException("No such qualify type");
-        }
-    }
-    private boolean compare(String string1, String string2, QualifyTypes op){
-        switch (op){
-            case QUA_EQ:
-                return string1.equals(string2);
-            case QUA_GT:
-                return (string1.compareTo(string2) > 0);
-            case QUA_LT:
-                return (string1.compareTo(string2) < 0);
-            case QUA_GET:
-                return (string1.compareTo(string2) >= 0);
-            case QUA_LET:
-                return (string1.compareTo(string2) <= 0);
-            case QUA_NOT_EQ:
-                return !string1.equals(string2);
-            default:
-                throw new RuntimeException("No such qualify type");
-        }
-    }
-
-    private boolean compare(Double double1, Double double2, QualifyTypes op){
-        switch (op){
-            case QUA_EQ:
-                return double1.equals(double2);
-            case QUA_GT:
-                return double1 > double2;
-            case QUA_LT:
-                return double1 < double2;
-            case QUA_GET:
-                return double1 >= double2;
-            case QUA_LET:
-                return double1 <= double2;
-            case QUA_NOT_EQ:
-                return !double1.equals(double2);
-            default:
-                throw new RuntimeException("No such qualify type");
-        }
-    }
-
-    private boolean compare(Boolean boolean1, Boolean boolean2, QualifyTypes op){
-        switch (op){
-            case QUA_EQ:
-                return boolean1.equals(boolean2);
-            case QUA_NOT_EQ:
-                return !boolean1.equals(boolean2);
+                return !left.equals(right);
             default:
                 throw new RuntimeException("No such qualify type");
         }
