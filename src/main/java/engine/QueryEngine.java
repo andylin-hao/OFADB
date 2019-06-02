@@ -30,7 +30,7 @@ public class QueryEngine{
         }
     }
 
-    private boolean dataValid(SingleResult data, WhereExpr where)throws IOException{
+    private boolean dataValid(SingleResult data, WhereExpr where){
         if(where == null)
             return true;
         if(where.isInvalid())
@@ -174,4 +174,5 @@ public class QueryEngine{
                 throw new RuntimeException("No such qualify type");
         }
     }
+
 }

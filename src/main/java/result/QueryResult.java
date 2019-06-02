@@ -20,7 +20,12 @@ public class QueryResult extends Result {
         isFinalResult = finalResult;
     }
 
+    public void setIterable(){
+        this.next = 0;
+    }
+
     private boolean isFinalResult = false;
+    private int next = 0;
 
     public SubSelectExpr getSelectExpr() {
         return selectExpr;
@@ -159,8 +164,6 @@ public class QueryResult extends Result {
             SingleResult baseResult =basedResult.getValue(basedResult.datas.get(Integer.parseInt(position)));
             //if the select is based on just one table
             if(isFinalResult){
-                SingleResult result = new SingleResult();
-
                 HashMap<String,Object> data= new HashMap<>();
                 for(Map.Entry<String,ResultColumnExpr> ele : selectColumns.entrySet()){
                     String columnName = ele.getKey();
@@ -196,5 +199,37 @@ public class QueryResult extends Result {
         this.selectColumns = new HashMap<>();
         for(ResultColumnExpr columnExpr : expr.getResultColumnExprs())
             this.selectColumns.put(columnExpr.getName(),columnExpr);
+    }
+
+    public String[] getColumnName(){
+        int columnNum = selectColumns.size();
+        String[] columnNames = new String[columnNum];
+        int i = 0;
+        for(String ele: selectColumns.keySet())
+            columnNames[i++] = ele;
+        return columnNames;
+    }
+
+    public boolean hasNext(){
+        return next<datas.size();
+    }
+
+    public Object[] next()throws IOException{
+        if(isFinalResult) {
+            if(next < this.datas.size()) {
+                int pos = next++;
+                SingleResult singleResult = getValue(datas.get(pos));
+                String[] names = getColumnName();
+                Object[] data = new Object[names.length];
+                Map<String, Object> result = singleResult.getDatas().get(QueryResult.finalResultName);
+                for (int i = 0; i < data.length; i++)
+                    data[i] = result.get(names[i]);
+                return data;
+            }
+            else
+                throw new RuntimeException("no more data in the result");
+        }
+        else
+            throw new RuntimeException("this is not a complete result of a select ");
     }
 }
