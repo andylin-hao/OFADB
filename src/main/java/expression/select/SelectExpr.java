@@ -5,8 +5,6 @@ import expression.Expression;
 import meta.ColumnInfo;
 import meta.MetaData;
 import meta.TableInfo;
-import result.Result;
-import server.Server;
 import types.*;
 
 import java.io.IOException;

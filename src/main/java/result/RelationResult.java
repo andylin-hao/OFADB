@@ -38,7 +38,7 @@ public class RelationResult extends QueryResult{
     }
 
     @Override
-    public SingleResult getValue(String position) throws IOException {
+    public SingleResult getValue(final String position) throws IOException {
         String tableName = tableExpr.getTableName();
         Table table = Objects.requireNonNull(System.getCurDB().getTable(tableName));
 
