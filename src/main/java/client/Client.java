@@ -18,10 +18,12 @@ import server.ResData;
 import types.MsgTypes;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 public class Client extends JFrame {
@@ -60,58 +62,50 @@ public class Client extends JFrame {
             case MSG_RES_SUCCESS:
                 if (res.tableData != null) {
                     Object[] columnNames = res.tableData.columnNames;
-                    Object[][] data = new Object[columnNames.length][res.tableData.data.size()];
-                    this.table = new JTable(res.tableData.data.toArray(data), columnNames);
-                    this.scrollPaneTable.removeAll();
-                    this.scrollPaneTable.add(this.table);
+                    Object[][] data = new Object[res.tableData.data.size()][columnNames.length];
+                    for (int i = 0;i<res.tableData.data.size();i++) {
+                        data[i] = res.tableData.data.get(i);
+                    }
+                    DefaultTableModel tableModel = (DefaultTableModel)this.table.getModel();
+                    tableModel.setDataVector(data, columnNames);
+                    this.table.setModel(tableModel);
                 }
 
                 this.label.setText(res.message);
+                break;
             default:
                 this.label.setText("Wrong format of response data");
         }
     }
 
     private ResData send(String data) {
-        RequestConfig defaultRequestConfig = RequestConfig.custom()
-                .setSocketTimeout(3000)
-                .setConnectTimeout(3000)
-                .setConnectionRequestTimeout(3000).build();
-
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-
-        HttpPost post = new HttpPost(URL);
-
-        post.setConfig(defaultRequestConfig);
-
-        StringEntity stringEntity = new StringEntity(data, StandardCharsets.UTF_8);
-        stringEntity.setContentType("application/json");
-        stringEntity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-        post.setEntity(stringEntity);
-
-        ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
-            @Override
-            public String handleResponse(HttpResponse httpResponse) throws ClientProtocolException, IOException {
-                int status = httpResponse.getStatusLine().getStatusCode();
-                if (status >= 200 && status < 300) {
-                    HttpEntity entity = httpResponse.getEntity();
-                    return entity != null ? EntityUtils.toString(entity) : null;
-                } else {
-                    throw new ClientProtocolException("Unexpected response status: " + status);
-                }
-            }
-        };
-
         try {
-            String resStr = httpClient.execute(post, responseHandler);
-            return new Gson().fromJson(resStr, ResData.class);
-        } catch (IOException e) {
+            Socket socket = new Socket("localhost", 8080);
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write(data.getBytes());
+            socket.shutdownOutput();
+
+            InputStream inputStream = socket.getInputStream();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String temp;
+            StringBuilder resStr = new StringBuilder();
+            while ((temp = bufferedReader.readLine()) != null) {
+                resStr.append(temp);
+            }
+            socket.shutdownInput();
+
+            socket.close();
+
+            return new Gson().fromJson(resStr.toString(), ResData.class);
+        } catch (Exception e) {
             ResData resData = new ResData();
             resData.type = MsgTypes.MSG_RES_ERR;
             resData.message = e.getMessage();
             resData.tableData = null;
             return resData;
         }
+
+
     }
 
     private void initUI() {
