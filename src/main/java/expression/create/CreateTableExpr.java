@@ -3,6 +3,7 @@ package expression.create;
 import expression.Expression;
 import expression.select.RelationExpr;
 import meta.MetaData;
+import types.ColumnConstraintTypes;
 import types.ColumnTypes;
 import types.ExprTypes;
 import types.TableConstraintTypes;
@@ -54,9 +55,11 @@ public class CreateTableExpr extends Expression {
     public HashSet<String> checkPrimaryKey() {
         HashSet<String> primaryKeys = new HashSet<>();
         for (ColumnDefExpr columnDefExpr: columnDefExprs) {
-            if (primaryKeys.contains(columnDefExpr.getColumnName()))
-                throw new RuntimeException("Duplicate definition of primary key " + columnDefExpr.getColumnName());
-            primaryKeys.add(columnDefExpr.getColumnName());
+            if (columnDefExpr.getConstraintTypes().contains(ColumnConstraintTypes.COL_PRIMARY_KEY)) {
+                if (primaryKeys.contains(columnDefExpr.getColumnName()))
+                    throw new RuntimeException("Duplicate definition of primary key " + columnDefExpr.getColumnName());
+                primaryKeys.add(columnDefExpr.getColumnName());
+            }
         }
 
         for (TableConstraintExpr tableConstraintExpr: tableConstraintExprs) {

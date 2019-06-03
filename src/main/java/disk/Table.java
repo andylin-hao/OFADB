@@ -31,6 +31,7 @@ public class Table {
             setPKIndex(pkIndexNum);
     }
 
+
     public void setPKIndex(int indexNum) throws IOException {
         primaryIndex = indexes.get(indexNum);
         if (!primaryIndex.info.isUnique) {
@@ -114,6 +115,7 @@ public class Table {
      **/
     public Row insert(Object[] data) throws IOException {
         //check the unique keys are unused before
+
         if (uniqueKeyUnUsed(data)) {
 
             // insert the data into data file
@@ -128,6 +130,10 @@ public class Table {
             return row;
         } else
             return null;
+    }
+
+    public Row get(int block,int row)throws IOException{
+        return dataFileManager.get(block,row);
     }
 
     /**

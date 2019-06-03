@@ -2,6 +2,7 @@ package expression.delete;
 
 import expression.Expression;
 import expression.select.*;
+import result.RelationResult;
 import types.ExprTypes;
 
 import java.io.IOException;
@@ -35,6 +36,17 @@ public class DeleteExpr extends Expression {
 
     public void setWhereExpr(WhereExpr whereExpr) {
         this.whereExpr = whereExpr;
+    }
+
+    public static SelectExpr getSelectExpr(WhereExpr whereExpr, RelationExpr table) throws IOException {
+        SelectExpr selectExpr = new SelectExpr();
+        selectExpr.setWhereExpr(whereExpr);
+        selectExpr.setFromExpr(table);
+        ResultColumnExpr resultColumnExpr = new ResultColumnExpr();
+        resultColumnExpr.setAttrName("*");
+        selectExpr.getResultColumnExprs().add(resultColumnExpr);
+        selectExpr.checkValidity();
+        return selectExpr;
     }
 
     @Override

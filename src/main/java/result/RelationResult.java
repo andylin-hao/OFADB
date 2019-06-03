@@ -52,7 +52,7 @@ public class RelationResult extends QueryResult{
         int blockIndex = Integer.valueOf(br[0]);
         int rowIndex = Integer.valueOf(br[1]);
 
-        Object[] rowData = table.dataFileManager.get(blockIndex, rowIndex).rowData;
+        Object[] rowData = table.get(blockIndex, rowIndex).rowData;
         HashMap<String, Object> data = new HashMap<>();
         for (int i = 0; i < table.info.columns.length; i++)
             data.put(table.info.columns[i].columnName, rowData[i]);

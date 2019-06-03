@@ -6,13 +6,14 @@ import types.ColumnTypes;
 import types.ExprTypes;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class ColumnDefExpr extends Expression {
 
     private String columnName;
     private ColumnTypes colType;
     private int typeNum;
-    private ArrayList<ColumnConstraintTypes> constraintTypes = new ArrayList<>();
+    private HashSet<ColumnConstraintTypes> constraintTypes = new HashSet<>();
 
     public ColumnDefExpr() {
         super(ExprTypes.EXPR_COLUMN_DEF);
@@ -25,12 +26,8 @@ public class ColumnDefExpr extends Expression {
         this.typeNum = typeNum;
     }
 
-    public ArrayList<ColumnConstraintTypes> getConstraintTypes() {
+    public HashSet<ColumnConstraintTypes> getConstraintTypes() {
         return constraintTypes;
-    }
-
-    public void setConstraintTypes(ArrayList<ColumnConstraintTypes> constraintTypes) {
-        this.constraintTypes = constraintTypes;
     }
 
     public String getColumnName() {

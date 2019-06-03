@@ -361,7 +361,9 @@ public class SQLParser extends SQLiteBaseListener {
 
     private Object getValue(SQLiteParser.ExprContext exprCtx) {
         String text = exprCtx.getText();
-        if (isInteger(text))
+        if (isNull(text))
+            return null;
+        else if (isInteger(text))
             return Long.parseLong(text);
         else if (isDouble(text))
             return Double.parseDouble(text);
@@ -520,6 +522,13 @@ public class SQLParser extends SQLiteBaseListener {
             return false;
         }
         return str.toLowerCase().equals("true") || str.toLowerCase().equals("false");
+    }
+
+    private boolean isNull(String str) {
+        if (null == str || "".equals(str)) {
+            return false;
+        }
+        return str.toLowerCase().equals("null");
     }
 
     private boolean isStr(String str) {

@@ -27,11 +27,11 @@ public class RelationExpr extends RangeTableExpr {
     private String alias = "";
     private String dbName = "";
 
-    public RelationExpr(String tableName, String alias, String daName) {
+    public RelationExpr(String tableName, String alias, String dbName) {
         super(RangeTableTypes.RT_RELATION);
         this.tableName = tableName;
         this.alias = alias;
-        this.dbName = daName;
+        this.dbName = dbName;
     }
 
     public RelationExpr() {
@@ -47,7 +47,7 @@ public class RelationExpr extends RangeTableExpr {
     }
 
     public String getDbName() {
-        return dbName;
+        return System.getCurDB().dataBaseName;
     }
 
     public void setTableName(String tableName) {
@@ -71,7 +71,7 @@ public class RelationExpr extends RangeTableExpr {
 
     @Override
     public void checkValidity() throws IOException {
-        if (MetaData.isTableNotExist(getDbName(), getTableName()))
+        if (MetaData.isTableNotExist(System.getCurDB().dataBaseName, getTableName()))
             throw new RuntimeException("Table " + getTableName() + " does not exist");
     }
 

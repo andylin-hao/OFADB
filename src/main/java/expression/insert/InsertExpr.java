@@ -47,6 +47,8 @@ public class InsertExpr extends Expression {
 
     private static boolean objectEqualsColumnType(Object object, Type columnType) {
         ColumnTypes type = columnType.typeCode;
+        if (object == null)
+            return true;
         if (object instanceof Long) {
             return type.equals(ColumnTypes.COL_SHORT) ||
                     type.equals(ColumnTypes.COL_INT) ||
@@ -101,6 +103,7 @@ public class InsertExpr extends Expression {
 
     @Override
     public void checkValidity() throws IOException {
+        //TODO:补充完整values输出
         checkColumnsValues(table, columns, values);
     }
 }

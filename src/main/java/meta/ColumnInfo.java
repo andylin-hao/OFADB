@@ -86,4 +86,8 @@ public class ColumnInfo {
         columnIndexs[0] = index;
         return table.getIndexByColumns(columnIndexs);
     }
+
+    public Integer getAutoIncrValue(){
+        return incrStart++;
+    }
 }

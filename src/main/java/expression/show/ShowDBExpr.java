@@ -24,6 +24,8 @@ public class ShowDBExpr extends Expression {
 
     @Override
     public void checkValidity() throws IOException {
+        if (dbName == null)
+            return;
         if (MetaData.isDBNotExist(dbName))
             throw new RuntimeException("Database " + dbName + " does not exist");
     }
