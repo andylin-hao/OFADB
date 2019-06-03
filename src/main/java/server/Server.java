@@ -1,82 +1,114 @@
 package server;
 
 import com.google.gson.Gson;
+import disk.System;
 import engine.Engine;
 import result.QueryResult;
 import result.Result;
 import types.MsgTypes;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-@WebServlet(name = "Server")
-public class Server extends HttpServlet {
+public class Server {
     private final static String USERNAME = "OFADB";
     private final static String PASSWORD = "OFADB";
+    private ServerSocket serverSocket;
+    private DataInputStream inputStream;
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        response.setContentType("application/json");
-        PrintWriter writer;
+    private Server() {
         try {
-            writer = response.getWriter();
+            serverSocket = new ServerSocket(8080, 1);
         } catch (IOException e) {
-            return;
+            e.printStackTrace();
         }
+        java.lang.System.out.println("Server is starting...");
+    }
+
+    @SuppressWarnings("InfiniteLoopStatement")
+    private void start() {
+        while (true) {
+            Socket socket;
+            try {
+                socket = serverSocket.accept();
+                java.lang.System.out.println("New connection accepted: " +
+                        socket.getInetAddress() + ":" + socket.getPort());
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
+
+            PostData postData = null;
+            try {
+                InputStream inputStream = socket.getInputStream();
+                postData = getPostData(inputStream);
+                socket.shutdownInput();
+            } catch (Exception e) {
+                java.lang.System.out.println("Client disconnected");
+            }
+
+            try {
+                OutputStream outputStream = socket.getOutputStream();
+                doResponse(outputStream, postData);
+                socket.shutdownOutput();
+            } catch (Exception e) {
+                java.lang.System.out.println("Client disconnected");
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Server server = new Server();
+        server.start();
+    }
+
+    private void doResponse(OutputStream os, PostData data) throws IOException {
         String resJson;
 
-
-        PostData data;
-        try {
-            data = getPostData(request);
-        } catch (Exception e) {
+        if (data == null) {
             resJson = getResJson(MsgTypes.MSG_RES_ERR, "Format error", null);
-            writer.println(resJson);
+            os.write(resJson.getBytes());
             return;
         }
 
         if (!verifyClient(data.userName, data.password)) {
             resJson = getResJson(MsgTypes.MSG_RES_ERR, "Invalid user", null);
-            writer.println(resJson);
+            os.write(resJson.getBytes());
             return;
         }
 
         try {
             switch (data.type) {
                 case MSG_POST_SQL:
+                    System.loadSystem();
+                    System.loadDataBase("testbase");
                     Result result = Engine.expressionExec(data.sql);
-                    writer.println(getResJson(result));
+                    os.write(getResJson(result).getBytes());
                     break;
                 case MSG_POST_CONNECT:
-                    writer.println(getResJson(MsgTypes.MSG_RES_SUCCESS, "Connection is stable", null));
+                    os.write(getResJson(MsgTypes.MSG_RES_SUCCESS, "Connection is stable", null).getBytes());
                     break;
                 default:
                     throw new RuntimeException("Post form is incorrect");
             }
         } catch (Exception e) {
             resJson = getResJson(MsgTypes.MSG_RES_ERR, e.getMessage(), null);
-            writer.println(resJson);
+            os.write(resJson.getBytes());
         }
-    }
-
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doPost(request, response);
     }
 
     private boolean verifyClient(String userName, String password) {
         return userName.equals(USERNAME) && password.equals(PASSWORD);
     }
 
-    private PostData getPostData(HttpServletRequest request) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8));
+    private PostData getPostData(InputStream is) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         StringBuilder jsonStr = new StringBuilder();
         String line;
-        while ((line = bufferedReader.readLine()) != null){
+        while ((line = bufferedReader.readLine()) != null) {
             jsonStr.append(line);
         }
 
