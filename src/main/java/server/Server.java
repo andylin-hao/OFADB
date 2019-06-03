@@ -2,7 +2,6 @@ package server;
 
 import disk.System;
 import engine.Engine;
-import javafx.geometry.Pos;
 import result.QueryResult;
 import result.Result;
 import types.MsgTypes;
@@ -10,7 +9,6 @@ import types.MsgTypes;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class Server {
