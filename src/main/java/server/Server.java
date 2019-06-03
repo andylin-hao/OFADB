@@ -1,8 +1,8 @@
 package server;
 
-import com.google.gson.Gson;
 import disk.System;
 import engine.Engine;
+import javafx.geometry.Pos;
 import result.QueryResult;
 import result.Result;
 import types.MsgTypes;
@@ -17,7 +17,6 @@ public class Server {
     private final static String USERNAME = "OFADB";
     private final static String PASSWORD = "OFADB";
     private ServerSocket serverSocket;
-    private DataInputStream inputStream;
 
     private Server() {
         try {
@@ -34,8 +33,6 @@ public class Server {
             Socket socket;
             try {
                 socket = serverSocket.accept();
-                java.lang.System.out.println("New connection accepted: " +
-                        socket.getInetAddress() + ":" + socket.getPort());
             } catch (Exception e) {
                 e.printStackTrace();
                 continue;
@@ -44,8 +41,9 @@ public class Server {
             PostData postData = null;
             try {
                 InputStream inputStream = socket.getInputStream();
-                postData = getPostData(inputStream);
+                postData = (PostData) deserialize(inputStream.readAllBytes());
                 socket.shutdownInput();
+                java.lang.System.out.println("Message received");
             } catch (Exception e) {
                 java.lang.System.out.println("Client disconnected");
             }
@@ -54,6 +52,7 @@ public class Server {
                 OutputStream outputStream = socket.getOutputStream();
                 doResponse(outputStream, postData);
                 socket.shutdownOutput();
+                java.lang.System.out.println("Result sent");
             } catch (Exception e) {
                 java.lang.System.out.println("Client disconnected");
             }
@@ -66,17 +65,17 @@ public class Server {
     }
 
     private void doResponse(OutputStream os, PostData data) throws IOException {
-        String resJson;
+        byte[] resStr;
 
         if (data == null) {
-            resJson = getResJson(MsgTypes.MSG_RES_ERR, "Format error", null);
-            os.write(resJson.getBytes());
+            resStr = getResStr(MsgTypes.MSG_RES_ERR, "Format error", null);
+            os.write(resStr);
             return;
         }
 
         if (!verifyClient(data.userName, data.password)) {
-            resJson = getResJson(MsgTypes.MSG_RES_ERR, "Invalid user", null);
-            os.write(resJson.getBytes());
+            resStr = getResStr(MsgTypes.MSG_RES_ERR, "Invalid user", null);
+            os.write(resStr);
             return;
         }
 
@@ -86,17 +85,17 @@ public class Server {
                     System.loadSystem();
                     System.loadDataBase("testbase");
                     Result result = Engine.expressionExec(data.sql);
-                    os.write(getResJson(result).getBytes());
+                    os.write(getResStr(result));
                     break;
                 case MSG_POST_CONNECT:
-                    os.write(getResJson(MsgTypes.MSG_RES_SUCCESS, "Connection is stable", null).getBytes());
+                    os.write(getResStr(MsgTypes.MSG_RES_SUCCESS, "Connection is stable", null));
                     break;
                 default:
                     throw new RuntimeException("Post form is incorrect");
             }
         } catch (Exception e) {
-            resJson = getResJson(MsgTypes.MSG_RES_ERR, e.getMessage(), null);
-            os.write(resJson.getBytes());
+            resStr = getResStr(MsgTypes.MSG_RES_ERR, e.getMessage(), null);
+            os.write(resStr);
         }
     }
 
@@ -104,19 +103,7 @@ public class Server {
         return userName.equals(USERNAME) && password.equals(PASSWORD);
     }
 
-    private PostData getPostData(InputStream is) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-        StringBuilder jsonStr = new StringBuilder();
-        String line;
-        while ((line = bufferedReader.readLine()) != null) {
-            jsonStr.append(line);
-        }
-
-        Gson gson = new Gson();
-        return gson.fromJson(jsonStr.toString(), PostData.class);
-    }
-
-    private String getResJson(Result result) throws IOException {
+    private byte[] getResStr(Result result) throws IOException {
         if (Objects.requireNonNull(result).getClass() == QueryResult.class) {
             QueryResult queryResult = (QueryResult) result;
             TableData tableData = new TableData();
@@ -124,18 +111,38 @@ public class Server {
             while (queryResult.hasNext()) {
                 tableData.data.add(queryResult.next());
             }
-            return getResJson(MsgTypes.MSG_RES_SUCCESS, "Query success", tableData);
+            return getResStr(MsgTypes.MSG_RES_SUCCESS, "Query success", tableData);
         } else {
-            return getResJson(MsgTypes.MSG_RES_SUCCESS, "message", null);
+            return getResStr(MsgTypes.MSG_RES_SUCCESS, "message", null);
         }
     }
 
-    private String getResJson(MsgTypes type, String message, TableData tableData) {
+    private byte[] getResStr(MsgTypes type, String message, TableData tableData) throws IOException {
         ResData resData = new ResData();
         resData.type = type;
         resData.message = message;
         resData.tableData = tableData;
 
-        return new Gson().toJson(resData);
+        return serialize(resData);
+    }
+
+    public static byte[] serialize(Object obj) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream;
+        objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+        objectOutputStream.writeObject(obj);
+        byte[] bytes = byteArrayOutputStream.toByteArray();
+        objectOutputStream.close();
+        byteArrayOutputStream.close();
+        return bytes;
+    }
+
+    public static Object deserialize(byte[] str) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(str);
+        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+        Object object = objectInputStream.readObject();
+        objectInputStream.close();
+        byteArrayInputStream.close();
+        return object;
     }
 }

@@ -2,7 +2,9 @@ package server;
 
 import types.MsgTypes;
 
-public class ResData {
+import java.io.Serializable;
+
+public class ResData implements Serializable {
     public MsgTypes type;
     public String message;
     public TableData tableData;

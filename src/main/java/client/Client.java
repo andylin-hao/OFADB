@@ -1,20 +1,8 @@
 package client;
 
-import com.google.gson.Gson;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
 import server.PostData;
 import server.ResData;
+import server.Server;
 import types.MsgTypes;
 
 import javax.swing.*;
@@ -32,7 +20,6 @@ public class Client extends JFrame {
     private JLabel label = new JLabel("No message");
     private JTable table = new JTable();
     private JButton button = new JButton("Confirm");
-    private JScrollPane scrollPaneTable;
 
     private final static String URL = "http://localhost:8080/OFADB_war_exploded/result";
     private final static String USERNAME = "OFADB";
@@ -50,14 +37,23 @@ public class Client extends JFrame {
     }
 
     private void connectToServer() {
-        ResData res = send(getPostJson(MsgTypes.MSG_POST_CONNECT, ""));
-        processRes(res);
+        send(getPostStr(MsgTypes.MSG_POST_CONNECT, ""));
+    }
+
+    private void send(final byte[] data) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ResData resData = sendToServer(data);
+                processRes(resData);
+            }
+        }).start();
     }
 
     private void processRes(ResData res) {
         switch (res.type) {
             case MSG_RES_ERR:
-                this.label.setText(res.message);
+                label.setText(res.message);
                 break;
             case MSG_RES_SUCCESS:
                 if (res.tableData != null) {
@@ -66,37 +62,32 @@ public class Client extends JFrame {
                     for (int i = 0;i<res.tableData.data.size();i++) {
                         data[i] = res.tableData.data.get(i);
                     }
-                    DefaultTableModel tableModel = (DefaultTableModel)this.table.getModel();
+                    DefaultTableModel tableModel = (DefaultTableModel)table.getModel();
                     tableModel.setDataVector(data, columnNames);
-                    this.table.setModel(tableModel);
+                    table.setModel(tableModel);
                 }
 
-                this.label.setText(res.message);
+                label.setText(res.message);
                 break;
             default:
-                this.label.setText("Wrong format of response data");
+                label.setText("Wrong format of response data");
         }
     }
 
-    private ResData send(String data) {
+    private ResData sendToServer(byte[] data) {
         try {
             Socket socket = new Socket("localhost", 8080);
             OutputStream outputStream = socket.getOutputStream();
-            outputStream.write(data.getBytes());
+            outputStream.write(data);
             socket.shutdownOutput();
 
             InputStream inputStream = socket.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            String temp;
-            StringBuilder resStr = new StringBuilder();
-            while ((temp = bufferedReader.readLine()) != null) {
-                resStr.append(temp);
-            }
+            ResData resData = (ResData) Server.deserialize(inputStream.readAllBytes());
             socket.shutdownInput();
 
             socket.close();
 
-            return new Gson().fromJson(resStr.toString(), ResData.class);
+            return resData;
         } catch (Exception e) {
             ResData resData = new ResData();
             resData.type = MsgTypes.MSG_RES_ERR;
@@ -114,7 +105,7 @@ public class Client extends JFrame {
 
         textArea.setLineWrap(true);
         JScrollPane scrollPaneText = new JScrollPane(textArea);
-        scrollPaneTable = new JScrollPane(table);
+        JScrollPane scrollPaneTable = new JScrollPane(table);
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollPaneText, scrollPaneTable);
         splitPane.setDividerLocation(200);
         splitPane.setDividerSize(1);
@@ -156,8 +147,7 @@ public class Client extends JFrame {
                 String sql = textArea.getText();
                 if (sql.equals(""))
                     return;
-                ResData res = send(getPostJson(MsgTypes.MSG_POST_SQL, sql));
-                processRes(res);
+                send(getPostStr(MsgTypes.MSG_POST_SQL, sql));
             }
         });
 
@@ -180,14 +170,20 @@ public class Client extends JFrame {
         textArea.setText(content.toString());
     }
 
-    private String getPostJson(MsgTypes type, String sql) {
+    private byte[] getPostStr(MsgTypes type, String sql)  {
         PostData postData = new PostData();
         postData.type = type;
         postData.userName = USERNAME;
         postData.password = PASSWORD;
         postData.sql = sql;
 
-        return new Gson().toJson(postData);
+        try {
+            return Server.serialize(postData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "".getBytes();
     }
 }
 

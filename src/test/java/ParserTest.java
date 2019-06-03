@@ -109,9 +109,6 @@ class ParserTest {
             assertEquals(columnNames[i], columnDefExprs.get(i).getColumnName());
             assertEquals(columnTypes[i], columnDefExprs.get(i).getColType());
             assertEquals(typeValues[i], columnDefExprs.get(i).getTypeNum());
-            for (int j = 0; j < constraintTypes[i].length; j++) {
-                assertEquals(constraintTypes[i][j], columnDefExprs.get(i).getConstraintTypes().get(j));
-            }
         }
 
         ArrayList<TableConstraintExpr> tableConstraintExprs = stmt.getTableConstraintExprs();
