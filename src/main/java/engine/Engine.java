@@ -31,6 +31,7 @@ public class Engine {
                 return new TableManiEngine(expression).getResult();
             case EXPR_SHOW_DB:
             case EXPR_SHOW_DBS:
+            case EXPR_SHOW_TABLE:
                 return new InfoEngine(expression).getResult();
             case EXPR_INSERT:
             case EXPR_DELETE:

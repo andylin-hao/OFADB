@@ -62,7 +62,7 @@ public class TableManiEngine {
             columnNames.add(expr.getColumnName());
             HashSet<ColumnConstraintTypes> constraintTypes = expr.getConstraintTypes();
             boolean autoInc = constraintTypes.contains(ColumnConstraintTypes.COL_AUTO_INC);
-            boolean nullable = (!constraintTypes.contains(ColumnConstraintTypes.COL_NOT_NULL)) || (!constraintTypes.contains(ColumnConstraintTypes.COL_UNIQUE));
+            boolean nullable = (!constraintTypes.contains(ColumnConstraintTypes.COL_NOT_NULL)) && (!constraintTypes.contains(ColumnConstraintTypes.COL_UNIQUE));
             boolean isUnique = constraintTypes.contains(ColumnConstraintTypes.COL_UNIQUE);
             columns[i] = new ColumnInfo(
                     expr.getColumnName(),

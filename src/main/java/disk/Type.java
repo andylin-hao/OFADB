@@ -126,7 +126,7 @@ public class Type {
             case COL_INT:
                 return "int";
             case COL_STRING:
-                return "string" + maxLength;
+                return "string" + "(" + maxLength + ")";
             case COL_DOUBLE:
                 return "double";
             case COL_FLOAT:

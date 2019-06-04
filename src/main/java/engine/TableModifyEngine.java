@@ -84,7 +84,7 @@ public class TableModifyEngine {
         ArrayList<Object[]> originData = new ArrayList<>();
         ArrayList<Row> insertedData = new ArrayList<>();
         try {
-            ArrayList<ArrayList<String>> datas = getMatchRows(((DeleteExpr)expression).getWhereExpr(),((DeleteExpr)expression).getTable());
+            ArrayList<ArrayList<String>> datas = getMatchRows(((UpdateExpr)expression).getWhereExpr(),((UpdateExpr)expression).getTable());
             for (ArrayList<String> string : datas) {
 
                 int[] pos = Utils.getPosFromStr(string.get(0));
@@ -113,7 +113,7 @@ public class TableModifyEngine {
     }
 
     private ArrayList<ArrayList<String>> getMatchRows(WhereExpr where, RelationExpr relationExpr)throws IOException{
-        SelectExpr selectExpr = Utils.getSelectExpr(((DeleteExpr)expression).getWhereExpr(),((DeleteExpr)expression).getTable());
+        SelectExpr selectExpr = Utils.getSelectExpr(where,relationExpr);
         QueryEngine queryEngine = new QueryEngine(selectExpr);
         QueryResult queryResult = queryEngine.getResult();
         RelationResult relationResult = (RelationResult)queryResult.getBasedResult();
