@@ -236,6 +236,7 @@ public class Table {
     public void closeFile()throws IOException{
         save();
         dataFileManager.close();
+        dataFileManager.file.close();
         for(IndexBase indexBase : indexes) {
             indexBase.indexChange.saveChange();
             indexBase.fileIO.file.close();

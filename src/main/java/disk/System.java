@@ -119,8 +119,6 @@ public class System {
      */
     public static Database getDataBase(String name)throws IOException{
         checkSystemLoaded();
-
-        if(!isDBExist(name))
         if(dbMap.containsKey(name))
             return dbMap.get(name);
 

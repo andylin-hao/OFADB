@@ -10,6 +10,7 @@ import disk.*;
 import engine.Engine;
 import expression.Expression;
 import index.*;
+import meta.ColumnInfo;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -49,20 +50,28 @@ public class DataFileTest {
 //        data[1] = "5";
 //        table.insert(data);
 //        table.save();
+
         System.loadSystem();
         System.loadDataBase("mdb");
+        System.getDataBase("mdb").removeTable("test");
+
         String sql_subSelect = "select t.name1,tt2.name from (select id as id1, name as name1 from tt2) t, tt2 where t.id1 = (5*8)/10 or t.name1 = '5'";
         String sql_simplest = "select * from person";
         String sql_where = "select * from tt2 where id = 6-(4-2) and name = '5'";
         String sql_createDatabase = "drop database testbase";
 //        Result result = Engine.expressionExec(sql_simplest);
 //        String[] names = ((QueryResult)result).getColumnName();
-        System.getDataBase("mdb").removeTable("person");
+//        System.getDataBase("mdb"). removeTable("test");
 //        while(((QueryResult)result).hasNext()){
 //            Object[] data = ((QueryResult)result).next();
 //            int a = 1;
 //        }
-//        SingleResult data = ((QueryResult)result).getValue("3");
+//        Database database = new Database("mdb",false);
+//        ColumnInfo[] columnInfos = new ColumnInfo[1];
+//        columnInfos[0] = new ColumnInfo("id",Type.intType(),false,true,false,0);
+//        Table table = new Table(database,columnInfos,"test",new ArrayList<>(),null,-1);
+
+//        table.dataFileManager.file.close();
         int a = 1;
 
 //                System.removeDatabase(database);
