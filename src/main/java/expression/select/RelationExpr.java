@@ -42,7 +42,7 @@ public class RelationExpr extends RangeTableExpr {
         return tableName;
     }
 
-    String getAlias() {
+    public String getAlias() {
         return alias;
     }
 

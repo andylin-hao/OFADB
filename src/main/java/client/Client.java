@@ -1,8 +1,8 @@
 package client;
 
+import utils.Utils;
 import server.PostData;
 import server.ResData;
-import server.Server;
 import types.MsgTypes;
 
 import javax.swing.*;
@@ -82,7 +82,7 @@ public class Client extends JFrame {
             socket.shutdownOutput();
 
             InputStream inputStream = socket.getInputStream();
-            ResData resData = (ResData) Server.deserialize(inputStream.readAllBytes());
+            ResData resData = (ResData) Utils.deserialize(inputStream.readAllBytes());
             socket.shutdownInput();
 
             socket.close();
@@ -178,7 +178,7 @@ public class Client extends JFrame {
         postData.sql = sql;
 
         try {
-            return Server.serialize(postData);
+            return Utils.serialize(postData);
         } catch (IOException e) {
             e.printStackTrace();
         }

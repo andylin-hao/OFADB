@@ -2,6 +2,7 @@ package expression.select;
 
 import disk.System;
 import expression.Expression;
+import utils.Utils;
 import meta.ColumnInfo;
 import meta.MetaData;
 import meta.TableInfo;
@@ -72,89 +73,13 @@ public class SelectExpr extends Expression {
      * @param columnName The column name of intended column.
      * @return {@code ResultColumnExpr} variable.
      */
-    private ResultColumnExpr getColumn(String columnName) {
+    public ResultColumnExpr getColumn(String columnName) {
         for (ResultColumnExpr columnExpr : this.resultColumnExprs) {
             if (columnExpr.getName().equals(columnName))
                 return columnExpr;
         }
 
         return null;
-    }
-
-    /**
-     * Transform the tree structure of join expression to array form.
-     * @param root {@code RangeTableExpr} variable
-     * @return {@code ArrayList} of {@code RangeTableExpr}
-     */
-    public static ArrayList<RangeTableExpr> getFromTableList(RangeTableExpr root) {
-        ArrayList<RangeTableExpr> result = new ArrayList<>();
-        while (true) {
-            if (root.getRtTypes() == RangeTableTypes.RT_RELATION ||
-                    root.getRtTypes() == RangeTableTypes.RT_SUB_QUERY) {
-                result.add(root);
-                return result;
-            } else if (root.getRtTypes() == RangeTableTypes.RT_JOIN) {
-                result.add(((JoinExpr) root).getRhs());
-                root = ((JoinExpr) root).getLhs();
-            } else
-                throw new RuntimeException("The from expression wasn't expanded correctly");
-        }
-    }
-
-    /**
-     * Acquire the map from table alias to table name.
-     * For sub query, the alias is mapped to null.
-     * For range table that has no alias, the table name is mapped to itself.
-     * @param root {@code RangeTableExpr} variable.
-     * @return {@code HashMap} of {@code String} to {@code String}.
-     */
-    private static HashMap<String, String> getTableNameList(RangeTableExpr root) {
-        ArrayList<RangeTableExpr> fromTableList = getFromTableList(root);
-        HashMap<String, String> tableNames = new HashMap<>();
-        for (RangeTableExpr tableExpr : fromTableList) {
-            if (tableExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY) {
-                SubSelectExpr subSelectExpr = (SubSelectExpr) tableExpr;
-                if (subSelectExpr.getAlias() == null)
-                    throw new RuntimeException("The sub-select statement needs an alias");
-                tableNames.put(((SubSelectExpr) tableExpr).getAlias(), null);
-            } else if (tableExpr.getRtTypes() == RangeTableTypes.RT_RELATION) {
-                RelationExpr relationExpr = (RelationExpr) tableExpr;
-                if (!relationExpr.getAlias().equals(""))
-                    tableNames.put(relationExpr.getAlias(), relationExpr.getTableName());
-                else {
-                    tableNames.put(relationExpr.getTableName(), relationExpr.getTableName());
-                }
-            } else
-                throw new RuntimeException("The from expression wasn't expanded correctly");
-        }
-        return tableNames;
-    }
-
-    /**
-     * Verify where clause.
-     * @param root {@code WhereExpr}.
-     * @param table {@code RangeTableExpr} variable is the field of where clause.
-     * @throws IOException IO exception.
-     */
-    public static void checkWhereClause(WhereExpr root, RangeTableExpr table) throws IOException {
-        if (root == null)
-            return;
-        if (root.getExprType() == ExprTypes.EXPR_QUALIFIER) {
-            QualifierExpr qualifierExpr = ((QualifierExpr) root);
-            ArrayList<QualifyEleExpr> attrELes = qualifierExpr.getAttrELes();
-            checkAttrEles(table, attrELes);
-            qualifierExpr.checkValidity(table);
-        } else {
-            checkWhereClause(root.getRight(), table);
-            checkWhereClause(root.getLeft(), table);
-        }
-    }
-
-    private static void checkAttrEles(RangeTableExpr rangeTableExpr, ArrayList<QualifyEleExpr> attrELes) throws IOException {
-        for (QualifyEleExpr eleExpr : attrELes) {
-            ResultColumnExpr attr = (ResultColumnExpr) eleExpr.getValue();
-            checkColumnExpr(attr, rangeTableExpr, true);
-        }
     }
 
     private void checkTableNames(HashMap<String, String> tableNames) throws IOException {
@@ -165,77 +90,6 @@ public class SelectExpr extends Expression {
                 continue;
             if (MetaData.isTableNotExist(dbName, tableName))
                 throw new RuntimeException(tableName + " does not exist in " + dbName);
-        }
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    static ColumnTypes checkColumnExpr(ResultColumnExpr columnExpr, RangeTableExpr rangeTableExpr, boolean addTableName) throws IOException {
-        ArrayList<RangeTableExpr> fromTableList = getFromTableList(rangeTableExpr);
-        HashMap<String, String> tableNames = getTableNameList(rangeTableExpr);
-        String dbName = System.getCurDB().dataBaseName;
-        String tableName = tableNames.get(columnExpr.getTableName());
-        SubSelectExpr subSelectExpr = null;
-
-        if (!columnExpr.getDbName().equals(""))
-            throw new RuntimeException("Syntax error of writing database name in query statement");
-
-        // Verify column name that has no table name
-        if (columnExpr.getTableName().equals("")) {
-            int occurTimes = 0;
-            for (RangeTableExpr fromExpr : fromTableList) {
-                if (fromExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY &&
-                        ((SubSelectExpr) fromExpr).getSelectExpr().getColumn(columnExpr.getAttrName()) != null) {
-                    occurTimes += 1;
-                    subSelectExpr = (SubSelectExpr) fromExpr;
-                    tableName = null;
-                    if (addTableName)
-                        columnExpr.setTableName(subSelectExpr.getAlias());
-                } else {
-                    if (fromExpr.getRtTypes() == RangeTableTypes.RT_RELATION &&
-                            MetaData.isColumnExist(dbName, ((RelationExpr) fromExpr).getTableName(), columnExpr.getAttrName())) {
-                        occurTimes += 1;
-                        tableName = ((RelationExpr) fromExpr).getTableName();
-                        if (addTableName)
-                            columnExpr.setTableName(((RelationExpr) fromExpr).getName());
-                    }
-                }
-            }
-
-            if (occurTimes == 0)
-                throw new RuntimeException("Column name " + columnExpr.getAttrName() + " does not exist");
-            if (occurTimes > 1)
-                throw new RuntimeException("Ambiguous column name " + columnExpr.getAttrName());
-            else {
-                if (tableName == null) {
-                    SelectExpr selectExpr = subSelectExpr.getSelectExpr();
-                    return SelectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr(), true);
-                } else {
-                    return MetaData.getColumnType(System.getCurDB().dataBaseName, tableName, columnExpr.getAttrName()).columnType.typeCode;
-                }
-            }
-        }
-
-        // Verify column name of sub query or not-exist table name
-        if (tableName == null) {
-            for (RangeTableExpr fromExpr : fromTableList) {
-                if (fromExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY &&
-                        ((SubSelectExpr) fromExpr).getAlias().equals(columnExpr.getTableName())) {
-                    if (((SubSelectExpr) fromExpr).getSelectExpr().getColumn(columnExpr.getAttrName()) == null)
-                        throw new RuntimeException("Column name " + columnExpr.getAttrName() + " does not exist");
-                    else {
-                        SelectExpr selectExpr = ((SubSelectExpr) fromExpr).getSelectExpr();
-                        return SelectExpr.checkColumnExpr(selectExpr.getColumn(columnExpr.getAttrName()), selectExpr.getFromExpr(), true);
-                    }
-                }
-            }
-            throw new RuntimeException("Table name " + columnExpr.getTableName() + " does not exist");
-        }
-
-        // Verify column name of relation
-        if (!MetaData.isColumnExist(dbName, tableName, columnExpr.getAttrName()))
-            throw new RuntimeException("Column " + columnExpr.getAttrName() + " does not exist in table " + tableName);
-        else {
-            return MetaData.getColumnType(System.getCurDB().dataBaseName, tableName, columnExpr.getAttrName()).columnType.typeCode;
         }
     }
 
@@ -255,8 +109,8 @@ public class SelectExpr extends Expression {
         alterStarColumn();
 
         // Acquire the table names in the statement and verify sub-select statement
-        ArrayList<RangeTableExpr> fromTableList = getFromTableList(fromExpr);
-        HashMap<String, String> tableNames = getTableNameList(fromExpr);
+        ArrayList<RangeTableExpr> fromTableList = Utils.getFromTableList(fromExpr);
+        HashMap<String, String> tableNames = Utils.getTableNameList(fromExpr);
         for (RangeTableExpr rangeTableExpr : fromTableList) {
             if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY) {
                 SelectExpr selectExpr = ((SubSelectExpr) rangeTableExpr).getSelectExpr();
@@ -276,7 +130,7 @@ public class SelectExpr extends Expression {
 
         // Verify the table names in the statement
         for (ResultColumnExpr columnExpr : resultColumnExprs) {
-            checkColumnExpr(columnExpr, fromExpr, true);
+            Utils.checkColumnExpr(columnExpr, fromExpr, true);
         }
 
         // Verify the table names, on-clause and using-clause in from expression
@@ -287,7 +141,7 @@ public class SelectExpr extends Expression {
                 break;
             else if (fromRoot.getRtTypes() == RangeTableTypes.RT_JOIN) {
                 JoinExpr joinExpr = (JoinExpr) fromRoot;
-                HashMap<String, String> tables = getTableNameList(joinExpr);
+                HashMap<String, String> tables = Utils.getTableNameList(joinExpr);
 
                 if (joinExpr.isNatural() && (joinExpr.getQualifierExpr() != null || joinExpr.getUsingExpr() != null))
                     throw new RuntimeException("Natural join cannot have on-clause and using-clause");
@@ -295,7 +149,7 @@ public class SelectExpr extends Expression {
                 if (joinExpr.getQualifierExpr() != null) {
                     QualifierExpr qualifierExpr = joinExpr.getQualifierExpr();
                     ArrayList<QualifyEleExpr> attrELes = qualifierExpr.getAttrELes();
-                    checkAttrEles(joinExpr, attrELes);
+                    Utils.checkAttrEles(joinExpr, attrELes);
                     qualifierExpr.checkValidity(joinExpr);
                 }
 
@@ -305,8 +159,8 @@ public class SelectExpr extends Expression {
                     for (ResultColumnExpr using : usingExpr) {
                         if (!using.getTableName().equals(""))
                             throw new RuntimeException("Using clause should not has table name");
-                        checkColumnExpr(using, joinExpr.getLhs(), false);
-                        checkColumnExpr(using, joinExpr.getRhs(), false);
+                        Utils.checkColumnExpr(using, joinExpr.getLhs(), false);
+                        Utils.checkColumnExpr(using, joinExpr.getRhs(), false);
                     }
                 }
 
@@ -316,7 +170,7 @@ public class SelectExpr extends Expression {
         }
 
         // Verify the table names in where-clause
-        checkWhereClause(whereExpr, fromExpr);
+        Utils.checkWhereClause(whereExpr, fromExpr);
         trimJoin();
     }
 
@@ -349,7 +203,7 @@ public class SelectExpr extends Expression {
     }
 
     private void alterStarColumn() throws IOException {
-        ArrayList<RangeTableExpr> fromTableList = getFromTableList(fromExpr);
+        ArrayList<RangeTableExpr> fromTableList = Utils.getFromTableList(fromExpr);
         if (resultColumnExprs.size() != 1) {
             for (ResultColumnExpr columnExpr: resultColumnExprs) {
                 if (columnExpr.getAttrName().equals("*"))
@@ -385,8 +239,8 @@ public class SelectExpr extends Expression {
                     try {
                         ResultColumnExpr rightUsing = using.clone();
                         ResultColumnExpr leftUsing = using.clone();
-                        checkColumnExpr(leftUsing, joinExpr.getLhs(), true);
-                        checkColumnExpr(rightUsing, joinExpr.getRhs(), true);
+                        Utils.checkColumnExpr(leftUsing, joinExpr.getLhs(), true);
+                        Utils.checkColumnExpr(rightUsing, joinExpr.getRhs(), true);
 
                         QualifyEleExpr leftEle = new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, leftUsing);
                         QualifyEleExpr rightEle = new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, rightUsing);

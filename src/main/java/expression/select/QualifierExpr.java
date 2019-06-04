@@ -65,7 +65,7 @@ public class QualifierExpr extends WhereExpr {
      * Acquire all the qualifier elements of attribute types in a qualify expression
      * @return {@code ArrayList} of {@code QualifyELeExpr}
      */
-    ArrayList<QualifyEleExpr> getAttrELes() {
+    public ArrayList<QualifyEleExpr> getAttrELes() {
         ArrayList<QualifyEleExpr> result = new ArrayList<>();
         if (lhs.getEleTypes() == QualifyEleTypes.QUA_ELE_ATTR)
             result.add(lhs);

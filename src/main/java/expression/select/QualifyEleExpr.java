@@ -1,6 +1,7 @@
 package expression.select;
 
 import expression.Expression;
+import utils.Utils;
 import types.ColumnTypes;
 import types.ExprTypes;
 import types.QualifyEleTypes;
@@ -84,7 +85,7 @@ public class QualifyEleExpr extends Expression {
     public QualifyEleTypes getBasicEleTypes(RangeTableExpr rangeTableExpr) throws IOException {
         switch (eleTypes) {
             case QUA_ELE_ATTR:
-                ColumnTypes type = SelectExpr.checkColumnExpr((ResultColumnExpr)value, rangeTableExpr, true);
+                ColumnTypes type = Utils.checkColumnExpr((ResultColumnExpr)value, rangeTableExpr, true);
                 return columnTypeToEleType(type);
             case QUA_ELE_FORMULA:
                 Number result = ((FormulaExpr) value).getValue();

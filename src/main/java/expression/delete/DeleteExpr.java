@@ -1,12 +1,11 @@
 package expression.delete;
 
 import expression.Expression;
+import utils.Utils;
 import expression.select.*;
-import result.RelationResult;
 import types.ExprTypes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class DeleteExpr extends Expression {
     private RelationExpr table = new RelationExpr();
@@ -38,21 +37,10 @@ public class DeleteExpr extends Expression {
         this.whereExpr = whereExpr;
     }
 
-    public static SelectExpr getSelectExpr(WhereExpr whereExpr, RelationExpr table) throws IOException {
-        SelectExpr selectExpr = new SelectExpr();
-        selectExpr.setWhereExpr(whereExpr);
-        selectExpr.setFromExpr(table);
-        ResultColumnExpr resultColumnExpr = new ResultColumnExpr();
-        resultColumnExpr.setAttrName("*");
-        selectExpr.getResultColumnExprs().add(resultColumnExpr);
-        selectExpr.checkValidity();
-        return selectExpr;
-    }
-
     @Override
     public void checkValidity() throws IOException {
         table.checkValidity();
 
-        SelectExpr.checkWhereClause(whereExpr, table);
+        Utils.checkWhereClause(whereExpr, table);
     }
 }

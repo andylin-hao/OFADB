@@ -1,9 +1,8 @@
 package expression.update;
 
 import expression.Expression;
-import expression.insert.InsertExpr;
+import utils.Utils;
 import expression.select.RelationExpr;
-import expression.select.SelectExpr;
 import expression.select.WhereExpr;
 import types.ExprTypes;
 
@@ -62,7 +61,7 @@ public class UpdateExpr extends Expression {
     public void checkValidity() throws IOException {
         ArrayList<ArrayList<Object>> values = new ArrayList<>();
         values.add(this.values);
-        InsertExpr.checkColumnsValues(table, attrNames, values);
-        SelectExpr.checkWhereClause(whereExpr, table);
+        Utils.checkColumnsValues(table, attrNames, values);
+        Utils.checkWhereClause(whereExpr, table);
     }
 }

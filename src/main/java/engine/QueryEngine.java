@@ -1,5 +1,6 @@
 package engine;
 
+import utils.Utils;
 import expression.select.*;
 import result.QueryResult;
 import result.RelationResult;
@@ -24,7 +25,7 @@ public class QueryEngine{
         this.selectExpr = expr;
         this.involvedRelations = new HashSet<>();
 
-        ArrayList<RangeTableExpr> rangeTableExprs = SelectExpr.getFromTableList(expr.getFromExpr());
+        ArrayList<RangeTableExpr> rangeTableExprs = Utils.getFromTableList(expr.getFromExpr());
         for (RangeTableExpr tableExpr: rangeTableExprs) {
             involvedRelations.add(tableExpr.getRangeTableName());
         }

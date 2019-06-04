@@ -2,6 +2,7 @@ package server;
 
 import disk.System;
 import engine.Engine;
+import utils.Utils;
 import result.QueryResult;
 import result.Result;
 import types.MsgTypes;
@@ -39,7 +40,7 @@ public class Server {
             PostData postData = null;
             try {
                 InputStream inputStream = socket.getInputStream();
-                postData = (PostData) deserialize(inputStream.readAllBytes());
+                postData = (PostData) Utils.deserialize(inputStream.readAllBytes());
                 socket.shutdownInput();
                 java.lang.System.out.println("Message received");
             } catch (Exception e) {
@@ -121,26 +122,7 @@ public class Server {
         resData.message = message;
         resData.tableData = tableData;
 
-        return serialize(resData);
+        return Utils.serialize(resData);
     }
 
-    public static byte[] serialize(Object obj) throws IOException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ObjectOutputStream objectOutputStream;
-        objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-        objectOutputStream.writeObject(obj);
-        byte[] bytes = byteArrayOutputStream.toByteArray();
-        objectOutputStream.close();
-        byteArrayOutputStream.close();
-        return bytes;
-    }
-
-    public static Object deserialize(byte[] str) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(str);
-        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
-        Object object = objectInputStream.readObject();
-        objectInputStream.close();
-        byteArrayInputStream.close();
-        return object;
-    }
 }
