@@ -260,7 +260,7 @@ public class MDBByteArrayInputStream {
                 return readDouble();
             case COL_BOOL:
                 return readBoolean();
-            case COL_VARCHAR:
+            case COL_STRING:
                 return readString(length);
         }
         return null;

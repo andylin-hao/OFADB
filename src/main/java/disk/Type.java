@@ -41,7 +41,7 @@ public class Type {
             typeCode = ColumnTypes.COL_LONG;
             maxLength = 0;
         } else if (typeStr.startsWith("string")) {
-            typeCode = ColumnTypes.COL_VARCHAR;
+            typeCode = ColumnTypes.COL_STRING;
             maxLength = Integer.parseInt(typeStr.substring(6));
         } else {
             typeCode = null;
@@ -58,7 +58,7 @@ public class Type {
     }
 
     public boolean isVariable() {
-        return typeCode == ColumnTypes.COL_VARCHAR;
+        return typeCode == ColumnTypes.COL_STRING;
     }
 
     public int variableLength() {
@@ -69,7 +69,7 @@ public class Type {
             case COL_INT:
             case COL_FLOAT:
                 return 4;
-            case COL_VARCHAR:
+            case COL_STRING:
                 return maxLength * 2;
             case COL_DOUBLE:
             case COL_LONG:
@@ -88,7 +88,7 @@ public class Type {
                 return (char) 0;
             case COL_INT:
                 return 0;
-            case COL_VARCHAR:
+            case COL_STRING:
                 return nullStringHolder;
             case COL_DOUBLE:
                 return (double) 0;
@@ -105,7 +105,7 @@ public class Type {
 
     public int getVariableTypeLength(Object data) {
         if (data == null)
-            if (typeCode == ColumnTypes.COL_VARCHAR)
+            if (typeCode == ColumnTypes.COL_STRING)
                 return nullStringHolder.length() * 2;
         if (data instanceof String) {
             return ((String) data).length() * 2;
@@ -122,7 +122,7 @@ public class Type {
                 return "short";
             case COL_INT:
                 return "int";
-            case COL_VARCHAR:
+            case COL_STRING:
                 return "string" + maxLength;
             case COL_DOUBLE:
                 return "double";
@@ -142,7 +142,7 @@ public class Type {
     }
 
     public static Type stringType(int maxLength) {
-        return new Type(ColumnTypes.COL_VARCHAR, maxLength);
+        return new Type(ColumnTypes.COL_STRING, maxLength);
     }
 
     public static Type boolType(){ return new Type(ColumnTypes.COL_BOOL); }

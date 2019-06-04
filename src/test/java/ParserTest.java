@@ -92,7 +92,7 @@ class ParserTest {
 
         CreateTableExpr stmt = (CreateTableExpr) getParseResult(sql);
         String[] columnNames = {"id", "name", "stu_num"};
-        ColumnTypes[] columnTypes = {ColumnTypes.COL_INT, ColumnTypes.COL_VARCHAR, ColumnTypes.COL_DOUBLE};
+        ColumnTypes[] columnTypes = {ColumnTypes.COL_INT, ColumnTypes.COL_STRING, ColumnTypes.COL_DOUBLE};
         int[] typeValues = {0, 8, 0};
         ColumnConstraintTypes[][] constraintTypes = {
                 {ColumnConstraintTypes.COL_PRIMARY_KEY, ColumnConstraintTypes.COL_NOT_NULL},

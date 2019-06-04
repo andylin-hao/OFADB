@@ -14,7 +14,7 @@ public enum ColumnTypes {
     COL_LONG,
     COL_FLOAT,
     COL_DOUBLE,
-    COL_VARCHAR,
+    COL_STRING,
     COL_BOOL,
     COL_CHAR
 }

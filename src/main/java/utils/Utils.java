@@ -187,7 +187,7 @@ public class Utils {
         }
 
         if (object instanceof String) {
-            if (type.equals(ColumnTypes.COL_VARCHAR) ||
+            if (type.equals(ColumnTypes.COL_STRING) ||
                     type.equals(ColumnTypes.COL_CHAR)) {
                 if (((String) object).length() > columnType.maxLength)
                     throw new RuntimeException("The string is too long");

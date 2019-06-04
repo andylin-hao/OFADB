@@ -7,13 +7,8 @@ import java.util.Random;
 
 import disk.System;
 import disk.*;
-import engine.Engine;
-import engine.QueryEngine;
 import expression.Expression;
-import expression.select.SelectExpr;
 import index.*;
-import meta.ColumnInfo;
-import meta.IndexInfo;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -22,12 +17,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import parser.SQLParser;
 import parser.SQLiteLexer;
 import parser.SQLiteParser;
-import result.QueryResult;
-import result.Result;
-import result.SingleResult;
 import types.ColumnTypes;
-
-import javax.print.attribute.standard.NumberUp;
 
 public class DataFileTest {
 
@@ -184,7 +174,7 @@ public class DataFileTest {
 //        //int
 //        types[0] = new Type(ColumnTypes.COL_INT);
 //        //String
-//        types[1] = new Type(ColumnTypes.COL_VARCHAR, 8);
+//        types[1] = new Type(ColumnTypes.COL_STRING, 8);
 //        //Double
 //
 //        types[2] = new Type(ColumnTypes.COL_DOUBLE);
@@ -532,7 +522,7 @@ public class DataFileTest {
 
     private static void compareTest_String(List<Integer> insertList) throws IOException {
         Type[] types = new Type[1];
-        types[0] = new Type(ColumnTypes.COL_VARCHAR, 10);
+        types[0] = new Type(ColumnTypes.COL_STRING, 10);
         File testIndex = new File("index.txt");
         IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types,false);
 
@@ -590,7 +580,7 @@ public class DataFileTest {
 
         File testIndex = new File("index.txt");
         Type[] types = new Type[1];
-        types[0] = new Type(ColumnTypes.COL_VARCHAR, 10);
+        types[0] = new Type(ColumnTypes.COL_STRING, 10);
         IndexBase index = new IndexBase(null, 3, new int[1], testIndex, types,false);
         for (int i = 0; i < insertList.size(); i++) {
             Object[] objects = new Object[1];

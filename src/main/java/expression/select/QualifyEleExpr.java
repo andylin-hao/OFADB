@@ -60,7 +60,7 @@ public class QualifyEleExpr extends Expression {
             case COL_FLOAT:
             case COL_DOUBLE:
                 return QualifyEleTypes.QUA_ELE_DOUBLE;
-            case COL_VARCHAR:
+            case COL_STRING:
             case COL_CHAR:
                 return QualifyEleTypes.QUA_ELE_STR;
             case COL_SHORT:
