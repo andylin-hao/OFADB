@@ -15,7 +15,7 @@ public class Type {
 
     public Type(ColumnTypes type, int length) {
         typeCode = type;
-        if(typeCode.equals(ColumnTypes.COL_VARCHAR))
+        if(typeCode.equals(ColumnTypes.COL_STRING))
             maxLength = length;
         else
             maxLength = 0;

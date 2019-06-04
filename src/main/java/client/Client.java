@@ -10,6 +10,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -51,9 +52,13 @@ public class Client extends JFrame {
     }
 
     private void processRes(ResData res) {
+        label.setText("");
+        Object[][] blankData = {};
+        ((DefaultTableModel)table.getModel()).setDataVector(blankData, blankData);
         switch (res.type) {
             case MSG_RES_ERR:
                 label.setText(res.message);
+                JOptionPane.showMessageDialog(getContentPane(), res.message, "Error Occurs", JOptionPane.ERROR_MESSAGE);
                 break;
             case MSG_RES_SUCCESS:
                 if (res.tableData != null) {
@@ -66,7 +71,6 @@ public class Client extends JFrame {
                     tableModel.setDataVector(data, columnNames);
                     table.setModel(tableModel);
                 }
-
                 label.setText(res.message);
                 break;
             default:
@@ -150,6 +154,7 @@ public class Client extends JFrame {
                 send(getPostStr(MsgTypes.MSG_POST_SQL, sql));
             }
         });
+        button.setMnemonic(KeyEvent.VK_ENTER);
 
         setTitle("OFADB");
         setSize(800, 600);
@@ -168,6 +173,7 @@ public class Client extends JFrame {
             content.append('\n');
         }
         textArea.setText(content.toString());
+        send(getPostStr(MsgTypes.MSG_POST_SQL, content.toString()));
     }
 
     private byte[] getPostStr(MsgTypes type, String sql)  {

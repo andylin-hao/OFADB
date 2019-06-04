@@ -2,6 +2,8 @@ package server;
 
 import disk.System;
 import engine.Engine;
+import result.InfoResult;
+import result.MsgResult;
 import utils.Utils;
 import result.QueryResult;
 import result.Result;
@@ -82,8 +84,10 @@ public class Server {
             switch (data.type) {
                 case MSG_POST_SQL:
                     System.loadSystem();
-                    System.loadDataBase("testbase");
-                    Result result = Engine.expressionExec(data.sql);
+                    String[] sqlStatements = data.sql.split(";");
+                    Result result = null;
+                    for (String sql: sqlStatements)
+                        result = Engine.expressionExec(sql);
                     os.write(getResStr(result));
                     break;
                 case MSG_POST_CONNECT:
@@ -111,9 +115,12 @@ public class Server {
                 tableData.data.add(queryResult.next());
             }
             return getResStr(MsgTypes.MSG_RES_SUCCESS, "Query success", tableData);
-        } else {
-            return getResStr(MsgTypes.MSG_RES_SUCCESS, "message", null);
-        }
+        } else if (result.getClass() == MsgResult.class) {
+            return getResStr(MsgTypes.MSG_RES_SUCCESS, ((MsgResult) result).getMsg(), null);
+        } else if (result.getClass() == InfoResult.class) {
+            return getResStr(MsgTypes.MSG_RES_SUCCESS, "Information acquired", ((InfoResult) result).getTableData());
+        } else
+            return getResStr(MsgTypes.MSG_RES_ERR, "Internal error", null);
     }
 
     private byte[] getResStr(MsgTypes type, String message, TableData tableData) throws IOException {
