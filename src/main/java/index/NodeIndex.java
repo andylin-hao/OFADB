@@ -555,9 +555,7 @@ public class NodeIndex implements NodeBPlus {
     public void remove(Comparable key, Object data, BPlusTree tree) {
         //leaf node
         if (isLeaf) {
-            if (contains(key) < 0)
-                return;
-            else {
+            if (contains(key) >= 0) {
                 NodeLeaf leaf = (NodeLeaf) get(key);
                 if (!leaf.rowInfos.contains(data))
                     return;
@@ -742,7 +740,7 @@ public class NodeIndex implements NodeBPlus {
                     for (int j = 0; j < a1.keys.size(); j++)
                         if (a1.keys.get(j).getValue() == null)
                             return false;
-                    if (!((NodeLeaf) a1.keys.get(i).getValue()).equals((NodeLeaf) b1.keys.get(i).getValue()))
+                    if (!(a1.keys.get(i).getValue()).equals(b1.keys.get(i).getValue()))
                         return false;
                     continue;
                 }

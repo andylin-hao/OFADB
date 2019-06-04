@@ -1,5 +1,6 @@
 package engine;
 
+import expression.Expression;
 import utils.Utils;
 import expression.select.*;
 import result.QueryResult;
@@ -21,11 +22,14 @@ public class QueryEngine{
         return result;
     }
 
-    public QueryEngine(SelectExpr expr){
-        this.selectExpr = expr;
+    public QueryEngine(Expression expr){
+        if(!expr.getExprType().equals(ExprTypes.EXPR_SELECT))
+            throw new RuntimeException("Wrong expression type");
+
+        this.selectExpr = (SelectExpr) expr;
         this.involvedRelations = new HashSet<>();
 
-        ArrayList<RangeTableExpr> rangeTableExprs = Utils.getFromTableList(expr.getFromExpr());
+        ArrayList<RangeTableExpr> rangeTableExprs = Utils.getFromTableList(this.selectExpr.getFromExpr());
         for (RangeTableExpr tableExpr: rangeTableExprs) {
             involvedRelations.add(tableExpr.getRangeTableName());
         }

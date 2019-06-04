@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -342,7 +343,7 @@ public class SQLParser extends SQLiteBaseListener {
 
     private QualifyEleExpr getQualifyEle(SQLiteParser.ExprContext exprCtx) {
         Object value = getValue(exprCtx);
-        Class valueClass = value.getClass();
+        Class valueClass = Objects.requireNonNull(value).getClass();
         if (valueClass == Long.class) {
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_INT, value);
         } else if (valueClass == Double.class) {

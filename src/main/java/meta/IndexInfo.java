@@ -15,6 +15,12 @@ public class IndexInfo {
         this.isUnique = isUnique;
     }
 
+    public IndexInfo(int column,boolean isUnique){
+        this.columnIndex = new int[1];
+        this.columnIndex[0] = column;
+        this.isUnique = isUnique;
+    }
+
     public IndexInfo(String columnInfo,boolean isUnique){
         String[] infoSpliced = columnInfo.split(Logger.columnIndexStringSegment);
         columnIndex = new int[infoSpliced.length];

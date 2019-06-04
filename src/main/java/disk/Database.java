@@ -78,6 +78,15 @@ public class Database {
         return null;
     }
 
+    public void removeTable(String tableName)throws IOException{
+        Table table = getTable(tableName);
+        if(table!=null){
+            removeTable(table);
+        }
+        else
+            throw new RuntimeException("Table doesn't exist");
+    }
+
 
     public void removeTable(Table table)throws IOException{
         if(table != null && tables.get(table.info.tableName) != null) {

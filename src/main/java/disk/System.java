@@ -13,6 +13,10 @@ public class System {
     private static Database system;
     private static Database curDB;
 
+    public static HashMap<String, Database> getDbMap() {
+        return dbMap;
+    }
+
     private static HashMap<String,Database> dbMap = new HashMap<>();
 
 
@@ -61,9 +65,9 @@ public class System {
      */
     public static void loadSystem() throws IOException {
         system = new Database(Logger.systemDatabaseName, true);
-        Table databases = new Table(system, Logger.datebasesTableType(), Logger.databaseTableName, new ArrayList<IndexInfo>(){{add(new IndexInfo("0",true));}}, system.cache, 0);
-        Table tables = new Table(system, Logger.tablesTableType(), Logger.tablesTableName, new ArrayList<IndexInfo>(){{add(new IndexInfo("1,0",true));}}, system.cache, 0);
-        Table indexes = new Table(system,Logger.indexesTableType(),Logger.indexesTableName,new ArrayList<IndexInfo>(){{add(new IndexInfo("1,0",false));}},system.cache,-1);
+        Table databases = new Table(system, Logger.datebasesTableType(), Logger.databaseTableName, new ArrayList<>(){{add(new IndexInfo("0",true));}}, system.cache, 0);
+        Table tables = new Table(system, Logger.tablesTableType(), Logger.tablesTableName, new ArrayList<>(){{add(new IndexInfo("1,0",true));}}, system.cache, 0);
+        Table indexes = new Table(system,Logger.indexesTableType(),Logger.indexesTableName,new ArrayList<>(){{add(new IndexInfo("1,0",false));}},system.cache,-1);
         system.tables.put(databases.info.tableName, databases);
         system.tables.put(tables.info.tableName, tables);
         system.tables.put(indexes.info.tableName,indexes);
@@ -89,6 +93,7 @@ public class System {
      * @param name name of the database
      */
     public static void loadDataBase(String name)throws IOException{
+        checkSystemLoaded();
         curDB = getDataBase(name);
     }
 
@@ -136,7 +141,8 @@ public class System {
             dbMap.put(ndb.dataBaseName,ndb);
             return ndb;
         }
-        return null;
+        else
+            throw new RuntimeException("database already exists");
     }
 
 
@@ -147,11 +153,21 @@ public class System {
      * @param info info of the index to be inserted
      */
     public static IndexInfo createNewIndex(String databaseName,String tableName,IndexInfo info)throws IOException{
+        checkSystemLoaded();
         Object[] indexData =indexData(databaseName,tableName,info);
         if(getIndexesTable().insert(indexData)!=null)
             return info;
         else
             return null;
+    }
+
+    public static void removeDatabase(String databaseName)throws IOException{
+        checkSystemLoaded();
+        Database database = getDataBase(databaseName);
+        if(database != null)
+            removeDatabase(database);
+        else
+            throw new RuntimeException("Database does not exist");
     }
 
 
@@ -160,6 +176,7 @@ public class System {
      * @param database the database to be deleted
      */
     public static void removeDatabase(Database database)throws IOException{
+        checkSystemLoaded();
         if(database == null)
             return;
         if(database == curDB)

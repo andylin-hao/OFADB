@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import parser.SQLParser;
 import parser.SQLiteLexer;
 import parser.SQLiteParser;
+import result.InfoResult;
 import result.Result;
 
 import java.io.ByteArrayInputStream;
@@ -20,8 +21,17 @@ public class Engine {
         Expression expression = getParseResult(sql);
         switch (expression.getExprType()){
             case EXPR_SELECT:
-                QueryEngine queryEngine = new QueryEngine((SelectExpr)expression);
-                return queryEngine.getResult();
+                return new QueryEngine(expression).getResult();
+            case EXPR_CREATE_DB:
+            case EXPR_DROP_DB:
+            case EXPR_USE_DB:
+                return new DBManiEngine(expression).getResult();
+            case EXPR_CREATE_TABLE:
+            case EXPR_DROP_TABLE:
+                return new TableManiEngine(expression).getResult();
+            case EXPR_SHOW_DB:
+            case EXPR_SHOW_DBS:
+                return new InfoEngine(expression).getResult();
             default:
                 return null;
         }

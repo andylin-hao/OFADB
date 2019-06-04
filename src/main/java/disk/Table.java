@@ -70,9 +70,16 @@ public class Table {
     /**
      * Check the column value of unique key in the data doesn't exist in the unique index
      **/
-    public boolean uniqueKeyUnUsed(Object[] data) {
+    private boolean uniqueKeyUnUsed(Object[] data) {
         for (IndexBase index : indexes)
             if (index.info.isUnique && index.root.contains(index.getIndexAccessor(data)) >= 0)
+                return false;
+        return true;
+    }
+
+    private boolean columnsNullCheck(Object[] data){
+        for(int i = 0;i<data.length;i++)
+            if(!info.columns[i].nullable && data[i] == null)
                 return false;
         return true;
     }
@@ -109,6 +116,9 @@ public class Table {
         return this.dataFileManager.get(leaf.rowInfos.get(0));
     }
 
+    public boolean insertConstraintCheck(Object[] data){
+        return columnsNullCheck(data)&&uniqueKeyUnUsed(data);
+    }
 
     /**
      * Check the unique key, then insert the data into data file and all index trees
@@ -116,7 +126,7 @@ public class Table {
     public Row insert(Object[] data) throws IOException {
         //check the unique keys are unused before
 
-        if (uniqueKeyUnUsed(data)) {
+        if (insertConstraintCheck(data)) {
 
             // insert the data into data file
             Row row = dataFileManager.insert(RowIO.writeRowData(info.columnTypes, data));
@@ -134,6 +144,14 @@ public class Table {
 
     public Row get(int block,int row)throws IOException{
         return dataFileManager.get(block,row);
+    }
+
+    public Row delete(int blockIndex,int rowIndex)throws IOException{
+        Row row = get(blockIndex,rowIndex);
+        for (IndexBase indexBase : indexes) {
+            indexBase.remove(indexBase.getIndexAccessor(row.rowData), row);
+        }
+        return dataFileManager.delete(blockIndex,rowIndex);
     }
 
     /**

@@ -33,6 +33,10 @@ public class DeleteExpr extends Expression {
         return whereExpr;
     }
 
+    public RelationExpr getTable() {
+        return table;
+    }
+
     public void setWhereExpr(WhereExpr whereExpr) {
         this.whereExpr = whereExpr;
     }

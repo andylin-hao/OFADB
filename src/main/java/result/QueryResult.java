@@ -10,6 +10,7 @@ import java.util.*;
 
 public class QueryResult extends Result {
     private QueryResult[] subResult;
+
     private QueryResult basedResult;
     protected ArrayList<ArrayList<String>> datas;
     private HashMap<String,ResultColumnExpr> selectColumns = null;
@@ -29,6 +30,10 @@ public class QueryResult extends Result {
 
     public SubSelectExpr getSelectExpr() {
         return selectExpr;
+    }
+
+    public QueryResult getBasedResult() {
+        return basedResult;
     }
 
     public void setSelectExpr(SubSelectExpr selectExpr) {

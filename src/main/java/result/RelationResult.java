@@ -185,11 +185,11 @@ public class RelationResult extends QueryResult{
         else
             throw new RuntimeException("Error in qualifier stucture");
 
-        Object[] keyData = new Object[1];
-        keyData[0] = key;
-        IndexKey indexKey = new IndexKey(index.info.types,keyData);
         if(index != null) {
             HashSet<Row> rowResult;
+            Object[] keyData = new Object[1];
+            keyData[0] = key;
+            IndexKey indexKey = new IndexKey(index.info.types,keyData);
             switch (qualifier.getQualifyTypes()){
                 case QUA_LT:
                     rowResult = index.rangeQuery(indexKey, IndexQueryType.QUERY_LT);
@@ -222,6 +222,7 @@ public class RelationResult extends QueryResult{
         }
     }
 
+    @SuppressWarnings("unchecked")
     private HashSet<String> filterByIndex(WhereExpr where)throws IOException{
         if(where.isInvalid())
             return (HashSet<String>) wholeRows.clone();
@@ -246,7 +247,11 @@ public class RelationResult extends QueryResult{
         HashSet<String> filterResult = filterByIndex(where);
         datas.clear();
         for(final String string : filterResult) {
-            datas.add(new ArrayList<String>(){{add(string);}});
+            datas.add(new ArrayList<>(){{add(string);}});
         }
+    }
+
+    public ArrayList<ArrayList<String>> getDatas(){
+        return this.datas;
     }
 }
