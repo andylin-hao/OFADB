@@ -257,4 +257,12 @@ public class Utils {
         byteArrayInputStream.close();
         return object;
     }
+
+    public static int[] getPosFromStr(String string){
+        String[] strs = string.split(",");
+        int[] result = new int[strs.length];
+        for(int i = 0;i<strs.length;i++)
+            result[i] = Integer.parseInt(strs[i]);
+        return result;
+    }
 }

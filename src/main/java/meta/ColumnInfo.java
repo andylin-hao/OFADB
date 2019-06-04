@@ -14,6 +14,7 @@ public class ColumnInfo {
     public  boolean nullable;
     public final static String segment = ",";
     public Table table;
+    public boolean isUnique;
 
     public ColumnInfo(Type columnType, String name) {
         this.columnType = columnType;
@@ -23,11 +24,12 @@ public class ColumnInfo {
         incrStart = 0;
     }
 
-    public ColumnInfo(String columnName, Type columnType, boolean autoIncr, boolean nullable, Integer incrStart){
+    public ColumnInfo(String columnName, Type columnType, boolean autoIncr, boolean nullable,boolean isUnique, Integer incrStart){
         this.columnName = columnName;
         this.columnType = columnType;
         this.incrStart = incrStart;
         this.autoIncr = autoIncr;
+        this.isUnique = isUnique;
         this.nullable = nullable;
     }
 
@@ -37,7 +39,8 @@ public class ColumnInfo {
         columnType = new Type(infos[1]);
         autoIncr = Integer.parseInt(infos[2]) == 1;
         nullable = Integer.parseInt(infos[3]) == 1;
-        incrStart = Integer.parseInt(infos[4]);
+        nullable = Integer.parseInt(infos[4]) == 1;
+        incrStart = Integer.parseInt(infos[5]);
     }
 
     @Override
@@ -46,6 +49,7 @@ public class ColumnInfo {
                 + columnType.toString() + ColumnInfo.segment
                 + ((Integer)(autoIncr ? 0:1)).toString() + ColumnInfo.segment
                 + ((Integer)(nullable ? 0:1)).toString() + ColumnInfo.segment
+                + ((Integer)(isUnique ? 0:1)).toString() + ColumnInfo.segment
                 + (incrStart).toString();
     }
 
