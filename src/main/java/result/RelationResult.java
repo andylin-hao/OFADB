@@ -67,9 +67,9 @@ public class RelationResult extends QueryResult{
 
     public boolean indexUsable(WhereExpr where)throws IOException{
         if(where == null)
-            return true;
+            return false;
         if(where.isInvalid())
-            return true;
+            return false;
         if(where.getExprType().equals(ExprTypes.EXPR_QUALIFIER)){
             QualifyEleExpr left = ((QualifierExpr)where).getLhs();
             QualifyEleExpr right = ((QualifierExpr)where).getRhs();
