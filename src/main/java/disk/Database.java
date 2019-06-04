@@ -95,6 +95,7 @@ public class Database {
             Table indexTable = System.getIndexesTable();
             indexTable.delete(0, System.tablePK(dataBaseName, table.info.tableName));
             table.closeFile();
+            java.lang.System.gc();
             Logger.deleteDir(new File(Logger.tableDirectoryPath(table)));
         }
     }

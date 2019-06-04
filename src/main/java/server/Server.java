@@ -86,9 +86,13 @@ public class Server {
                     System.loadSystem();
                     String[] sqlStatements = data.sql.split(";");
                     Result result = null;
-                    for (String sql: sqlStatements)
-                        result = Engine.expressionExec(sql);
-                    os.write(getResStr(result));
+                    try {
+                        for (String sql: sqlStatements)
+                            result = Engine.expressionExec(sql);
+                        os.write(getResStr(result));
+                    } catch (Exception e) {
+                        os.write(getResStr(MsgTypes.MSG_RES_ERR, e.getMessage(), null));
+                    }
                     break;
                 case MSG_POST_CONNECT:
                     os.write(getResStr(MsgTypes.MSG_RES_SUCCESS, "Connection is stable", null));

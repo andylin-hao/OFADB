@@ -49,13 +49,15 @@ public class DataFileTest {
 //        data[1] = "5";
 //        table.insert(data);
 //        table.save();
-
+        System.loadSystem();
+        System.loadDataBase("mdb");
         String sql_subSelect = "select t.name1,tt2.name from (select id as id1, name as name1 from tt2) t, tt2 where t.id1 = (5*8)/10 or t.name1 = '5'";
-        String sql_simplest = "select * from tt2";
+        String sql_simplest = "select * from person";
         String sql_where = "select * from tt2 where id = 6-(4-2) and name = '5'";
-        String sql_createDatabase = "create database testbase";
-        Result result = Engine.expressionExec(sql_createDatabase);
+        String sql_createDatabase = "drop database testbase";
+//        Result result = Engine.expressionExec(sql_simplest);
 //        String[] names = ((QueryResult)result).getColumnName();
+        System.getDataBase("mdb").removeTable("person");
 //        while(((QueryResult)result).hasNext()){
 //            Object[] data = ((QueryResult)result).next();
 //            int a = 1;

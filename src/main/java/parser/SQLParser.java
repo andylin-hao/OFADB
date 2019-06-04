@@ -52,7 +52,10 @@ public class SQLParser extends SQLiteBaseListener {
 
     @Override
     public void exitCreate_table_stmt(SQLiteParser.Create_table_stmtContext ctx) {
-        expr = new CreateTableExpr(ctx.database_name().getText(), ctx.table_name().getText());
+        String dbName = "";
+        if (ctx.database_name() != null)
+            dbName = ctx.database_name().getText();
+        expr = new CreateTableExpr(dbName, ctx.table_name().getText());
         CreateTableExpr createTableExpr = (CreateTableExpr) expr;
         HashMap<String, ColumnDefExpr> columnExprs = new HashMap<>();
 

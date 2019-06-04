@@ -1,5 +1,6 @@
 package disk;
 
+import block.BlockInfo;
 import index.IndexKey;
 import meta.IndexInfo;
 
@@ -58,6 +59,20 @@ public class System {
     public static Table getIndexesTable()throws IOException{
         checkSystemLoaded();
         return system.tables.get(Logger.indexesTableName);
+    }
+
+    public static ArrayList<String> getAllDatabaseNames()throws IOException{
+        checkSystemLoaded();
+        ArrayList<String> names = new ArrayList<>();
+        for(BlockInfo info:getDatabaseTable().dataFileManager.blockInfos){
+            for(int i = 0;i<info.emptyRecord.size();i++)
+                if(!info.emptyRecord.get(i))
+                {
+                    Row row = getDatabaseTable().get(getDatabaseTable().dataFileManager.blockInfos.indexOf(info),i);
+                    names.add((String) row.rowData[0]);
+                }
+        }
+        return names;
     }
 
     /**

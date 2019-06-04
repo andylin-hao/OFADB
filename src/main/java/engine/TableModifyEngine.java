@@ -44,7 +44,7 @@ public class TableModifyEngine {
         ArrayList<Row> insertedData = new ArrayList<>();
         try{
             for (ArrayList<Object> allDatum : allData) {
-                if (!table.insertConstraintCheck(allDatum.toArray())) {
+                if (table.insertConstraintCheck(allDatum.toArray())) {
                     Row row = table.insert(allDatum.toArray());
                     insertedData.add(row);
                 } else {
@@ -93,7 +93,7 @@ public class TableModifyEngine {
                 Object[] newData = oldRow.rowData.clone();
                 ((UpdateExpr)expression).completeValues(newData);
 
-                if (!table.insertConstraintCheck(newData)) {
+                if (table.insertConstraintCheck(newData)) {
                     Row newRow = table.insert(newData);
                     insertedData.add(newRow);
                 } else {

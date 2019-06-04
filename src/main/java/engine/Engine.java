@@ -32,6 +32,10 @@ public class Engine {
             case EXPR_SHOW_DB:
             case EXPR_SHOW_DBS:
                 return new InfoEngine(expression).getResult();
+            case EXPR_INSERT:
+            case EXPR_DELETE:
+            case EXPR_UPDATE:
+                return new TableModifyEngine(expression).getResult();
             default:
                 return null;
         }

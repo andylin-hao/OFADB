@@ -117,7 +117,7 @@ public class SelectExpr extends Expression {
                 selectExpr.checkValidity();
                 selectExpr.checkColumnUniqueness(selectExpr.resultColumnExprs);
             }
-            if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_RELATION && !((RelationExpr) rangeTableExpr).getDbName().equals(""))
+            if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_RELATION && !((RelationExpr) rangeTableExpr).getDbName().equals(System.getCurDB().dataBaseName))
                 throw new RuntimeException("Syntax error of writing database name in query statement");
         }
 

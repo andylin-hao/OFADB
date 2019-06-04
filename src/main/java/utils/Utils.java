@@ -108,7 +108,7 @@ public class Utils {
         String tableName = tableNames.get(columnExpr.getTableName());
         SubSelectExpr subSelectExpr = null;
 
-        if (!columnExpr.getDbName().equals(""))
+        if (!columnExpr.getDbName().equals(System.getCurDB().dataBaseName))
             throw new RuntimeException("Syntax error of writing database name in query statement");
 
         // Verify column name that has no table name
@@ -218,12 +218,14 @@ public class Utils {
             }
         }
 
-        if (values.size() != columns.size())
-            throw new RuntimeException("Inserted values is not enough for specified columns");
+        for (ArrayList<Object> value: values) {
+            if (value.size() != columns.size())
+                throw new RuntimeException("Inserted values is not enough for specified columns");
 
-        for (int i = 0; i < values.size(); i++) {
-            if (!objectEqualsColumnType(values, Objects.requireNonNull(MetaData.getColumnType(table.getDbName(), table.getTableName(), columns.get(i))).columnType))
-                throw new RuntimeException("Value type does not match column type");
+            for (int i = 0; i < value.size(); i++) {
+                if (!objectEqualsColumnType(value.get(i), Objects.requireNonNull(MetaData.getColumnType(table.getDbName(), table.getTableName(), columns.get(i))).columnType))
+                    throw new RuntimeException("Value type does not match column type");
+            }
         }
     }
 

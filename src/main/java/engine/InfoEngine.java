@@ -5,7 +5,9 @@ import expression.Expression;
 import expression.show.ShowDBExpr;
 import result.InfoResult;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class InfoEngine {
     private Expression expression;
@@ -13,7 +15,7 @@ public class InfoEngine {
         this.expression = expression;
     }
 
-    public InfoResult getResult(){
+    public InfoResult getResult()throws IOException{
         String dbName = ((ShowDBExpr)expression).getDbName();
         if(dbName == null)
             return getDatabasesResult();
@@ -21,15 +23,14 @@ public class InfoEngine {
             return getTablesResult();
     }
 
-    private InfoResult getDatabasesResult(){
+    private InfoResult getDatabasesResult()throws IOException {
         String name = "All databases";
-        ArrayList<String> dbNames = new ArrayList<>(System.getDbMap().keySet());
-        return new InfoResult(name,dbNames);
+        return new InfoResult(name,System.getAllDatabaseNames());
     }
 
-    private InfoResult getTablesResult(){
+    private InfoResult getTablesResult()throws IOException{
         String name = ((ShowDBExpr)expression).getDbName();
-        ArrayList<String> tbName = new ArrayList<>(System.getCurDB().tables.keySet());
+        ArrayList<String> tbName = new ArrayList<>(Objects.requireNonNull(System.getDataBase(name)).tables.keySet());
         return new InfoResult(name,tbName);
     }
 }
