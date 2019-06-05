@@ -129,7 +129,7 @@ public class Cache {
      *
      * @param accessor : the key of the block in cache
      **/
-    private void putIn(BlockIO loaded, CacheKey accessor) throws IOException{
+    private void putIn(BlockIO loaded, CacheKey accessor) throws IOException {
         //the cache has enough space
         if (cacheSize + loaded.blockSize <= Logger.cacheSizeLimit) {
             blockHashMap.put(accessor, loaded);
@@ -138,7 +138,7 @@ public class Cache {
         //the cache overflowed
         else {
             pop();
-            putIn(loaded,accessor);
+            putIn(loaded, accessor);
         }
     }
 
@@ -186,7 +186,7 @@ public class Cache {
         }
     }
 
-    private void visitBlock(CacheKey accessor){
+    private void visitBlock(CacheKey accessor) {
         int pos = keys.indexOf(accessor);
         accessor = keys.get(pos);
         accessor.visited();

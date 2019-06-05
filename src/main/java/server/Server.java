@@ -87,7 +87,7 @@ public class Server {
                     String[] sqlStatements = data.sql.split(";");
                     Result result = null;
                     try {
-                        for (String sql: sqlStatements)
+                        for (String sql : sqlStatements)
                             result = Engine.expressionExec(sql);
                         os.write(getResStr(result));
                     } catch (Exception e) {
@@ -114,7 +114,7 @@ public class Server {
         if (Objects.requireNonNull(result).getClass() == QueryResult.class) {
             QueryResult queryResult = (QueryResult) result;
             TableData tableData = new TableData();
-            tableData.columnNames = queryResult.getColumnName();
+            tableData.columnNames = queryResult.getColumnNames();
             while (queryResult.hasNext()) {
                 tableData.data.add(queryResult.next());
             }

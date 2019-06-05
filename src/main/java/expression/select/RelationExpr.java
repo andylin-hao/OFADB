@@ -26,6 +26,7 @@ public class RelationExpr extends RangeTableExpr {
     private String tableName = "";
     private String alias = "";
     private String dbName = "";
+    private JoinExpr parent = null;
 
     public RelationExpr(String tableName, String alias, String dbName) {
         super(RangeTableTypes.RT_RELATION);

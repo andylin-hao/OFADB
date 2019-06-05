@@ -54,7 +54,7 @@ public class Client extends JFrame {
     private void processRes(ResData res) {
         label.setText("");
         Object[][] blankData = {};
-        ((DefaultTableModel)table.getModel()).setDataVector(blankData, blankData);
+        ((DefaultTableModel) table.getModel()).setDataVector(blankData, blankData);
         switch (res.type) {
             case MSG_RES_ERR:
                 label.setText(res.message);
@@ -64,10 +64,10 @@ public class Client extends JFrame {
                 if (res.tableData != null) {
                     Object[] columnNames = res.tableData.columnNames;
                     Object[][] data = new Object[res.tableData.data.size()][columnNames.length];
-                    for (int i = 0;i<res.tableData.data.size();i++) {
+                    for (int i = 0; i < res.tableData.data.size(); i++) {
                         data[i] = res.tableData.data.get(i);
                     }
-                    DefaultTableModel tableModel = (DefaultTableModel)table.getModel();
+                    DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
                     tableModel.setDataVector(data, columnNames);
                     table.setModel(tableModel);
                 }
@@ -176,7 +176,7 @@ public class Client extends JFrame {
         send(getPostStr(MsgTypes.MSG_POST_SQL, content.toString()));
     }
 
-    private byte[] getPostStr(MsgTypes type, String sql)  {
+    private byte[] getPostStr(MsgTypes type, String sql) {
         PostData postData = new PostData();
         postData.type = type;
         postData.userName = USERNAME;

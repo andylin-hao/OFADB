@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 /**
  * The select expression.
@@ -106,7 +107,7 @@ public class SelectExpr extends Expression {
 
     @Override
     public void checkValidity() throws IOException {
-        alterStarColumn();
+        alterResultColumn();
 
         // Acquire the table names in the statement and verify sub-select statement
         ArrayList<RangeTableExpr> fromTableList = Utils.getFromTableList(fromExpr);
@@ -180,8 +181,8 @@ public class SelectExpr extends Expression {
     }
 
     @SuppressWarnings("ConstantConditions")
-    private HashSet<String> getColumns(RangeTableExpr table) throws IOException {
-        HashSet<String> result = new HashSet<>();
+    private LinkedHashSet<String> getColumns(RangeTableExpr table) throws IOException {
+        LinkedHashSet<String> result = new LinkedHashSet<>();
         if (table.getRtTypes().equals(RangeTableTypes.RT_SUB_QUERY)) {
             for (ResultColumnExpr columnExpr : ((SubSelectExpr) table).getSelectExpr().getResultColumnExprs()) {
                 result.add(columnExpr.getAttrName());
@@ -202,25 +203,31 @@ public class SelectExpr extends Expression {
         alterJoinQualifier(fromExpr);
     }
 
-    private void alterStarColumn() throws IOException {
-        ArrayList<RangeTableExpr> fromTableList = Utils.getFromTableList(fromExpr);
-        if (resultColumnExprs.size() != 1) {
-            for (ResultColumnExpr columnExpr: resultColumnExprs) {
-                if (columnExpr.getAttrName().equals("*"))
-                    throw new RuntimeException("Illegal star in select expression");
-            }
-            return;
-        }
-        resultColumnExprs.size();
-        if (!resultColumnExprs.get(0).getAttrName().equals("*"))
-            return;
-        resultColumnExprs.clear();
-        for (RangeTableExpr table: fromTableList) {
-            for (String columnName: table.getColumnNames()) {
-                ResultColumnExpr columnExpr = new ResultColumnExpr();
-                columnExpr.setTableName(table.getRangeTableName());
-                columnExpr.setAttrName(columnName);
-                resultColumnExprs.add(columnExpr);
+    private void alterResultColumn() throws IOException {
+        if (resultColumnExprs.size() == 1 && resultColumnExprs.get(0).getAttrName().equals("*")) {
+            resultColumnExprs.clear();
+            RangeTableExpr root = fromExpr;
+            while (true) {
+                if (root.getRtTypes() == RangeTableTypes.RT_RELATION ||
+                        root.getRtTypes() == RangeTableTypes.RT_SUB_QUERY) {
+                    for (String columnName : root.getColumnNames()) {
+                        ResultColumnExpr columnExpr = new ResultColumnExpr();
+                        columnExpr.setTableName(root.getRangeTableName());
+                        columnExpr.setAttrName(columnName);
+                        resultColumnExprs.add(0, columnExpr);
+                    }
+                    return;
+                } else if (root.getRtTypes() == RangeTableTypes.RT_JOIN) {
+                    RangeTableExpr right = ((JoinExpr) root).getRhs();
+                    for (String columnName : right.getColumnNames()) {
+                        ResultColumnExpr columnExpr = new ResultColumnExpr();
+                        columnExpr.setTableName(right.getRangeTableName());
+                        columnExpr.setAttrName(columnName);
+                        resultColumnExprs.add(0, columnExpr);
+                    }
+                    root = ((JoinExpr) root).getLhs();
+                } else
+                    throw new RuntimeException("The from expression wasn't expanded correctly");
             }
         }
     }
@@ -257,12 +264,12 @@ public class SelectExpr extends Expression {
                 RangeTableExpr right = joinExpr.getRhs();
                 HashSet<String> rightColumnNames = getColumns(right);
                 RangeTableExpr left = joinExpr.getLhs();
-                HashSet<String> leftColumnNames;
+                LinkedHashSet<String> leftColumnNames;
                 if (left.getRtTypes().equals(RangeTableTypes.RT_JOIN))
                     leftColumnNames = getColumns(((JoinExpr) left).getRhs());
                 else
                     leftColumnNames = getColumns(left);
-                HashSet<String> interColumns = new HashSet<>(rightColumnNames);
+                LinkedHashSet<String> interColumns = new LinkedHashSet<>(rightColumnNames);
                 interColumns.retainAll(leftColumnNames);
                 for (String columnName : interColumns) {
                     ResultColumnExpr leftColumn = new ResultColumnExpr();

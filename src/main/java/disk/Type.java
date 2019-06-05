@@ -15,7 +15,7 @@ public class Type {
 
     public Type(ColumnTypes type, int length) {
         typeCode = type;
-        if(typeCode.equals(ColumnTypes.COL_STRING))
+        if (typeCode.equals(ColumnTypes.COL_STRING))
             maxLength = length;
         else
             maxLength = 0;
@@ -126,7 +126,7 @@ public class Type {
             case COL_INT:
                 return "int";
             case COL_STRING:
-                return "string"+maxLength;
+                return "string" + maxLength;
             case COL_DOUBLE:
                 return "double";
             case COL_FLOAT:
@@ -148,9 +148,15 @@ public class Type {
         return new Type(ColumnTypes.COL_STRING, maxLength);
     }
 
-    public static Type boolType(){ return new Type(ColumnTypes.COL_BOOL); }
+    public static Type boolType() {
+        return new Type(ColumnTypes.COL_BOOL);
+    }
 
-    public static Type longType(){ return new Type(ColumnTypes.COL_LONG); }
+    public static Type longType() {
+        return new Type(ColumnTypes.COL_LONG);
+    }
 
-    public ColumnTypes getColumnTypes() {return typeCode; }
+    public ColumnTypes getColumnTypes() {
+        return typeCode;
+    }
 }

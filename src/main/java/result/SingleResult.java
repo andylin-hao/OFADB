@@ -24,18 +24,18 @@ public class SingleResult {
         this.datas = datas;
     }
 
-    private HashMap<String,HashMap<String,Object>> datas = new HashMap<>();
+    private HashMap<String, HashMap<String, Object>> datas = new HashMap<>();
 
-    public SingleResult(String position,String tableName,HashMap<String,Object> data){
+    public SingleResult(String position, String tableName, HashMap<String, Object> data) {
         positions.add(position);
-        datas.put(tableName,data);
+        datas.put(tableName, data);
     }
 
-    public SingleResult(){
+    public SingleResult() {
 
     }
 
-    public SingleResult(SingleResult r1,SingleResult r2){
+    public SingleResult(SingleResult r1, SingleResult r2) {
         this.positions.addAll(r1.positions);
         this.positions.addAll(r2.positions);
         this.datas = new HashMap<>();
@@ -43,22 +43,22 @@ public class SingleResult {
         this.datas.putAll(r2.datas);
     }
 
-    public void merge(SingleResult another){
-        positions.addAll( another.positions);
+    public void merge(SingleResult another) {
+        positions.addAll(another.positions);
         datas.putAll(another.datas);
     }
 
-    public Object getValue(ResultColumnExpr expr){
+    public Object getValue(ResultColumnExpr expr) {
         String tableName = expr.getTableName();
         String columnName = expr.getAttrName();
-        return getValue(columnName,tableName);
+        return getValue(columnName, tableName);
     }
 
-    public Object getValue(String columnName,String tableName){
+    public Object getValue(String columnName, String tableName) {
         return datas.get(tableName).get(columnName);
     }
 
-    public static SingleResult merge(SingleResult r1,SingleResult r2){
+    public static SingleResult merge(SingleResult r1, SingleResult r2) {
         SingleResult result = new SingleResult();
         result.getPositions().addAll(r1.getPositions());
         result.getPositions().addAll(r2.getPositions());

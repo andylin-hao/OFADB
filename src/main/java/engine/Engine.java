@@ -17,9 +17,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 public class Engine {
-    public static Result expressionExec(String sql)throws IOException {
+    public static Result expressionExec(String sql) throws IOException {
         Expression expression = getParseResult(sql);
-        switch (expression.getExprType()){
+        switch (expression.getExprType()) {
             case EXPR_SELECT:
                 return new QueryEngine(expression).getResult();
             case EXPR_CREATE_DB:
