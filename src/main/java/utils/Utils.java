@@ -106,6 +106,7 @@ public class Utils {
     public static ColumnTypes checkColumnExpr(ResultColumnExpr columnExpr, RangeTableExpr rangeTableExpr, boolean addTableName) throws IOException {
         ArrayList<RangeTableExpr> fromTableList = getFromTableList(rangeTableExpr);
         HashMap<String, String> tableNames = getTableNameList(rangeTableExpr);
+        HashMap<String, ArrayList<String>> selectableColumns = getTableSelectableColumns(rangeTableExpr);
         String dbName = System.getCurDB().dataBaseName;
         String tableName = tableNames.get(columnExpr.getTableName());
         SubSelectExpr subSelectExpr = null;
@@ -116,25 +117,32 @@ public class Utils {
         // Verify column name that has no table name
         if (columnExpr.getTableName().equals("")) {
             int occurTimes = 0;
+            ArrayList<String> redundantTables = new ArrayList<>();
             for (RangeTableExpr fromExpr : fromTableList) {
                 if (fromExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY &&
                         ((SubSelectExpr) fromExpr).getSelectExpr().getColumn(columnExpr.getAttrName()) != null) {
-                    occurTimes += 1;
-                    subSelectExpr = (SubSelectExpr) fromExpr;
                     tableName = null;
-                    if (addTableName)
-                        columnExpr.setTableName(subSelectExpr.getAlias());
+                } else if (fromExpr.getRtTypes() == RangeTableTypes.RT_RELATION &&
+                        MetaData.isColumnExist(dbName, ((RelationExpr) fromExpr).getTableName(), columnExpr.getAttrName())) {
+                    tableName = fromExpr.getRangeTableName();
                 } else {
-                    if (fromExpr.getRtTypes() == RangeTableTypes.RT_RELATION &&
-                            MetaData.isColumnExist(dbName, ((RelationExpr) fromExpr).getTableName(), columnExpr.getAttrName())) {
-                        occurTimes += 1;
-                        tableName = ((RelationExpr) fromExpr).getTableName();
-                        if (addTableName)
-                            columnExpr.setTableName(((RelationExpr) fromExpr).getName());
-                    }
+                    throw new RuntimeException("Wrong range table type");
                 }
+                occurTimes += 1;
+                if (occurTimes >= 1)
+                    redundantTables.add(fromExpr.getRangeTableName());
+                if (addTableName)
+                    columnExpr.setTableName(fromExpr.getRangeTableName());
             }
 
+            if (occurTimes > 1) {
+                int count = 0;
+                for (String redundantTable: redundantTables) {
+                    if (selectableColumns.get(redundantTable).contains(columnExpr.getAttrName()))
+                        count += 1;
+                }
+                occurTimes = count;
+            }
             if (occurTimes == 0)
                 throw new RuntimeException("Column name " + columnExpr.getAttrName() + " does not exist");
             if (occurTimes > 1)
