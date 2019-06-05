@@ -234,7 +234,7 @@ public class Utils {
                         former.get(joinExpr.getRhs().getRangeTableName()).add(rightColumn);
                     }
                 }
-            } else if (joinExpr.getUsingExpr().size() == 0) {
+            } else if (joinExpr.getUsingExpr().size() > 0) {
                 for (String rightColumn : rightColumns) {
                     boolean isAdd = true;
                     for (ResultColumnExpr columnExpr : joinExpr.getUsingExpr()) {

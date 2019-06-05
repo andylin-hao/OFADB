@@ -78,7 +78,6 @@ public class RelationExpr extends RangeTableExpr {
 
     @Override
     protected RelationExpr clone() throws CloneNotSupportedException {
-        super.clone();
         return new RelationExpr(tableName, alias, dbName);
     }
 

@@ -7,6 +7,7 @@ import meta.IndexInfo;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -206,7 +207,8 @@ public class System {
             curDB = null;
 
         Table databases = getDatabaseTable();
-        for (Table table : database.tables.values())
+        ArrayList<Table> tables = new ArrayList<>(database.tables.values());
+        for (Table table : tables)
             database.removeTable(table);
         databases.delete(0, databasePK(database.dataBaseName));
         Logger.deleteDir(new File(Logger.databaseDirectoryPath(database)));
@@ -275,7 +277,10 @@ public class System {
      * get the current database
      */
     public static Database getCurDB() {
-        return curDB;
+        if(curDB!= null)
+            return curDB;
+        else
+            throw new RuntimeException("No database is used");
     }
 
 

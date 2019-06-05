@@ -62,6 +62,11 @@ class ParserTest {
     }
 
     @Test
+    void StringMatchTest() {
+        assertTrue("\n".matches("\\s*"));
+    }
+
+    @Test
     void noTest() {
         assertEquals(1, 1);
     }

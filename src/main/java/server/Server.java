@@ -87,8 +87,11 @@ public class Server {
                     String[] sqlStatements = data.sql.split(";");
                     Result result = null;
                     try {
-                        for (String sql : sqlStatements)
+                        for (String sql : sqlStatements) {
+                            if (sql.matches("\\s*"))
+                                continue;
                             result = Engine.expressionExec(sql);
+                        }
                         os.write(getResStr(result));
                     } catch (Exception e) {
                         os.write(getResStr(MsgTypes.MSG_RES_ERR, e.getMessage(), null));
@@ -100,6 +103,9 @@ public class Server {
                 default:
                     throw new RuntimeException("Post form is incorrect");
             }
+        } catch (NullPointerException e) {
+            resStr = getResStr(MsgTypes.MSG_RES_ERR, "Empty error", null);
+            os.write(resStr);
         } catch (Exception e) {
             resStr = getResStr(MsgTypes.MSG_RES_ERR, e.getMessage(), null);
             os.write(resStr);

@@ -68,10 +68,9 @@ public class ResultColumnExpr extends Expression {
 
     @Override
     protected ResultColumnExpr clone() throws CloneNotSupportedException {
-        super.clone();
         ResultColumnExpr newColumn = new ResultColumnExpr();
         newColumn.attrName = attrName;
-        newColumn.table = table;
+        newColumn.table = table.clone();
         newColumn.alias = alias;
         return newColumn;
     }
