@@ -70,7 +70,7 @@ public class Client extends JFrame {
                     tableModel.setDataVector(data, columnNames);
                     table.setModel(tableModel);
                 }
-                label.setText(res.message);
+                label.setText(res.message + ". Execution time: " + res.time + "μs");
                 break;
             default:
                 label.setText("Wrong format of response data");

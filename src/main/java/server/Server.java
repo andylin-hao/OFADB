@@ -13,6 +13,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Objects;
+import java.util.Timer;
 
 public class Server {
     private final static String USERNAME = "OFADB";
@@ -69,13 +70,13 @@ public class Server {
         byte[] resStr;
 
         if (data == null) {
-            resStr = getResStr(MsgTypes.MSG_RES_ERR, "Format error", null);
+            resStr = getResStr(MsgTypes.MSG_RES_ERR, "Format error", null, 0.);
             os.write(resStr);
             return;
         }
 
         if (!verifyClient(data.userName, data.password)) {
-            resStr = getResStr(MsgTypes.MSG_RES_ERR, "Invalid user", null);
+            resStr = getResStr(MsgTypes.MSG_RES_ERR, "Invalid user", null, 0.);
             os.write(resStr);
             return;
         }
@@ -86,28 +87,31 @@ public class Server {
                     System.loadSystem();
                     String[] sqlStatements = data.sql.split(";");
                     Result result = null;
+                    long startTime = java.lang.System.nanoTime();
                     try {
                         for (String sql : sqlStatements) {
                             if (sql.matches("\\s*"))
                                 continue;
                             result = Engine.expressionExec(sql);
                         }
-                        os.write(getResStr(result));
+                        double total = (java.lang.System.nanoTime()-startTime)/1000;
+                        os.write(getResStr(result, total));
                     } catch (Exception e) {
-                        os.write(getResStr(MsgTypes.MSG_RES_ERR, e.getMessage(), null));
+                        double total = (java.lang.System.nanoTime()-startTime)/1000;
+                        os.write(getResStr(MsgTypes.MSG_RES_ERR, e.getMessage(), null, total));
                     }
                     break;
                 case MSG_POST_CONNECT:
-                    os.write(getResStr(MsgTypes.MSG_RES_SUCCESS, "Connection is stable", null));
+                    os.write(getResStr(MsgTypes.MSG_RES_SUCCESS, "Connection is stable", null, 0.));
                     break;
                 default:
                     throw new RuntimeException("Post form is incorrect");
             }
         } catch (NullPointerException e) {
-            resStr = getResStr(MsgTypes.MSG_RES_ERR, "Empty error", null);
+            resStr = getResStr(MsgTypes.MSG_RES_ERR, "Empty error", null, 0.);
             os.write(resStr);
         } catch (Exception e) {
-            resStr = getResStr(MsgTypes.MSG_RES_ERR, e.getMessage(), null);
+            resStr = getResStr(MsgTypes.MSG_RES_ERR, e.getMessage(), null, 0.);
             os.write(resStr);
         }
     }
@@ -116,7 +120,7 @@ public class Server {
         return userName.equals(USERNAME) && password.equals(PASSWORD);
     }
 
-    private byte[] getResStr(Result result) throws IOException {
+    private byte[] getResStr(Result result, double time) throws IOException {
         if (Objects.requireNonNull(result).getClass() == QueryResult.class) {
             QueryResult queryResult = (QueryResult) result;
             TableData tableData = new TableData();
@@ -124,20 +128,21 @@ public class Server {
             while (queryResult.hasNext()) {
                 tableData.data.add(queryResult.next());
             }
-            return getResStr(MsgTypes.MSG_RES_SUCCESS, "Query success", tableData);
+            return getResStr(MsgTypes.MSG_RES_SUCCESS, "Query success", tableData, time);
         } else if (result.getClass() == MsgResult.class) {
-            return getResStr(MsgTypes.MSG_RES_SUCCESS, ((MsgResult) result).getMsg(), null);
+            return getResStr(MsgTypes.MSG_RES_SUCCESS, ((MsgResult) result).getMsg(), null, time);
         } else if (result.getClass() == InfoResult.class) {
-            return getResStr(MsgTypes.MSG_RES_SUCCESS, "Information acquired", ((InfoResult) result).getTableData());
+            return getResStr(MsgTypes.MSG_RES_SUCCESS, "Information acquired", ((InfoResult) result).getTableData(), time);
         } else
-            return getResStr(MsgTypes.MSG_RES_ERR, "Internal error", null);
+            return getResStr(MsgTypes.MSG_RES_ERR, "Internal error", null, time);
     }
 
-    private byte[] getResStr(MsgTypes type, String message, TableData tableData) throws IOException {
+    private byte[] getResStr(MsgTypes type, String message, TableData tableData, double time) throws IOException {
         ResData resData = new ResData();
         resData.type = type;
         resData.message = message;
         resData.tableData = tableData;
+        resData.time = time;
 
         return Utils.serialize(resData);
     }
