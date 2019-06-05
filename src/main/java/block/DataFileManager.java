@@ -224,7 +224,7 @@ public class DataFileManager {
         }
     }
 
-    public void close()throws IOException{
+    public void close() throws IOException {
         saveAll();
         file.close();
     }

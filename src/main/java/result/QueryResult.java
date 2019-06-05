@@ -12,8 +12,9 @@ public class QueryResult extends Result {
     private QueryResult[] subResult;
 
     private QueryResult basedResult;
-    protected ArrayList<ArrayList<String>> datas;
-    private HashMap<String,ResultColumnExpr> selectColumns = null;
+    ArrayList<ArrayList<String>> datas;
+    private HashMap<String, ResultColumnExpr> selectColumns = null;
+    private String[] columnNames = null;
 
     private static String finalResultName = "result";
 
@@ -21,7 +22,7 @@ public class QueryResult extends Result {
         isFinalResult = finalResult;
     }
 
-    public void setIterable(){
+    public void setIterable() {
         this.next = 0;
     }
 
@@ -42,14 +43,14 @@ public class QueryResult extends Result {
 
     private SubSelectExpr selectExpr;
 
-    public QueryResult(){
+    QueryResult() {
         super(ResultType.RESULT_QUERY);
-        subResult   = null;
+        subResult = null;
         basedResult = null;
         selectExpr = null;
     }
 
-    public QueryResult(QueryResult base){
+    public QueryResult(QueryResult base) {
         super(ResultType.RESULT_QUERY);
         basedResult = base;
         datas = new ArrayList<>();
@@ -57,7 +58,7 @@ public class QueryResult extends Result {
         this.selectExpr = null;
     }
 
-    public QueryResult(QueryResult base,SubSelectExpr tableExpr){
+    public QueryResult(QueryResult base, SubSelectExpr tableExpr) {
         super(ResultType.RESULT_QUERY);
         basedResult = base;
         datas = new ArrayList<>();
@@ -65,10 +66,10 @@ public class QueryResult extends Result {
         this.selectExpr = tableExpr;
     }
 
-    public QueryResult(QueryResult r1,QueryResult r2){
+    public QueryResult(QueryResult r1, QueryResult r2) {
         super(ResultType.RESULT_QUERY);
         basedResult = null;
-        subResult = getMergedSubResultArray(r1,r2);
+        subResult = getMergedSubResultArray(r1, r2);
         datas = new ArrayList<>();
         this.selectExpr = null;
     }
@@ -82,28 +83,24 @@ public class QueryResult extends Result {
     }
 
 
-    public void insert(ArrayList<String> data){
+    public void insert(ArrayList<String> data) {
         this.datas.add(data);
     }
 
 
-    private QueryResult[] getMergedSubResultArray(QueryResult r1,QueryResult r2){
+    private QueryResult[] getMergedSubResultArray(QueryResult r1, QueryResult r2) {
         QueryResult[] r1Array;
         QueryResult[] r2Array;
-        if(r1.subResult == null)
-        {
-            r1Array  = new QueryResult[1];
+        if (r1.subResult == null) {
+            r1Array = new QueryResult[1];
             r1Array[0] = r1;
-        }
-        else{
+        } else {
             r1Array = r1.subResult;
         }
-        if(r2.subResult == null)
-        {
-            r2Array  = new QueryResult[1];
+        if (r2.subResult == null) {
+            r2Array = new QueryResult[1];
             r2Array[0] = r2;
-        }
-        else{
+        } else {
             r2Array = r2.subResult;
         }
 
@@ -118,24 +115,23 @@ public class QueryResult extends Result {
     /**
      * return the actual data of the insert position,if the result is a finish version of a select expression ,then it return the data of select sub-expresion
      * else it return the hole data of all table involved
+     *
      * @param positions the positions of this line in different sub-result
      */
-    public SingleResult getValue(ArrayList<String> positions)throws IOException{
-        if(!isFinalResult){
-            if(basedResult == null) {
+    public SingleResult getValue(ArrayList<String> positions) throws IOException {
+        if (!isFinalResult) {
+            if (basedResult == null) {
                 SingleResult result = new SingleResult();
                 for (int i = 0; i < subResult.length; i++) {
                     SingleResult subSingle = subResult[i].getValue(positions.get(i));
                     result.merge(subSingle);
                 }
                 return result;
-            }
-            else{
+            } else {
                 return getValue(positions.get(0));
             }
-        }
-        else{
-            if(subResult != null) {
+        } else {
+            if (subResult != null) {
                 SingleResult result = new SingleResult();
                 for (int i = 0; i < subResult.length; i++) {
                     SingleResult subSingle = subResult[i].getValue(positions.get(i));
@@ -152,8 +148,7 @@ public class QueryResult extends Result {
                     return new SingleResult(index, selectExpr.getRangeTableName(), data);
                 else
                     return new SingleResult(index, QueryResult.finalResultName, data);
-            }
-            else{
+            } else {
                 return getValue(positions.get(0));
             }
         }
@@ -162,33 +157,33 @@ public class QueryResult extends Result {
 
     /**
      * return the data with the input index in the datas list
+     *
      * @param position the index of the line in datas
      */
-    public SingleResult getValue(String position)throws IOException{
-        if(basedResult != null) {
-            SingleResult baseResult =basedResult.getValue(basedResult.datas.get(Integer.parseInt(position)));
+    public SingleResult getValue(String position) throws IOException {
+        if (basedResult != null) {
+            SingleResult baseResult = basedResult.getValue(basedResult.datas.get(Integer.parseInt(position)));
             //if the select is based on just one table
-            if(isFinalResult){
-                HashMap<String,Object> data= new HashMap<>();
-                for(Map.Entry<String,ResultColumnExpr> ele : selectColumns.entrySet()){
+            if (isFinalResult) {
+                HashMap<String, Object> data = new HashMap<>();
+                for (Map.Entry<String, ResultColumnExpr> ele : selectColumns.entrySet()) {
                     String columnName = ele.getKey();
-                    Object object= baseResult.getValue(ele.getValue());
-                    data.put(columnName,object);
+                    Object object = baseResult.getValue(ele.getValue());
+                    data.put(columnName, object);
                 }
-                if(selectExpr != null)
-                    return new SingleResult(position,selectExpr.getRangeTableName(),data);
+                if (selectExpr != null)
+                    return new SingleResult(position, selectExpr.getRangeTableName(), data);
                 else
-                    return new SingleResult(position,QueryResult.finalResultName,data);
+                    return new SingleResult(position, QueryResult.finalResultName, data);
             }
             return baseResult;
-        }
-        else {
+        } else {
             return getValue(datas.get(Integer.parseInt(position)));
         }
     }
 
-    public SingleResult getValue(int position)throws IOException{
-        if(basedResult != null)
+    public SingleResult getValue(int position) throws IOException {
+        if (basedResult != null)
             return basedResult.getValue(basedResult.datas.get(position));
         else {
             return getValue(datas.get(position));
@@ -202,39 +197,37 @@ public class QueryResult extends Result {
 
     public void setSelectColumns(SelectExpr expr) {
         this.selectColumns = new HashMap<>();
-        for(ResultColumnExpr columnExpr : expr.getResultColumnExprs())
-            this.selectColumns.put(columnExpr.getName(),columnExpr);
+        ArrayList<String> names = new ArrayList<>();
+        for (ResultColumnExpr columnExpr : expr.getResultColumnExprs()) {
+            this.selectColumns.put(columnExpr.getName(), columnExpr);
+            names.add(columnExpr.getName());
+        }
+        this.columnNames = new String[names.size()];
+        names.toArray(this.columnNames);
     }
 
-    public String[] getColumnName(){
-        int columnNum = selectColumns.size();
-        String[] columnNames = new String[columnNum];
-        int i = 0;
-        for(String ele: selectColumns.keySet())
-            columnNames[i++] = ele;
+    public String[] getColumnNames() {
         return columnNames;
     }
 
-    public boolean hasNext(){
-        return next<datas.size();
+    public boolean hasNext() {
+        return next < datas.size();
     }
 
-    public Object[] next()throws IOException{
-        if(isFinalResult) {
-            if(next < this.datas.size()) {
+    public Object[] next() throws IOException {
+        if (isFinalResult) {
+            if (next < this.datas.size()) {
                 int pos = next++;
                 SingleResult singleResult = getValue(datas.get(pos));
-                String[] names = getColumnName();
+                String[] names = getColumnNames();
                 Object[] data = new Object[names.length];
                 Map<String, Object> result = singleResult.getDatas().get(QueryResult.finalResultName);
                 for (int i = 0; i < data.length; i++)
                     data[i] = result.get(names[i]);
                 return data;
-            }
-            else
-                throw new RuntimeException("no more data in the result");
-        }
-        else
-            throw new RuntimeException("this is not a complete result of a select ");
+            } else
+                throw new RuntimeException("No more data in the result");
+        } else
+            throw new RuntimeException("This is not a complete result of a select ");
     }
 }

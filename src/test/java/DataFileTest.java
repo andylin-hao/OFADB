@@ -60,7 +60,7 @@ public class DataFileTest {
         String sql_where = "select * from tt2 where id = 6-(4-2) and name = '5'";
         String sql_createDatabase = "drop database testbase";
 //        Result result = Engine.expressionExec(sql_simplest);
-//        String[] names = ((QueryResult)result).getColumnName();
+//        String[] names = ((QueryResult)result).getColumnNames();
 //        System.getDataBase("mdb"). removeTable("test");
 //        while(((QueryResult)result).hasNext()){
 //            Object[] data = ((QueryResult)result).next();

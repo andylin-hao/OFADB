@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class SubSelectExpr extends RangeTableExpr {
     private String alias;
     private SelectExpr selectExpr;
+    private JoinExpr parent;
 
     public SubSelectExpr(String alias) {
         super(RangeTableTypes.RT_SUB_QUERY);

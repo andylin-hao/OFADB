@@ -25,6 +25,7 @@ import parser.SQLiteParser;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 
 class ParserTest {
@@ -41,6 +42,23 @@ class ParserTest {
         SQLParser constructor = new SQLParser();
         walker.walk(constructor, tree);
         return constructor.getExpr();
+    }
+
+    @Test
+    void setTest() {
+        LinkedHashSet<String> set1 = new LinkedHashSet<>();
+        set1.add("1");
+        set1.add("2");
+        set1.add("3");
+
+        LinkedHashSet<String> set2 = new LinkedHashSet<>();
+        set2.add("2");
+        set2.add("1");
+        set2.add("4");
+        set2.add("3");
+
+        set1.addAll(set2);
+        System.out.println(set1);
     }
 
     @Test

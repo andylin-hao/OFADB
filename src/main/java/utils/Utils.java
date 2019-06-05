@@ -11,6 +11,7 @@ import types.ExprTypes;
 import types.RangeTableTypes;
 
 import java.io.*;
+import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -26,6 +27,7 @@ import java.util.Objects;
 public class Utils {
     /**
      * Transform the tree structure of join expression to array form.
+     *
      * @param root {@code RangeTableExpr} variable
      * @return {@code ArrayList} of {@code RangeTableExpr}
      */
@@ -48,6 +50,7 @@ public class Utils {
      * Acquire the map from table alias to table name.
      * For sub query, the alias is mapped to null.
      * For range table that has no alias, the table name is mapped to itself.
+     *
      * @param root {@code RangeTableExpr} variable.
      * @return {@code HashMap} of {@code String} to {@code String}.
      */
@@ -75,7 +78,8 @@ public class Utils {
 
     /**
      * Verify where clause.
-     * @param root {@code WhereExpr}.
+     *
+     * @param root  {@code WhereExpr}.
      * @param table {@code RangeTableExpr} variable is the field of where clause.
      * @throws IOException IO exception.
      */
@@ -175,13 +179,16 @@ public class Utils {
         ColumnTypes type = columnType.typeCode;
         if (object == null)
             return true;
-        if (object instanceof Long) {
+        if (object instanceof Long ||
+                object instanceof Integer ||
+                object instanceof Short) {
             return type.equals(ColumnTypes.COL_SHORT) ||
                     type.equals(ColumnTypes.COL_INT) ||
                     type.equals(ColumnTypes.COL_LONG);
         }
 
-        if (object instanceof Double) {
+        if (object instanceof Double ||
+                object instanceof Float) {
             return type.equals(ColumnTypes.COL_FLOAT) ||
                     type.equals(ColumnTypes.COL_DOUBLE);
         }
@@ -218,7 +225,7 @@ public class Utils {
             }
         }
 
-        for (ArrayList<Object> value: values) {
+        for (ArrayList<Object> value : values) {
             if (value.size() != columns.size())
                 throw new RuntimeException("Inserted values is not enough for specified columns");
 
@@ -260,11 +267,38 @@ public class Utils {
         return object;
     }
 
-    public static int[] getPosFromStr(String string){
+    public static int[] getPosFromStr(String string) {
         String[] strs = string.split(",");
         int[] result = new int[strs.length];
-        for(int i = 0;i<strs.length;i++)
+        for (int i = 0; i < strs.length; i++)
             result[i] = Integer.parseInt(strs[i]);
         return result;
+    }
+
+    public static Object convertValueTypes(Object oldValue, ColumnTypes newType) {
+        switch (newType) {
+            case COL_SHORT:
+                if (!(oldValue instanceof Long))
+                    throw new RuntimeException("Incompatible types");
+                return ((Number) oldValue).shortValue();
+            case COL_INT:
+                if (!(oldValue instanceof Long))
+                    throw new RuntimeException("Incompatible types");
+                return ((Number) oldValue).intValue();
+            case COL_LONG:
+                if (!(oldValue instanceof Long))
+                    throw new RuntimeException("Incompatible types");
+                return ((Number) oldValue).longValue();
+            case COL_FLOAT:
+                if (!(oldValue instanceof Double))
+                    throw new RuntimeException("Incompatible types");
+                return ((Number) oldValue).floatValue();
+            case COL_DOUBLE:
+                if (!(oldValue instanceof Double))
+                    throw new RuntimeException("Incompatible types");
+                return ((Number) oldValue).doubleValue();
+            default:
+                return oldValue;
+        }
     }
 }

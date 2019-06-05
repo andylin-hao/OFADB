@@ -27,8 +27,8 @@ public class Logger {
     public final static Type[] columnTypesOftableTable = {Type.stringType(20), Type.stringType(20), Type.stringType(400), Type.stringType(200), Type.intType()};
 
     public final static String indexesTableName = "indexes";
-    public final static String[] columnNamesOfindexTable = {"tableName","databaseName","columnsInfo","isUnique"};
-    public final static Type[] getColumnTypesOfindexTable = {Type.stringType(20),Type.stringType(20),Type.stringType(200),Type.boolType()};
+    public final static String[] columnNamesOfindexTable = {"tableName", "databaseName", "columnsInfo", "isUnique"};
+    public final static Type[] getColumnTypesOfindexTable = {Type.stringType(20), Type.stringType(20), Type.stringType(200), Type.boolType()};
 
     public final static String tableColumnNameSegment = "\1";
 
@@ -49,7 +49,6 @@ public class Logger {
         preFile(filePath);
         return filePath;
     }
-
 
 
     /**
@@ -124,10 +123,10 @@ public class Logger {
         return columns;
     }
 
-    public static ColumnInfo[] indexesTableType(){
+    public static ColumnInfo[] indexesTableType() {
         ColumnInfo[] columns = new ColumnInfo[columnNamesOfindexTable.length];
-        for(int i = 0;i<columns.length;i++)
-            columns[i] = new ColumnInfo(getColumnTypesOfindexTable[i],columnNamesOfindexTable[i]);
+        for (int i = 0; i < columns.length; i++)
+            columns[i] = new ColumnInfo(getColumnTypesOfindexTable[i], columnNamesOfindexTable[i]);
         return columns;
     }
 }

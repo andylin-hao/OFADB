@@ -24,7 +24,7 @@ public class Table {
     public TableInfo info;
 
     public Table(Database database, ColumnInfo[] columns, String name, List<IndexInfo> indexInfos, Cache cache, int pkIndexNum) throws IOException {
-        this.info = new TableInfo(database,this,columns,name,indexInfos);
+        this.info = new TableInfo(database, this, columns, name, indexInfos);
         dataFileManager = new DataFileManager(this, new File(Logger.dataFilePath(this)), cache);
         loadIndex(indexInfos);
         if (pkIndexNum >= 0)
@@ -40,7 +40,6 @@ public class Table {
         }
 
     }
-
 
 
     /**
@@ -77,9 +76,9 @@ public class Table {
         return true;
     }
 
-    private boolean columnsNullCheck(Object[] data){
-        for(int i = 0;i<data.length;i++)
-            if(!info.columns[i].nullable && data[i] == null)
+    private boolean columnsNullCheck(Object[] data) {
+        for (int i = 0; i < data.length; i++)
+            if (!info.columns[i].nullable && data[i] == null)
                 return false;
         return true;
     }
@@ -92,7 +91,7 @@ public class Table {
         NodeLeaf leaf = (NodeLeaf) index.get(key);
         List<Row> rowList = new ArrayList<>();
 
-        if(leaf != null) {
+        if (leaf != null) {
             for (Row ele : leaf.rowInfos) {
                 rowList.add(dataFileManager.get(ele));
             }
@@ -102,22 +101,21 @@ public class Table {
     }
 
 
-
-
     /**
      * get the row by its primary key
+     *
      * @param pk primary key
      */
-    public Row getByPrimaryKey(IndexKey pk)throws IOException{
-        NodeLeaf leaf = (NodeLeaf)primaryIndex.get(pk);
-        if(leaf == null)
+    public Row getByPrimaryKey(IndexKey pk) throws IOException {
+        NodeLeaf leaf = (NodeLeaf) primaryIndex.get(pk);
+        if (leaf == null)
             return null;
 
         return this.dataFileManager.get(leaf.rowInfos.get(0));
     }
 
-    public boolean insertConstraintCheck(Object[] data){
-        return columnsNullCheck(data)&&uniqueKeyUnUsed(data);
+    public boolean insertConstraintCheck(Object[] data) {
+        return columnsNullCheck(data) && uniqueKeyUnUsed(data);
     }
 
     /**
@@ -142,16 +140,16 @@ public class Table {
             return null;
     }
 
-    public Row get(int block,int row)throws IOException{
-        return dataFileManager.get(block,row);
+    public Row get(int block, int row) throws IOException {
+        return dataFileManager.get(block, row);
     }
 
-    public Row delete(int blockIndex,int rowIndex)throws IOException{
-        Row row = get(blockIndex,rowIndex);
+    public Row delete(int blockIndex, int rowIndex) throws IOException {
+        Row row = get(blockIndex, rowIndex);
         for (IndexBase indexBase : indexes) {
             indexBase.remove(indexBase.getIndexAccessor(row.rowData), row);
         }
-        return dataFileManager.delete(blockIndex,rowIndex);
+        return dataFileManager.delete(blockIndex, rowIndex);
     }
 
     /**
@@ -165,7 +163,7 @@ public class Table {
         NodeLeaf rowPos = new NodeLeaf((NodeLeaf) index.get(key));
 
         List<Row> deletedRow = new ArrayList<>();
-        for(Row ele : rowPos.rowInfos){
+        for (Row ele : rowPos.rowInfos) {
             Row row = dataFileManager.get(ele.blockIndex, ele.rowIndex);
             for (IndexBase indexBase : indexes) {
                 indexBase.remove(indexBase.getIndexAccessor(row.rowData), ele);
@@ -222,8 +220,8 @@ public class Table {
         return data;
     }
 
-    public Object[] tableData(){
-        return Table.tableData(info.database.dataBaseName,info.tableName,info.columns,indexes.indexOf(primaryIndex));
+    public Object[] tableData() {
+        return Table.tableData(info.database.dataBaseName, info.tableName, info.columns, indexes.indexOf(primaryIndex));
     }
 
     @Override
@@ -233,21 +231,21 @@ public class Table {
         return info.tableName.equals(((Table) obj).info.tableName) && info.database.equals(((Table) obj).info.database);
     }
 
-    public void closeFile()throws IOException{
+    public void closeFile() throws IOException {
         save();
         dataFileManager.close();
         dataFileManager.file.close();
-        for(IndexBase indexBase : indexes) {
+        for (IndexBase indexBase : indexes) {
             indexBase.indexChange.saveChange();
             indexBase.fileIO.file.close();
         }
     }
 
-    public IndexBase getIndexByColumns(int[] columns){
+    public IndexBase getIndexByColumns(int[] columns) {
         Arrays.sort(columns);
-        for(IndexBase indexBase : indexes){
+        for (IndexBase indexBase : indexes) {
             Arrays.sort(indexBase.info.columnIndex);
-            if(Arrays.equals(indexBase.info.columnIndex, columns))
+            if (Arrays.equals(indexBase.info.columnIndex, columns))
                 return indexBase;
         }
         return null;

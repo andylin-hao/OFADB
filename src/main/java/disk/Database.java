@@ -32,7 +32,6 @@ public class Database {
     }
 
 
-
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Database))
@@ -46,7 +45,7 @@ public class Database {
         }
     }
 
-    public void close() throws IOException{
+    public void close() throws IOException {
         save();
         this.cache = null;
         this.eventLogger = null;
@@ -55,14 +54,15 @@ public class Database {
 
     /**
      * create a new table in the current database
-     * @param name name of the table
-     * @param columns columns of the  table
+     *
+     * @param name       name of the table
+     * @param columns    columns of the  table
      * @param indexInfos the list of index info
      * @param pkIndexNum the index of the primary index in index list
      */
     public Table createNewTable(String name, ColumnInfo[] columns, List<IndexInfo> indexInfos, int pkIndexNum) throws IOException {
 
-        Object[] tableData = Table.tableData(dataBaseName,name, columns, pkIndexNum);
+        Object[] tableData = Table.tableData(dataBaseName, name, columns, pkIndexNum);
 
         Row result = System.getSystem().tables.get(Logger.tablesTableName).insert(tableData);
 
@@ -78,18 +78,17 @@ public class Database {
         return null;
     }
 
-    public void removeTable(String tableName)throws IOException{
+    public void removeTable(String tableName) throws IOException {
         Table table = getTable(tableName);
-        if(table!=null){
+        if (table != null) {
             removeTable(table);
-        }
-        else
+        } else
             throw new RuntimeException("Table doesn't exist");
     }
 
 
-    public void removeTable(Table table)throws IOException{
-        if(table != null && tables.get(table.info.tableName) != null) {
+    public void removeTable(Table table) throws IOException {
+        if (table != null && tables.get(table.info.tableName) != null) {
             Table tables = System.getTablesTable();
             tables.delete(0, System.tablePK(dataBaseName, table.info.tableName));
             Table indexTable = System.getIndexesTable();
@@ -103,7 +102,6 @@ public class Database {
     }
 
 
-
     public void loadTables() throws IOException {
         Table tables = System.getTablesTable();
         IndexBase pkIndex = tables.indexes.get(0);
@@ -115,7 +113,7 @@ public class Database {
                     Row meta = tables.dataFileManager.get(leaf.rowInfos.get(0));
                     String tableName = (String) meta.rowData[0];
                     ColumnInfo[] columns = ColumnInfo.columnsFromString((String) meta.rowData[2]);
-                    List<IndexInfo> indexInfos = MetaData.getIndexesInfo(dataBaseName,tableName);
+                    List<IndexInfo> indexInfos = MetaData.getIndexesInfo(dataBaseName, tableName);
                     Integer pkIndexNum = (Integer) meta.rowData[4];
                     Table newTable = new Table(this, columns, tableName, indexInfos, cache, pkIndexNum);
                     this.tables.put(tableName, newTable);
@@ -125,7 +123,7 @@ public class Database {
         }
     }
 
-    public Table getTable(String tableName){
+    public Table getTable(String tableName) {
         return this.tables.get(tableName);
     }
 

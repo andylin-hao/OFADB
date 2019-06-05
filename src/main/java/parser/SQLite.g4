@@ -293,7 +293,7 @@ update_stmt_limited
  ;
 
 use_database_stmt
- : K_USE K_DATABASE database_name
+ : K_USE database_name
  ;
 
 vacuum_stmt

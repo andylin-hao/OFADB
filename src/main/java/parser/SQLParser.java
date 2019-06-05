@@ -241,6 +241,8 @@ public class SQLParser extends SQLiteBaseListener {
             insertExpr.getValues().add(new ArrayList<>());
             for (SQLiteParser.ExprContext exprCtx : exprContexts) {
                 Object value = getValue(exprCtx);
+                if (value instanceof ResultColumnExpr)
+                    throw new RuntimeException("Illegal insert values");
                 insertExpr.getValues().get(i).add(value);
             }
         }
