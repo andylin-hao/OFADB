@@ -200,8 +200,9 @@ public class SelectExpr extends Expression {
     private void alterResultColumns() throws IOException {
         HashMap<String, ArrayList<String>> selectableColumns = Utils.getTableSelectableColumns(fromExpr);
         for (ResultColumnExpr columnExpr: resultColumnExprs) {
-            if (!selectableColumns.get(columnExpr.getTableName()).contains(columnExpr.getAttrName()))
-                return;
+            if (!selectableColumns.get(columnExpr.getTableName()).contains(columnExpr.getAttrName())) {
+                
+            }
         }
     }
 
