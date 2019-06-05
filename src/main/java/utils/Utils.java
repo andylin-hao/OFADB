@@ -12,9 +12,7 @@ import types.RangeTableTypes;
 
 import java.io.*;
 import java.nio.file.LinkOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Various utility functions.
@@ -210,6 +208,54 @@ public class Utils {
             throw new RuntimeException("Unknown insert value type");
     }
 
+    public static HashMap<String, ArrayList<String>> getTableSelectableColumns(RangeTableExpr fromExpr) throws IOException {
+        if (fromExpr.getRtTypes().equals(RangeTableTypes.RT_JOIN)) {
+            JoinExpr joinExpr = (JoinExpr) fromExpr;
+            HashMap<String, ArrayList<String>> former = getTableSelectableColumns(joinExpr.getLhs());
+            Collection<ArrayList<String>> values = former.values();
+            former.put(joinExpr.getRhs().getRangeTableName(), new ArrayList<>());
+            LinkedHashSet<String> rightColumns = getColumns(joinExpr.getRhs());
+            if (joinExpr.isNatural()) {
+                for (String rightColumn : rightColumns) {
+                    boolean isAdd = true;
+                    for (ArrayList<String> value : values) {
+                        if (value.contains(rightColumn))
+                            isAdd = false;
+                    }
+                    if (isAdd) {
+                        former.get(joinExpr.getRhs().getRangeTableName()).add(rightColumn);
+                    }
+                }
+                return former;
+            } else if (joinExpr.getUsingExpr() != null) {
+                for (String rightColumn : rightColumns) {
+                    boolean isAdd = true;
+                    for (ResultColumnExpr columnExpr : joinExpr.getUsingExpr()) {
+                        if (columnExpr.getName().equals(rightColumn))
+                            isAdd = false;
+                    }
+                    if (isAdd) {
+                        former.get(joinExpr.getRhs().getRangeTableName()).add(rightColumn);
+                    }
+                }
+            } else {
+                for (String rightColumn : rightColumns) {
+                    former.get(joinExpr.getRhs().getRangeTableName()).add(rightColumn);
+                }
+            }
+        } else if (fromExpr.getRtTypes().equals(RangeTableTypes.RT_RELATION) ||
+                fromExpr.getRtTypes().equals(RangeTableTypes.RT_SUB_QUERY)) {
+            HashMap<String, ArrayList<String>> result = new HashMap<>();
+            result.put(fromExpr.getRangeTableName(), new ArrayList<>());
+            for (String column : getColumns(fromExpr)) {
+                result.get(fromExpr.getRangeTableName()).add(column);
+            }
+            return result;
+        }
+
+        throw new RuntimeException("Illegal range table type");
+    }
+
     public static void checkColumnsValues(RelationExpr table, ArrayList<String> columns, ArrayList<ArrayList<Object>> values) throws IOException {
         table.checkValidity();
         TableInfo tableInfo = MetaData.getTableInfoByName(table.getDbName(), table.getTableName());
@@ -300,5 +346,24 @@ public class Utils {
             default:
                 return oldValue;
         }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    public static LinkedHashSet<String> getColumns(RangeTableExpr table) throws IOException {
+        LinkedHashSet<String> result = new LinkedHashSet<>();
+        if (table.getRtTypes().equals(RangeTableTypes.RT_SUB_QUERY)) {
+            for (ResultColumnExpr columnExpr : ((SubSelectExpr) table).getSelectExpr().getResultColumnExprs()) {
+                result.add(columnExpr.getName());
+            }
+        } else if (table.getRtTypes().equals(RangeTableTypes.RT_RELATION)) {
+            TableInfo tableInfo = MetaData.getTableInfoByName(System.getCurDB().dataBaseName, ((RelationExpr) table).getTableName());
+            for (ColumnInfo columnInfo : tableInfo.columns) {
+                result.add(columnInfo.columnName);
+            }
+        } else {
+            throw new RuntimeException("Table must be relation or sub query");
+        }
+
+        return result;
     }
 }
