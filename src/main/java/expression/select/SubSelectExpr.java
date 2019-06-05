@@ -23,12 +23,16 @@ public class SubSelectExpr extends RangeTableExpr {
         this.selectExpr = selectExpr;
     }
 
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
     public String getAlias() {
         return alias;
     }
 
     @Override
-    public ArrayList<String> getColumnNames() throws IOException {
+    public ArrayList<String> getColumnNames(){
         ArrayList<String> result = new ArrayList<>();
         for (ResultColumnExpr columnExpr: selectExpr.getResultColumnExprs()) {
             result.add(columnExpr.getName());

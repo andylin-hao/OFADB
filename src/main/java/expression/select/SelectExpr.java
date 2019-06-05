@@ -141,7 +141,7 @@ public class SelectExpr extends Expression {
                 JoinExpr joinExpr = (JoinExpr) fromRoot;
                 HashMap<String, String> tables = Utils.getTableNameList(joinExpr);
 
-                if (joinExpr.isNatural() && (joinExpr.getQualifierExpr() != null || joinExpr.getUsingExpr() != null))
+                if (joinExpr.isNatural() && (joinExpr.getQualifierExpr() != null || joinExpr.getUsingExpr().size() > 0))
                     throw new RuntimeException("Natural join cannot have on-clause and using-clause");
 
                 if (joinExpr.getQualifierExpr() != null) {
@@ -242,15 +242,14 @@ public class SelectExpr extends Expression {
                     }
                 }
             }
-            if (joinExpr.isNatural() && joinExpr.getQualifierExpr() == null && joinExpr.getUsingExpr() == null) {
+            if (joinExpr.isNatural() && joinExpr.getQualifierExpr() == null && joinExpr.getUsingExpr().size() == 0) {
                 RangeTableExpr right = joinExpr.getRhs();
                 HashSet<String> rightColumnNames = Utils.getColumns(right);
                 RangeTableExpr left = joinExpr.getLhs();
                 LinkedHashSet<String> leftColumnNames;
                 if (left.getRtTypes().equals(RangeTableTypes.RT_JOIN))
-                    leftColumnNames = Utils.getColumns(((JoinExpr) left).getRhs());
-                else
-                    leftColumnNames = Utils.getColumns(left);
+                    left = ((JoinExpr) left).getRhs();
+                leftColumnNames = Utils.getColumns(left);
                 LinkedHashSet<String> interColumns = new LinkedHashSet<>(rightColumnNames);
                 interColumns.retainAll(leftColumnNames);
                 for (String columnName : interColumns) {
@@ -262,7 +261,7 @@ public class SelectExpr extends Expression {
                     ResultColumnExpr rightColumn = new ResultColumnExpr();
                     rightColumn.setTableName(right.getRangeTableName());
                     rightColumn.setAttrName(columnName);
-                    QualifyEleExpr rightEle = new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, leftColumn);
+                    QualifyEleExpr rightEle = new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, rightColumn);
 
                     QualifierExpr qualifierExpr = new QualifierExpr(QualifyTypes.QUA_EQ, leftEle, rightEle);
 

@@ -267,8 +267,9 @@ public class SQLParser extends SQLiteBaseListener {
                 joinExpr.setRhs((RangeTableExpr) ctxExpr.get(rangeTblContexts.get(i)));
 
                 if (rangeTblContexts.get(i - 1).table_alias() != null &&
-                        rangeTblContexts.get(i - 1).table_alias().getText().toLowerCase().toLowerCase().equals("natural") ||
+                        rangeTblContexts.get(i - 1).table_alias().getText().toLowerCase().equals("natural") ||
                         ctx.join_operator(i - 1).getText().toLowerCase().equals("naturaljoin")) {
+                    checkRangeTable(leftRangeTblExpr);
                     joinExpr.setNatural(true);
                 }
 
@@ -557,5 +558,17 @@ public class SQLParser extends SQLiteBaseListener {
     private void checkQualifier(SQLiteParser.ExprContext exprCtx) {
         if (exprCtx.expr().size() != 2)
             throw new RuntimeException("Cannot parse qualifier:" + exprCtx.getText().toLowerCase());
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private void checkRangeTable(RangeTableExpr rangeTableExpr) {
+        if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_RELATION
+                && ((RelationExpr)rangeTableExpr).getAlias().equals("natural"))
+            ((RelationExpr)rangeTableExpr).setAlias("");
+        if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY
+                && ((SubSelectExpr)rangeTableExpr).getAlias().equals("natural"))
+            ((SubSelectExpr)rangeTableExpr).setAlias("");
+        else if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_JOIN)
+            checkRangeTable(((JoinExpr)rangeTableExpr).getRhs());
     }
 }
