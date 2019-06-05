@@ -54,6 +54,7 @@ public class WhereExpr extends Expression {
                 String tableName = ((ResultColumnExpr) attrEle.getValue()).getTableName();
                 if (trimTargetTables.contains(tableName)) {
                     qualifierExpr.setInvalid(true);
+                    return;
                 } else {
                     qualifierExpr.setInvalid(false);
                 }

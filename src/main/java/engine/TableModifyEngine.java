@@ -87,8 +87,8 @@ public class TableModifyEngine {
                 int[] pos = Utils.getPosFromStr(string.get(0));
                 Row oldRow = table.delete(pos[0], pos[1]);
                 originData.add(oldRow.rowData);
-                Object[] newData = oldRow.rowData.clone();
-                ((UpdateExpr) expression).completeValues(newData);
+                ((UpdateExpr)expression).completeValues(oldRow.rowData);
+                Object[] newData = ((UpdateExpr)expression).getValues().toArray();
 
                 if (table.insertConstraintCheck(newData)) {
                     Row newRow = table.insert(newData);
@@ -115,7 +115,10 @@ public class TableModifyEngine {
         RelationResult relationResult = (RelationResult) queryResult.getBasedResult();
         if (relationResult == null)
             throw new RuntimeException("Internal error");
-        return relationResult.getDatas();
+        ArrayList<ArrayList<String>> matchedRows = new ArrayList<>();
+        for(ArrayList<String> ele : queryResult.getDatas())
+            matchedRows.add(relationResult.getDatas().get(Integer.parseInt(ele.get(0))));
+        return matchedRows;
     }
 
 }

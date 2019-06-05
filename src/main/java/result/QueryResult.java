@@ -13,8 +13,7 @@ public class QueryResult extends Result {
 
     private QueryResult basedResult;
     ArrayList<ArrayList<String>> datas;
-    private HashMap<String, ResultColumnExpr> selectColumns = null;
-    private String[] columnNames = null;
+    private LinkedHashMap<String, ResultColumnExpr> selectColumns = null;
 
     private static String finalResultName = "result";
 
@@ -196,18 +195,15 @@ public class QueryResult extends Result {
     }
 
     public void setSelectColumns(SelectExpr expr) {
-        this.selectColumns = new HashMap<>();
-        ArrayList<String> names = new ArrayList<>();
+        this.selectColumns = new LinkedHashMap<>();
         for (ResultColumnExpr columnExpr : expr.getResultColumnExprs()) {
-            this.selectColumns.put(columnExpr.getName(), columnExpr);
-            names.add(columnExpr.getName());
+            this.selectColumns.put(columnExpr.getTableName()+"."+columnExpr.getName(), columnExpr);
         }
-        this.columnNames = new String[names.size()];
-        names.toArray(this.columnNames);
     }
 
     public String[] getColumnNames() {
-        return columnNames;
+        String[] names = new String[this.selectColumns.size()];
+        return this.selectColumns.keySet().toArray(names);
     }
 
     public boolean hasNext() {
