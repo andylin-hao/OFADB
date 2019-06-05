@@ -22,7 +22,6 @@ public class Client extends JFrame {
     private JTable table = new JTable();
     private JButton button = new JButton("Confirm");
 
-    private final static String URL = "http://localhost:8080/OFADB_war_exploded/result";
     private final static String USERNAME = "OFADB";
     private final static String PASSWORD = "OFADB";
 
@@ -109,7 +108,8 @@ public class Client extends JFrame {
 
         textArea.setLineWrap(true);
         JScrollPane scrollPaneText = new JScrollPane(textArea);
-        JScrollPane scrollPaneTable = new JScrollPane(table);
+        JScrollPane scrollPaneTable = new JScrollPane();
+        scrollPaneTable.setViewportView(table);
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollPaneText, scrollPaneTable);
         splitPane.setDividerLocation(200);
         splitPane.setDividerSize(1);

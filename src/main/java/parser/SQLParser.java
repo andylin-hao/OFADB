@@ -255,9 +255,9 @@ public class SQLParser extends SQLiteBaseListener {
         List<SQLiteParser.Join_constraintContext> constraintContexts = ctx.join_constraint();
 
         if (rangeTblContexts.size() == 1) {
-            RelationExpr relationExpr = (RelationExpr) ctxExpr.get(ctx.table_or_subquery(0));
+            RangeTableExpr rangeTableExpr = (RangeTableExpr) ctxExpr.get(ctx.table_or_subquery(0));
             SelectExpr selectExpr = (SelectExpr) ctxExpr.get(ctx.getParent());
-            selectExpr.setFromExpr(relationExpr);
+            selectExpr.setFromExpr(rangeTableExpr);
         } else {
             JoinExpr joinExpr = null;
             RangeTableExpr leftRangeTblExpr = (RangeTableExpr) ctxExpr.get(rangeTblContexts.get(0));

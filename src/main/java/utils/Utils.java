@@ -226,8 +226,7 @@ public class Utils {
                         former.get(joinExpr.getRhs().getRangeTableName()).add(rightColumn);
                     }
                 }
-                return former;
-            } else if (joinExpr.getUsingExpr() != null) {
+            } else if (joinExpr.getUsingExpr().size() == 0) {
                 for (String rightColumn : rightColumns) {
                     boolean isAdd = true;
                     for (ResultColumnExpr columnExpr : joinExpr.getUsingExpr()) {
@@ -243,6 +242,8 @@ public class Utils {
                     former.get(joinExpr.getRhs().getRangeTableName()).add(rightColumn);
                 }
             }
+
+            return former;
         } else if (fromExpr.getRtTypes().equals(RangeTableTypes.RT_RELATION) ||
                 fromExpr.getRtTypes().equals(RangeTableTypes.RT_SUB_QUERY)) {
             HashMap<String, ArrayList<String>> result = new HashMap<>();

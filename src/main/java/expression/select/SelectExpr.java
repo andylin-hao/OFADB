@@ -105,8 +105,6 @@ public class SelectExpr extends Expression {
 
     @Override
     public void checkValidity() throws IOException {
-        alterStarColumn();
-
         // Acquire the table names in the statement and verify sub-select statement
         ArrayList<RangeTableExpr> fromTableList = Utils.getFromTableList(fromExpr);
         HashMap<String, String> tableNames = Utils.getTableNameList(fromExpr);
@@ -119,6 +117,7 @@ public class SelectExpr extends Expression {
             if (rangeTableExpr.getRtTypes() == RangeTableTypes.RT_RELATION && !((RelationExpr) rangeTableExpr).getDbName().equals(System.getCurDB().dataBaseName))
                 throw new RuntimeException("Syntax error of writing database name in query statement");
         }
+        alterStarColumn();
 
         // Verify the uniqueness of table names
         if (tableNames.size() != fromTableList.size())

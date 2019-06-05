@@ -1,5 +1,6 @@
 package result;
 
+import expression.create.ColumnDefExpr;
 import expression.select.ResultColumnExpr;
 import expression.select.SelectExpr;
 import expression.select.SubSelectExpr;
@@ -197,7 +198,14 @@ public class QueryResult extends Result {
     public void setSelectColumns(SelectExpr expr) {
         this.selectColumns = new LinkedHashMap<>();
         for (ResultColumnExpr columnExpr : expr.getResultColumnExprs()) {
-            this.selectColumns.put(columnExpr.getTableName()+"."+columnExpr.getName(), columnExpr);
+            if(!this.selectColumns.containsKey(columnExpr.getName()))
+                this.selectColumns.put(columnExpr.getName(), columnExpr);
+            else{
+                ResultColumnExpr another = this.selectColumns.get(columnExpr.getName());
+                this.selectColumns.remove(another.getName());
+                this.selectColumns.put(another.getTableName() + '.' + another.getName(),another);
+                this.selectColumns.put(columnExpr.getTableName() + '.'+columnExpr.getName(),columnExpr);
+            }
         }
     }
 
@@ -217,9 +225,12 @@ public class QueryResult extends Result {
                 SingleResult singleResult = getValue(datas.get(pos));
                 String[] names = getColumnNames();
                 Object[] data = new Object[names.length];
-                Map<String, Object> result = singleResult.getDatas().get(QueryResult.finalResultName);
+                Map<String, Object> result = null;
+                for(HashMap<String,Object> datum : singleResult.getDatas().values()){
+                     result= datum;
+                }
                 for (int i = 0; i < data.length; i++)
-                    data[i] = result.get(names[i]);
+                    data[i] = Objects.requireNonNull(result).get(names[i]);
                 return data;
             } else
                 throw new RuntimeException("No more data in the result");
