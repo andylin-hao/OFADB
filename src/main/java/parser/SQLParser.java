@@ -54,21 +54,21 @@ public class SQLParser extends SQLiteBaseListener {
     public void exitCreate_table_stmt(SQLiteParser.Create_table_stmtContext ctx) {
         String dbName = "";
         if (ctx.database_name() != null)
-            dbName = ctx.database_name().getText();
-        expr = new CreateTableExpr(dbName, ctx.table_name().getText());
+            dbName = ctx.database_name().getText().toLowerCase();
+        expr = new CreateTableExpr(dbName, ctx.table_name().getText().toLowerCase());
         CreateTableExpr createTableExpr = (CreateTableExpr) expr;
         HashMap<String, ColumnDefExpr> columnExprs = new HashMap<>();
 
         List<SQLiteParser.Column_defContext> columnDefContexts = ctx.column_def();
         for (SQLiteParser.Column_defContext defCtx : columnDefContexts) {
-            String columnName = defCtx.column_name().getText();
+            String columnName = defCtx.column_name().getText().toLowerCase();
             ColumnTypes columnType = ColumnTypes.valueOf("COL_" + defCtx.type_name().name().getText().toUpperCase());
             int signedNum = 0;
             if (defCtx.type_name().signed_number().size() > 0 && defCtx.type_name().signed_number() != null) {
                 if (defCtx.type_name().signed_number().size() == 1)
-                    signedNum = Integer.parseInt(defCtx.type_name().signed_number(0).getText());
+                    signedNum = Integer.parseInt(defCtx.type_name().signed_number(0).getText().toLowerCase());
                 else
-                    throw new RuntimeException("Unable to parse:" + defCtx.getText());
+                    throw new RuntimeException("Unable to parse:" + defCtx.getText().toLowerCase());
             }
             ColumnDefExpr columnDefExpr = new ColumnDefExpr(columnName, columnType, signedNum);
             columnExprs.put(columnName, columnDefExpr);
@@ -89,9 +89,9 @@ public class SQLParser extends SQLiteBaseListener {
 
             List<SQLiteParser.Indexed_columnContext> columnContexts = tblConstraintCtx.indexed_column();
             for (SQLiteParser.Indexed_columnContext columnCtx : columnContexts) {
-                ColumnDefExpr column = columnExprs.get(columnCtx.getText());
+                ColumnDefExpr column = columnExprs.get(columnCtx.getText().toLowerCase());
                 if (column == null) {
-                    throw new RuntimeException("Table constraint incorrect:" + tblConstraintCtx.getText());
+                    throw new RuntimeException("Table constraint incorrect:" + tblConstraintCtx.getText().toLowerCase());
                 } else {
                     tblConstraintExpr.getColumns().add(column);
                 }
@@ -103,15 +103,15 @@ public class SQLParser extends SQLiteBaseListener {
 
     @Override
     public void exitCreate_database_stmt(SQLiteParser.Create_database_stmtContext ctx) {
-        expr = new CreateDBExpr(ctx.database_name().getText());
+        expr = new CreateDBExpr(ctx.database_name().getText().toLowerCase());
     }
 
     @Override
     public void enterDelete_stmt(SQLiteParser.Delete_stmtContext ctx) {
         String dbName = "";
         if (ctx.qualified_table_name().database_name() != null)
-            dbName = ctx.qualified_table_name().database_name().getText();
-        expr = new DeleteExpr(dbName, ctx.qualified_table_name().table_name().getText());
+            dbName = ctx.qualified_table_name().database_name().getText().toLowerCase();
+        expr = new DeleteExpr(dbName, ctx.qualified_table_name().table_name().getText().toLowerCase());
         ctxExpr.put(ctx, expr);
     }
 
@@ -119,13 +119,13 @@ public class SQLParser extends SQLiteBaseListener {
     public void exitDrop_table_stmt(SQLiteParser.Drop_table_stmtContext ctx) {
         String dbName = "";
         if (ctx.database_name() != null)
-            dbName = ctx.database_name().getText();
-        expr = new DropTableExpr(dbName, ctx.table_name().getText());
+            dbName = ctx.database_name().getText().toLowerCase();
+        expr = new DropTableExpr(dbName, ctx.table_name().getText().toLowerCase());
     }
 
     @Override
     public void exitDrop_database_stmt(SQLiteParser.Drop_database_stmtContext ctx) {
-        expr = new DropDBExpr(ctx.database_name().getText());
+        expr = new DropDBExpr(ctx.database_name().getText().toLowerCase());
     }
 
     @Override
@@ -153,14 +153,14 @@ public class SQLParser extends SQLiteBaseListener {
     public void exitResult_column(SQLiteParser.Result_columnContext ctx) {
         ResultColumnExpr resultColumnExpr = new ResultColumnExpr();
 
-        if (ctx.expr() == null && ctx.getText().equals("*"))
+        if (ctx.expr() == null && ctx.getText().toLowerCase().equals("*"))
             resultColumnExpr.setAttrName("*");
         else {
             if (ctx.expr() == null)
-                throw new RuntimeException("Unable to parse \"" + ctx.getText() + "\"");
+                throw new RuntimeException("Unable to parse \"" + ctx.getText().toLowerCase() + "\"");
             resultColumnExpr = getColumnExpr(ctx.expr());
             if (ctx.column_alias() != null)
-                resultColumnExpr.setAlias(ctx.column_alias().getText());
+                resultColumnExpr.setAlias(ctx.column_alias().getText().toLowerCase());
         }
 
         Expression expression = ctxExpr.get(ctx.getParent());
@@ -184,9 +184,9 @@ public class SQLParser extends SQLiteBaseListener {
         if (ctx.K_DATABASES() != null) {
             expr = new ShowDBExpr();
         } else if (ctx.K_DATABASE() != null) {
-            expr = new ShowDBExpr(ctx.database_name().getText());
+            expr = new ShowDBExpr(ctx.database_name().getText().toLowerCase());
         } else {
-            throw new RuntimeException("Unable to parse:" + ctx.getText());
+            throw new RuntimeException("Unable to parse:" + ctx.getText().toLowerCase());
         }
     }
 
@@ -194,8 +194,8 @@ public class SQLParser extends SQLiteBaseListener {
     public void exitShow_table_stmt(SQLiteParser.Show_table_stmtContext ctx) {
         String dbName = "";
         if (ctx.database_name() != null)
-            dbName = ctx.database_name().getText();
-        expr = new ShowTableExpr(dbName, ctx.table_name().getText());
+            dbName = ctx.database_name().getText().toLowerCase();
+        expr = new ShowTableExpr(dbName, ctx.table_name().getText().toLowerCase());
     }
 
     @Override
@@ -203,17 +203,17 @@ public class SQLParser extends SQLiteBaseListener {
         if (ctx.table_name() != null) {
             String tableName = "", dbName = "", alias = "";
             if (ctx.table_name() != null)
-                tableName = ctx.table_name().getText();
+                tableName = ctx.table_name().getText().toLowerCase();
             if (ctx.database_name() != null)
-                dbName = ctx.database_name().getText();
+                dbName = ctx.database_name().getText().toLowerCase();
             if (ctx.table_alias() != null)
-                alias = ctx.table_alias().getText();
+                alias = ctx.table_alias().getText().toLowerCase();
             RelationExpr relationExpr = new RelationExpr(tableName, alias, dbName);
             ctxExpr.put(ctx, relationExpr);
         } else if (ctx.select_stmt() != null) {
             String alias = "";
             if (ctx.table_alias() != null)
-                alias = ctx.table_alias().getText();
+                alias = ctx.table_alias().getText().toLowerCase();
             SubSelectExpr subSelectExpr = new SubSelectExpr(alias);
             subSelectExpr.setSelectExpr((SelectExpr) ctxExpr.get(ctx.select_stmt().select_or_values(0)));
             ctxExpr.put(ctx, subSelectExpr);
@@ -224,14 +224,14 @@ public class SQLParser extends SQLiteBaseListener {
     public void exitInsert_stmt(SQLiteParser.Insert_stmtContext ctx) {
         String dbName = "";
         if (ctx.database_name() != null) {
-            dbName = ctx.database_name().getText();
+            dbName = ctx.database_name().getText().toLowerCase();
         }
-        expr = new InsertExpr(dbName, ctx.table_name().getText());
+        expr = new InsertExpr(dbName, ctx.table_name().getText().toLowerCase());
         InsertExpr insertExpr = (InsertExpr) expr;
 
         List<SQLiteParser.Column_nameContext> columnContexts = ctx.column_name();
         for (SQLiteParser.Column_nameContext columnCtx : columnContexts) {
-            insertExpr.getColumns().add(columnCtx.getText());
+            insertExpr.getColumns().add(columnCtx.getText().toLowerCase());
         }
 
         List<SQLiteParser.Insert_value_stmtContext> valueContexts = ctx.insert_value_stmt();
@@ -267,8 +267,8 @@ public class SQLParser extends SQLiteBaseListener {
                 joinExpr.setRhs((RangeTableExpr) ctxExpr.get(rangeTblContexts.get(i)));
 
                 if (rangeTblContexts.get(i - 1).table_alias() != null &&
-                        rangeTblContexts.get(i - 1).table_alias().getText().toLowerCase().equals("natural") ||
-                        ctx.join_operator(i - 1).getText().equals("naturaljoin")) {
+                        rangeTblContexts.get(i - 1).table_alias().getText().toLowerCase().toLowerCase().equals("natural") ||
+                        ctx.join_operator(i - 1).getText().toLowerCase().equals("naturaljoin")) {
                     joinExpr.setNatural(true);
                 }
 
@@ -285,7 +285,7 @@ public class SQLParser extends SQLiteBaseListener {
                         ArrayList<ResultColumnExpr> usingExpr = joinExpr.getUsingExpr();
                         for (SQLiteParser.Column_nameContext context : columnNameContexts) {
                             ResultColumnExpr column = new ResultColumnExpr();
-                            column.setAttrName(context.getText());
+                            column.setAttrName(context.getText().toLowerCase());
                             usingExpr.add(column);
                         }
                         joinExpr.setUsingExpr(usingExpr);
@@ -327,14 +327,14 @@ public class SQLParser extends SQLiteBaseListener {
     public void enterUpdate_stmt(SQLiteParser.Update_stmtContext ctx) {
         String dbName = "";
         if (ctx.qualified_table_name().database_name() != null) {
-            dbName = ctx.qualified_table_name().database_name().getText();
+            dbName = ctx.qualified_table_name().database_name().getText().toLowerCase();
         }
-        expr = new UpdateExpr(dbName, ctx.qualified_table_name().table_name().getText());
+        expr = new UpdateExpr(dbName, ctx.qualified_table_name().table_name().getText().toLowerCase());
         UpdateExpr updateExpr = (UpdateExpr) expr;
 
         List<SQLiteParser.Update_values_stmtContext> valuesContexts = ctx.update_values_stmt();
         for (SQLiteParser.Update_values_stmtContext valueCtx : valuesContexts) {
-            updateExpr.getAttrNames().add(valueCtx.column_name().getText());
+            updateExpr.getAttrNames().add(valueCtx.column_name().getText().toLowerCase());
             updateExpr.getValues().add(getValue(valueCtx.expr()));
         }
 
@@ -343,7 +343,7 @@ public class SQLParser extends SQLiteBaseListener {
 
     @Override
     public void enterUse_database_stmt(SQLiteParser.Use_database_stmtContext ctx) {
-        expr = new UseDBExpr(ctx.database_name().getText());
+        expr = new UseDBExpr(ctx.database_name().getText().toLowerCase());
     }
 
     private QualifyEleExpr getQualifyEle(SQLiteParser.ExprContext exprCtx) {
@@ -362,11 +362,11 @@ public class SQLParser extends SQLiteBaseListener {
         } else if (valueClass == ResultColumnExpr.class) {
             return new QualifyEleExpr(QualifyEleTypes.QUA_ELE_ATTR, value);
         } else
-            throw new RuntimeException("Unable to parse:" + exprCtx.getText());
+            throw new RuntimeException("Unable to parse:" + exprCtx.getText().toLowerCase());
     }
 
     private Object getValue(SQLiteParser.ExprContext exprCtx) {
-        String text = exprCtx.getText();
+        String text = exprCtx.getText().toLowerCase();
         if (isNull(text))
             return null;
         else if (isInteger(text))
@@ -386,11 +386,11 @@ public class SQLParser extends SQLiteBaseListener {
     private ResultColumnExpr getColumnExpr(SQLiteParser.ExprContext exprCtx) {
         ResultColumnExpr columnExpr = new ResultColumnExpr();
         if (exprCtx.database_name() != null)
-            columnExpr.setDbName(exprCtx.database_name().getText());
+            columnExpr.setDbName(exprCtx.database_name().getText().toLowerCase());
         if (exprCtx.table_name() != null)
-            columnExpr.setTableName(exprCtx.table_name().getText());
+            columnExpr.setTableName(exprCtx.table_name().getText().toLowerCase());
         if (exprCtx.column_name() != null)
-            columnExpr.setAttrName(exprCtx.column_name().getText());
+            columnExpr.setAttrName(exprCtx.column_name().getText().toLowerCase());
         return columnExpr;
     }
 
@@ -446,14 +446,14 @@ public class SQLParser extends SQLiteBaseListener {
             return getQualifier(exprCtx);
         }
 
-        if (exprCtx.expr().size() == 1 && exprCtx.getText().equals("(" + exprCtx.expr(0) + ")")) {
+        if (exprCtx.expr().size() == 1 && exprCtx.getText().toLowerCase().equals("(" + exprCtx.expr(0) + ")")) {
             exprCtx = exprCtx.expr(0);
         }
 
         if (exprCtx.expr().size() == 2) {
             OpTypes op = getOperator(exprCtx);
             if (op == null)
-                throw new RuntimeException("Unable to parse:" + exprCtx.getText());
+                throw new RuntimeException("Unable to parse:" + exprCtx.getText().toLowerCase());
 
             SQLiteParser.ExprContext left = exprCtx.expr(0);
             SQLiteParser.ExprContext right = exprCtx.expr(1);
@@ -462,14 +462,14 @@ public class SQLParser extends SQLiteBaseListener {
 
             return new WhereExpr(whereLeft, whereRight, op);
         }
-        throw new RuntimeException("Unable to parse:" + exprCtx.getText());
+        throw new RuntimeException("Unable to parse:" + exprCtx.getText().toLowerCase());
     }
 
     private FormulaExpr getFormulaExpr(SQLiteParser.ExprContext exprCtx) {
-        if (isInteger(exprCtx.getText())) {
-            return new FormulaNodeExpr(Integer.parseInt(exprCtx.getText()));
-        } else if (isDouble(exprCtx.getText())) {
-            return new FormulaNodeExpr(Double.parseDouble(exprCtx.getText()));
+        if (isInteger(exprCtx.getText().toLowerCase())) {
+            return new FormulaNodeExpr(Integer.parseInt(exprCtx.getText().toLowerCase()));
+        } else if (isDouble(exprCtx.getText().toLowerCase())) {
+            return new FormulaNodeExpr(Double.parseDouble(exprCtx.getText().toLowerCase()));
         } else {
             if (exprCtx.expr().size() == 1) {
                 exprCtx = exprCtx.expr(0);
@@ -480,12 +480,12 @@ public class SQLParser extends SQLiteBaseListener {
                 FormulaExpr right = getFormulaExpr(exprCtx.expr(1));
                 return new FormulaExpr(left, right, op);
             }
-            throw new RuntimeException("Unable to parse:" + exprCtx.getText());
+            throw new RuntimeException("Unable to parse:" + exprCtx.getText().toLowerCase());
         }
     }
 
     private ColumnConstraintTypes getColConstraintType(SQLiteParser.Column_constraintContext exprCtx) {
-        switch (exprCtx.getText().toLowerCase()) {
+        switch (exprCtx.getText().toLowerCase().toLowerCase()) {
             case "notnull":
                 return ColumnConstraintTypes.COL_NOT_NULL;
             case "primarykey":
@@ -500,7 +500,7 @@ public class SQLParser extends SQLiteBaseListener {
     }
 
     private TableConstraintTypes getTableConstraintType(SQLiteParser.Table_constraintContext exprCtx) {
-        String str = exprCtx.getText().toLowerCase();
+        String str = exprCtx.getText().toLowerCase().toLowerCase();
         if (str.startsWith("primarykey"))
             return TableConstraintTypes.TBL_PRIMARY_KEY;
         else
@@ -556,6 +556,6 @@ public class SQLParser extends SQLiteBaseListener {
 
     private void checkQualifier(SQLiteParser.ExprContext exprCtx) {
         if (exprCtx.expr().size() != 2)
-            throw new RuntimeException("Cannot parse qualifier:" + exprCtx.getText());
+            throw new RuntimeException("Cannot parse qualifier:" + exprCtx.getText().toLowerCase());
     }
 }
