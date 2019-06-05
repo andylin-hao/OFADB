@@ -194,14 +194,17 @@ public class SelectExpr extends Expression {
                     resultColumnExprs.add(columnExpr);
                 }
             }
-        }
-    }
 
-    private void alterResultColumns() throws IOException {
-        HashMap<String, ArrayList<String>> selectableColumns = Utils.getTableSelectableColumns(fromExpr);
-        for (ResultColumnExpr columnExpr: resultColumnExprs) {
-            if (!selectableColumns.get(columnExpr.getTableName()).contains(columnExpr.getAttrName())) {
-                
+            HashMap<String, ArrayList<String>> selectableColumns = Utils.getTableSelectableColumns(fromExpr);
+            ArrayList<ResultColumnExpr> removeList = new ArrayList<>();
+            for (ResultColumnExpr columnExpr: resultColumnExprs) {
+                if (!selectableColumns.get(columnExpr.getTableName()).contains(columnExpr.getAttrName())) {
+                    removeList.add(columnExpr);
+                }
+            }
+
+            for (ResultColumnExpr columnExpr: removeList) {
+                resultColumnExprs.remove(columnExpr);
             }
         }
     }

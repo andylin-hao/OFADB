@@ -1,6 +1,7 @@
 package expression.update;
 
 import expression.Expression;
+import expression.select.FormulaExpr;
 import meta.ColumnInfo;
 import meta.MetaData;
 import meta.TableInfo;
@@ -90,7 +91,10 @@ public class UpdateExpr extends Expression {
         for (int i = 0; i < columnInfos.length; i++) {
             ColumnInfo columnInfo = columnInfos[i];
             if (columnIndexMap.containsKey(columnInfo.columnName)) {
-                newValues.add(values.get(columnIndexMap.get(columnInfo.columnName)));
+                Object valueObject = values.get(columnIndexMap.get(columnInfo.columnName));
+                if (valueObject instanceof FormulaExpr)
+                    valueObject = ((FormulaExpr) valueObject).getValue();
+                newValues.add(Utils.convertValueTypes(valueObject, columnInfo.columnType.typeCode));
             } else {
                 newValues.add(oldValues[i]);
             }
