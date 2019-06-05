@@ -367,7 +367,7 @@ public class SQLParser extends SQLiteBaseListener {
     }
 
     private Object getValue(SQLiteParser.ExprContext exprCtx) {
-        String text = exprCtx.getText().toLowerCase();
+        String text = exprCtx.getText();
         if (isNull(text))
             return null;
         else if (isInteger(text))
@@ -486,7 +486,7 @@ public class SQLParser extends SQLiteBaseListener {
     }
 
     private ColumnConstraintTypes getColConstraintType(SQLiteParser.Column_constraintContext exprCtx) {
-        switch (exprCtx.getText().toLowerCase().toLowerCase()) {
+        switch (exprCtx.getText().toLowerCase()) {
             case "notnull":
                 return ColumnConstraintTypes.COL_NOT_NULL;
             case "primarykey":
@@ -501,7 +501,7 @@ public class SQLParser extends SQLiteBaseListener {
     }
 
     private TableConstraintTypes getTableConstraintType(SQLiteParser.Table_constraintContext exprCtx) {
-        String str = exprCtx.getText().toLowerCase().toLowerCase();
+        String str = exprCtx.getText().toLowerCase();
         if (str.startsWith("primarykey"))
             return TableConstraintTypes.TBL_PRIMARY_KEY;
         else
