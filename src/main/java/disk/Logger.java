@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class Logger {
     public final static int defaultBlockSize = 4096;                                        // default size of one block of data file
-    public final static int cacheSizeLimit = 4096 * 256;                                    // size of the block cache
+    public final static int cacheSizeLimit = defaultBlockSize * 256;                                    // size of the block cache
     public final static String dataFileSuffix = ".data";                                    // suffix of data file
     public final static String indexFileSuffix = ".ndx";                                    // suffix of index file
     public final static String FilePrefix = "./data/";

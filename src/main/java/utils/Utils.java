@@ -333,23 +333,23 @@ public class Utils {
     public static Object convertValueTypes(Object oldValue, ColumnTypes newType) {
         switch (newType) {
             case COL_SHORT:
-                if (!(oldValue instanceof Long))
+                if (!(oldValue instanceof Long || oldValue instanceof Integer || oldValue instanceof Short))
                     throw new RuntimeException("Incompatible types");
                 return ((Number) oldValue).shortValue();
             case COL_INT:
-                if (!(oldValue instanceof Long))
+                if (!(oldValue instanceof Long || oldValue instanceof Integer || oldValue instanceof Short))
                     throw new RuntimeException("Incompatible types");
                 return ((Number) oldValue).intValue();
             case COL_LONG:
-                if (!(oldValue instanceof Long))
+                if (!(oldValue instanceof Long || oldValue instanceof Integer || oldValue instanceof Short))
                     throw new RuntimeException("Incompatible types");
                 return ((Number) oldValue).longValue();
             case COL_FLOAT:
-                if (!(oldValue instanceof Double))
+                if (!(oldValue instanceof Double || oldValue instanceof Float))
                     throw new RuntimeException("Incompatible types");
                 return ((Number) oldValue).floatValue();
             case COL_DOUBLE:
-                if (!(oldValue instanceof Double))
+                if (!(oldValue instanceof Double || oldValue instanceof Float))
                     throw new RuntimeException("Incompatible types");
                 return ((Number) oldValue).doubleValue();
             default:

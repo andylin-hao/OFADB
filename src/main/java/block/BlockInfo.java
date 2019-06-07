@@ -173,7 +173,7 @@ public class BlockInfo {
 
         //if this is the last row in the list, then release the entry space
         if (index == emptyRecord.size() - 1)
-            removeLastEntryi(index);
+            removeLastEntry(index);
         emptyPointer += dataLength;
         emptySize += dataLength;
 //        writeMetaToBytes();
@@ -187,8 +187,9 @@ public class BlockInfo {
      **/
     public void updateMetaByInsert(int index, int dataLength) throws IOException {
         rowNum++;
-        if (index == emptyRecord.size())
-            emptyRecord.add(true);
+        if (index == emptyRecord.size()) {
+            addNewEntry();
+        }
         emptyRecord.set(index, false);
         emptyPointer -= dataLength;
         emptySize -= dataLength;
@@ -219,7 +220,7 @@ public class BlockInfo {
     /**
      * Remove the last entry in the list and update emptySize
      **/
-    public void removeLastEntryi(int index) {
+    public void removeLastEntry(int index) {
         emptyRecord.remove(index);
         emptySize += entrySize;
     }
