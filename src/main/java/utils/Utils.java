@@ -122,6 +122,7 @@ public class Utils {
                 if (fromExpr.getRtTypes() == RangeTableTypes.RT_SUB_QUERY &&
                         ((SubSelectExpr) fromExpr).getSelectExpr().getColumn(columnExpr.getAttrName()) != null) {
                     tableName = null;
+                    subSelectExpr = (SubSelectExpr) fromExpr;
                 } else if (fromExpr.getRtTypes() == RangeTableTypes.RT_RELATION &&
                         MetaData.isColumnExist(dbName, ((RelationExpr) fromExpr).getTableName(), columnExpr.getAttrName())) {
                     tableName = fromExpr.getRangeTableName();

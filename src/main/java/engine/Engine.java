@@ -20,9 +20,7 @@ import java.util.Timer;
 
 public class Engine {
     public static Result expressionExec(String sql) throws IOException {
-        long start = System.nanoTime();
         Expression expression = getParseResult(sql);
-        System.out.println(System.nanoTime() - start);
         switch (expression.getExprType()) {
             case EXPR_SELECT:
                 return new QueryEngine(expression).getResult();
