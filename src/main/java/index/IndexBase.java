@@ -48,7 +48,7 @@ public class IndexBase extends BPlusTree {
         HashSet<Row> rowHashSet = new HashSet<>();
         if(splitNode != null) {
             if (queryDir.equals(IndexQueryType.QUERY_LT)) {
-                for (int i = 0; i < splitNode.keys.size() - 1; i++)
+                for (int i = 0; i < splitNode.keys.size(); i++)
                     if (key.compareTo(splitNode.keys.get(i).getKey()) > 0)
                         rowHashSet.addAll(((NodeLeaf) (splitNode.keys.get(i).getValue())).rowInfos);
                 while (splitNode.previous != null) {
@@ -57,7 +57,7 @@ public class IndexBase extends BPlusTree {
                         rowHashSet.addAll(((NodeLeaf) (splitNode.keys.get(i).getValue())).rowInfos);
                 }
             } else if (queryDir.equals(IndexQueryType.QUERY_GT)) {
-                for (int i = 0; i < splitNode.keys.size() - 1; i++)
+                for (int i = 0; i < splitNode.keys.size(); i++)
                     if (key.compareTo(splitNode.keys.get(i).getKey()) < 0)
                         rowHashSet.addAll(((NodeLeaf) (splitNode.keys.get(i).getValue())).rowInfos);
                 while (splitNode.next != null) {
