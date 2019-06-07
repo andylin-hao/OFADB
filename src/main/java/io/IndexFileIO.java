@@ -3,6 +3,7 @@ package io;
 import disk.Row;
 import index.*;
 
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -426,6 +427,7 @@ public class IndexFileIO {
                 }
                 nodeIndex.keys.add(new AbstractMap.SimpleEntry<Comparable, Object>(key, nodeLeaf));
             }
+//            System.out.println(pos);
             index.loadedNodes.put(pos, nodeIndex);
 
             //set previous and next pointers
@@ -460,6 +462,7 @@ public class IndexFileIO {
                 nodeIndex.children.add(child);
                 file.seek(lastKey);
             }
+//            System.out.println(pos);
             index.loadedNodes.put(pos, nodeIndex);
         }
         return nodeIndex;

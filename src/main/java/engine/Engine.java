@@ -15,10 +15,14 @@ import result.Result;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.Time;
+import java.util.Timer;
 
 public class Engine {
     public static Result expressionExec(String sql) throws IOException {
+        long start = System.nanoTime();
         Expression expression = getParseResult(sql);
+        System.out.println(System.nanoTime() - start);
         switch (expression.getExprType()) {
             case EXPR_SELECT:
                 return new QueryEngine(expression).getResult();
@@ -40,6 +44,7 @@ public class Engine {
             default:
                 return null;
         }
+
     }
 
     private static Expression getParseResult(String sql) throws IOException {
