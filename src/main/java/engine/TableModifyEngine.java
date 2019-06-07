@@ -75,6 +75,7 @@ public class TableModifyEngine {
         return new MsgResult("Delete successfully");
     }
 
+    @SuppressWarnings("unchecked")
     private MsgResult getUpdateResult() throws IOException {
         String tableName = ((UpdateExpr) expression).getTableName();
         Table table = System.getCurDB().getTable(tableName);
@@ -87,8 +88,14 @@ public class TableModifyEngine {
                 int[] pos = Utils.getPosFromStr(string.get(0));
                 Row oldRow = table.delete(pos[0], pos[1]);
                 originData.add(oldRow.rowData);
-                ((UpdateExpr)expression).completeValues(oldRow.rowData);
+                UpdateExpr updateExpr = (UpdateExpr) expression;
+                ArrayList<String> attrNames = (ArrayList<String>) updateExpr.getAttrNames().clone();
+                ArrayList<Object> values = (ArrayList<Object>) updateExpr.getValues().clone();
+                updateExpr.completeValues(oldRow.rowData);
                 Object[] newData = ((UpdateExpr)expression).getValues().toArray();
+                updateExpr.setAttrNames(attrNames);
+                updateExpr.setValues(values);
+
 
                 if (table.insertConstraintCheck(newData)) {
                     Row newRow = table.insert(newData);
